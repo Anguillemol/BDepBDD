@@ -379,30 +379,114 @@ class creaWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Création d'un dépôt")
-        self.title = QLabel("Créer un dépôt")
-        
+        self.title = QLabel("Création d'un dépôt")
+        self.title.setFont(QFont('Arial', 18))
+        self.layout = QGridLayout()
+
+        self.ligne1 = QHBoxLayout()
+
+        self.data1 = QLineEdit()
+        self.data2 = QLineEdit()
+        self.data3 = QLineEdit()
+        self.ligne1.addWidget(self.data1)
+        self.ligne1.addWidget(self.data2)
+        self.ligne1.addWidget(self.data3)
+
+        self.ligne2 = QHBoxLayout()
+
+        self.data4 = QLineEdit()
+        self.data5 = QLineEdit()
+        self.data6 = QLineEdit()
+        self.ligne2.addWidget(self.data4)
+        self.ligne2.addWidget(self.data5)
+        self.ligne2.addWidget(self.data6)
+
+        self.ligne3 = QHBoxLayout()
+
+        self.data7 = QLineEdit()
+        self.data8 = QLineEdit()
+        self.data9 = QLineEdit()
+        self.ligne3.addWidget(self.data7)
+        self.ligne3.addWidget(self.data8)
+        self.ligne3.addWidget(self.data9)
+
         self.boutonCreer = QPushButton("Créer le dépôt")
+        self.boutonCreer.clicked.connect(self.insertionbdd)
+
+        self.layout.addWidget(self.title, 0, 0, 1, 3, Qt.AlignmentFlag.AlignCenter)
+        self.layout.addWidget(self.ligne1, 1, 0, 1, 3)
+        self.layout.addWidget(self.ligne2, 2, 0, 1, 3)
+        self.layout.addWidget(self.ligne3, 3, 0, 1, 3)
+        self.layout.addWidget(self.boutonCreer, 4, 1, 1, 1, Qt.AlignmentFlag.AlignCenter)
+
+        self.setLayout(self.layout)
+
+    def insertionbdd(self):
+        print("Bibimbap")
 
 class modifWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Modification d'un dépôt")
         self.title = QLabel("Modification d'un dépôt")
-        
+
         ##TODO: Faire un stacked widget
+        self.stack = QStackedWidget()
+                
+        ##TODO: Widget 1 -> Sélection du dépot
+        self.layout1 = QGridLayout()
+        self.listedepots = QComboBox()
         
-        ##TODO: Widget 1 -> Sélection du Widget, bouton confirmation
+        ##TODO: Widget 2 -> Affichage du dépot + possibilité de toujours le modifier
+        self.layout2 = QGridLayout()
+        self.listedepots2 = QComboBox()
+        self.affichageDep = QTableView()
+
+        self.boutonConfirmation = QPushButton()
+        self.boutonConfirmation.clicked.connect(self.choix)
 
         ##TODO: Widget 2 -> Accès aux infos du Widget, modification des infos et bouton confirmation
+        self.layout3 = QGridLayout()
 
-        self.boutonCreer = QPushButton("Créer le dépôt")
+        self.boutonCreer = QPushButton("Modifier le dépôt")
+
+    def combo(self):
+        print("Combo")
+        #Charger les données dans self.affichageDep
+        self.stack.setCurrentIndex(1)
+
+    def choix(self):
+        print("Choxi")
+        self.stack.setCurrentIndex(2)
+
+    def modif(self):
+        print("Modification faite")
+        self.close()
+
 
 class suppWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Suppression d'un dépôt")
 
-        ##TODO: Faire tout et la gestoin du dataframe
+        self.stack = QStackedWidget()
+                
+        ##TODO: Widget 1 -> Sélection du dépot
+        self.layout1 = QGridLayout()
+        self.listedepots = QComboBox()
+        
+        ##TODO: Widget 2 -> Affichage du dépot + possibilité de toujours le modifier
+        self.layout2 = QGridLayout()
+        self.listedepots2 = QComboBox()
+        self.affichageDep = QTableView()
+
+        self.boutonConfirmation = QPushButton()
+        self.boutonConfirmation.clicked.connect(self.choix)
+
+        ##TODO: Faire une fenetre de confirmation
+
+    def choix(self):
+        print("supp")
 
 class demandeChangement(QWidget):
     def __init__(self):
