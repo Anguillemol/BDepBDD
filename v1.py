@@ -368,12 +368,19 @@ class mainWindow(QWidget):
 
     def creerDepot(self):
         print("Création")
+        self.w = creaWindow()
+        self.w.show()
 
     def modifDepot(self):
         print("Modification")
+        modifWindow.sheet=self.sheet
+        self.w = modifWindow()
+        self.w.show()
 
     def supprimerDepot(self):
         print("Suppression")
+        self.w = suppWindow()
+        self.w.show()
 
 class creaWindow(QWidget):
     def __init__(self):
@@ -383,48 +390,68 @@ class creaWindow(QWidget):
         self.title.setFont(QFont('Arial', 18))
         self.layout = QGridLayout()
 
+        self.widget1 = QWidget()
         self.ligne1 = QHBoxLayout()
 
         self.data1 = QLineEdit()
+        self.data1.setPlaceholderText("Test1")
         self.data2 = QLineEdit()
+        self.data2.setPlaceholderText("Test2")
         self.data3 = QLineEdit()
+        self.data3.setPlaceholderText("Test3")
         self.ligne1.addWidget(self.data1)
         self.ligne1.addWidget(self.data2)
         self.ligne1.addWidget(self.data3)
+        self.widget1.setLayout(self.ligne1)
 
+        self.widget2 = QWidget()
         self.ligne2 = QHBoxLayout()
 
         self.data4 = QLineEdit()
+        self.data4.setPlaceholderText("Test4")
         self.data5 = QLineEdit()
+        self.data5.setPlaceholderText("Test5")
         self.data6 = QLineEdit()
+        self.data6.setPlaceholderText("Test6")
         self.ligne2.addWidget(self.data4)
         self.ligne2.addWidget(self.data5)
         self.ligne2.addWidget(self.data6)
+        self.widget2.setLayout(self.ligne2)
 
+        self.widget3 = QWidget()
         self.ligne3 = QHBoxLayout()
 
         self.data7 = QLineEdit()
+        self.data7.setPlaceholderText("Test7")
         self.data8 = QLineEdit()
+        self.data8.setPlaceholderText("Test8")
         self.data9 = QLineEdit()
+        self.data9.setPlaceholderText("Test9")
         self.ligne3.addWidget(self.data7)
         self.ligne3.addWidget(self.data8)
         self.ligne3.addWidget(self.data9)
+        self.widget3.setLayout(self.ligne3)
 
         self.boutonCreer = QPushButton("Créer le dépôt")
         self.boutonCreer.clicked.connect(self.insertionbdd)
 
         self.layout.addWidget(self.title, 0, 0, 1, 3, Qt.AlignmentFlag.AlignCenter)
-        self.layout.addWidget(self.ligne1, 1, 0, 1, 3)
-        self.layout.addWidget(self.ligne2, 2, 0, 1, 3)
-        self.layout.addWidget(self.ligne3, 3, 0, 1, 3)
+        self.layout.addWidget(self.widget1, 1, 0, 1, 3)
+        self.layout.addWidget(self.widget2, 2, 0, 1, 3)
+        self.layout.addWidget(self.widget3, 3, 0, 1, 3)
         self.layout.addWidget(self.boutonCreer, 4, 1, 1, 1, Qt.AlignmentFlag.AlignCenter)
 
         self.setLayout(self.layout)
 
+    ##TODO: Faire l'insertion des données dans le DataFrame
     def insertionbdd(self):
         print("Bibimbap")
+        print("Ajout des données dans le dataframe")
+        self.close()
 
 class modifWindow(QWidget):
+    sheet = pd.DataFrame
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Modification d'un dépôt")
@@ -434,10 +461,27 @@ class modifWindow(QWidget):
         self.stack = QStackedWidget()
                 
         ##TODO: Widget 1 -> Sélection du dépot
-        self.layout1 = QGridLayout()
+        self.widget1 = QWidget()
+        self.layout1 = QVBoxLayout()
+
+        self.titre = QLabel("Sélection du dépôt à modifier")
         self.listedepots = QComboBox()
+        self.listedesdepots = self.sheet["Dépôt"].values.tolist()
+        print(self.listedesdepots)
+        self.listedepots.addItems(self.listedesdepots)
+        self.listedepots.currentIndexChanged.connect(self.selectionDepot)
+        self.boutontest = QPushButton("test")
+        self.boutontest.clicked.connect(self.tesst)
+
+
+        self.layout1.addWidget(self.titre)
+        self.layout1.addWidget(self.listedepots)
+        self.layout1.addWidget(self.boutontest)
+
+        self.widget1.setLayout(self.layout1)
         
         ##TODO: Widget 2 -> Affichage du dépot + possibilité de toujours le modifier
+        self.widget2 = QWidget()
         self.layout2 = QGridLayout()
         self.listedepots2 = QComboBox()
         self.affichageDep = QTableView()
@@ -445,10 +489,24 @@ class modifWindow(QWidget):
         self.boutonConfirmation = QPushButton()
         self.boutonConfirmation.clicked.connect(self.choix)
 
+        self.widget2.setLayout(self.layout2)
+
         ##TODO: Widget 2 -> Accès aux infos du Widget, modification des infos et bouton confirmation
+        self.widget3 = QWidget()
         self.layout3 = QGridLayout()
 
         self.boutonCreer = QPushButton("Modifier le dépôt")
+
+        self.widget3.setLayout(self.layout3)
+
+        ##TODO: Le stackWidget
+        self.mainlayout = QGridLayout()
+        self.stack.addWidget(self.widget1)
+        self.stack.addWidget(self.widget2)
+        self.stack.addWidget(self.widget3)
+        self.mainlayout.addWidget(self.stack)
+        self.setLayout(self.mainlayout)
+
 
     def combo(self):
         print("Combo")
@@ -462,6 +520,13 @@ class modifWindow(QWidget):
     def modif(self):
         print("Modification faite")
         self.close()
+
+    def tesst(self):
+        print(self.sheet['Dépôt'][0])
+        print(self.listedesdepots)
+
+    def selectionDepot(self):
+        print("prout")
 
 
 class suppWindow(QWidget):
