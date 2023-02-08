@@ -386,129 +386,373 @@ class mainWindow(QWidget):
 ##TODO: Faire l'insertion des données dans le DataFrame
 class creaWindow(QWidget):
     def __init__(self):
-        super().__init__
-        self.setWindowTitle("Création d'un dépôt")
-        self.title = QLabel("Création d'un dépôt")
-        self.title.setFont(QFont('Arial', 18))
-
-        self.layout = QGridLayout()
-        
-        #Premiere ligne de boutons
-        self.row1 = QHBoxLayout()
-
-        self.listeDepot = QPushButton("Liste dépôt")
-
-        self.donneesSociales = QPushButton("Données sociales")
-
-        self.secteurSecurite = QPushButton("Secteur sécurité")
-
-        self.secteurLogistique = QPushButton("Secteur logistique")
-
-        self.secteurAmenagement = QPushButton("Sectuer aménagement")
-        
-        self.secteurConstruction = QPushButton("Secteur construction")
-
-        self.secteurTechnique = QPushButton("Secteur technique")
-
-        self.secteurAdministratif = QPushButton("Secteur administratif")
-
-        self.secteurCaisse = QPushButton("Secteur caisse")
-
-        self.RH = QPushButton("RH")
-
-        self.donneesDepot = QPushButton("Données dépôt")
-
-        self.surface = QPushButton("Surface")
-
-        self.agencement = QPushButton("Agencement")
-
-        self.caisse = QPushButton("Caisse")
-
-        self.PDA = QPushButton("PDA")
-
-        self.menace = QPushButton("Menace")
-
-        self.securite = QPushButton("Sécurité")
-
-        self.conceptCommercial = QPushButton("Concept commercial")
-
-        self.divers = QPushButton("Divers")
-
-        self.numCommercant = QPushButton("Num commercant")
-
-        self.colissimo = QPushButton("Colissimo")
-        
-        self.accidentTravail = QPushButton("Accident travail")
-
-
-
-
-class creaWindow1(QWidget):
-    def __init__(self):
         super().__init__()
         self.setWindowTitle("Création d'un dépôt")
         self.title = QLabel("Création d'un dépôt")
         self.title.setFont(QFont('Arial', 18))
         self.layout = QGridLayout()
+        
+        #Premiere ligne de boutons
+        self.r1 = QWidget()
+        self.row1 = QHBoxLayout()
 
-        self.widget1 = QWidget()
-        self.ligne1 = QHBoxLayout()
+        self.listeDepot = QPushButton("Liste dépôt")
+        self.listeDepot.clicked.connect(self.ldepot)
+        self.w1 = listeDepot()
+        self.donneesSociales = QPushButton("Données sociales")
+        self.donneesSociales.clicked.connect(self.dSociales)
+        self.w2 = donneesSociales()
+        self.secteurSecurite = QPushButton("Secteur sécurité")
+        self.secteurSecurite.clicked.connect(self.sSecurite)
+        self.w3 = secteurSecurite()
 
-        self.data1 = QLineEdit()
-        self.data1.setPlaceholderText("Test1")
-        self.data2 = QLineEdit()
-        self.data2.setPlaceholderText("Test2")
-        self.data3 = QLineEdit()
-        self.data3.setPlaceholderText("Test3")
-        self.ligne1.addWidget(self.data1)
-        self.ligne1.addWidget(self.data2)
-        self.ligne1.addWidget(self.data3)
-        self.widget1.setLayout(self.ligne1)
+        self.row1.addWidget(self.listeDepot)
+        self.row1.addWidget(self.donneesSociales)
+        self.row1.addWidget(self.secteurSecurite)
 
-        self.widget2 = QWidget()
-        self.ligne2 = QHBoxLayout()
+        self.r1.setLayout(self.row1)
 
-        self.data4 = QLineEdit()
-        self.data4.setPlaceholderText("Test4")
-        self.data5 = QLineEdit()
-        self.data5.setPlaceholderText("Test5")
-        self.data6 = QLineEdit()
-        self.data6.setPlaceholderText("Test6")
-        self.ligne2.addWidget(self.data4)
-        self.ligne2.addWidget(self.data5)
-        self.ligne2.addWidget(self.data6)
-        self.widget2.setLayout(self.ligne2)
+        #Seconde ligne de boutons
+        self.r2 = QWidget()
+        self.row2 = QHBoxLayout()
 
-        self.widget3 = QWidget()
-        self.ligne3 = QHBoxLayout()
+        self.secteurLogistique = QPushButton("Secteur logistique")
+        self.secteurLogistique.clicked.connect(self.sLogistique)
+        self.w4 = secteurLogistique()
+        self.secteurAmenagement = QPushButton("Sectuer aménagement")
+        self.secteurAmenagement.clicked.connect(self.sAmenagement)
+        self.w5 = secteurAmenagement()
+        self.secteurConstruction = QPushButton("Secteur construction")
+        self.secteurConstruction.clicked.connect(self.sConstruction)
+        self.w6 = secteurConstruction()
 
-        self.data7 = QLineEdit()
-        self.data7.setPlaceholderText("Test7")
-        self.data8 = QLineEdit()
-        self.data8.setPlaceholderText("Test8")
-        self.data9 = QLineEdit()
-        self.data9.setPlaceholderText("Test9")
-        self.ligne3.addWidget(self.data7)
-        self.ligne3.addWidget(self.data8)
-        self.ligne3.addWidget(self.data9)
-        self.widget3.setLayout(self.ligne3)
+        self.row2.addWidget(self.secteurLogistique)
+        self.row2.addWidget(self.secteurAmenagement)
+        self.row2.addWidget(self.secteurConstruction)
+        
+        self.r2.setLayout(self.row2)
 
-        self.boutonCreer = QPushButton("Créer le dépôt")
-        self.boutonCreer.clicked.connect(self.insertionbdd)
+        #Troisième ligne de boutons
+        self.r3 = QWidget()
+        self.row3= QHBoxLayout()
 
-        self.layout.addWidget(self.title, 0, 0, 1, 3, Qt.AlignmentFlag.AlignCenter)
-        self.layout.addWidget(self.widget1, 1, 0, 1, 3)
-        self.layout.addWidget(self.widget2, 2, 0, 1, 3)
-        self.layout.addWidget(self.widget3, 3, 0, 1, 3)
-        self.layout.addWidget(self.boutonCreer, 4, 1, 1, 1, Qt.AlignmentFlag.AlignCenter)
+        self.secteurTechnique = QPushButton("Secteur technique")
+        self.secteurTechnique.clicked.connect(self.sTechnique)
+        self.w7 = secteurTechnique()
+        self.secteurAdministratif = QPushButton("Secteur administratif")
+        self.secteurAdministratif.clicked.connect(self.sAdministratif)
+        self.w8 = secteurAdministratif()
+        self.secteurCaisse = QPushButton("Secteur caisse")
+        self.secteurCaisse.clicked.connect(self.sCaisse)
+        self.w9 = secteurCaisse()
+
+        self.row3.addWidget(self.secteurTechnique)
+        self.row3.addWidget(self.secteurAdministratif)
+        self.row3.addWidget(self.secteurCaisse)
+
+        self.r3.setLayout(self.row3)
+
+        #Quatrième ligne de boutons
+        self.r4 = QWidget()
+        self.row4 = QHBoxLayout()
+
+        self.RH = QPushButton("RH")
+        self.RH.clicked.connect(self.RHFonction)
+        self.w10 = RH()
+        self.donneesDepot = QPushButton("Données dépôt")
+        self.donneesDepot.clicked.connect(self.dDepot)
+        self.w11 = donneesDepot()
+        self.surface = QPushButton("Surface")
+        self.surface.clicked.connect(self.surfaceFonction)
+        self.w12 = surface()
+
+        self.row4.addWidget(self.RH)
+        self.row4.addWidget(self.donneesDepot)
+        self.row4.addWidget(self.surface)
+
+        self.r4.setLayout(self.row4)
+
+        #Cinquième ligne de boutons
+        self.r5 = QWidget()
+        self.row5 = QHBoxLayout()
+
+        self.agencement = QPushButton("Agencement")
+        self.agencement.clicked.connect(self.agencementFonction)
+        self.w13 = agencement()
+        self.caisse = QPushButton("Caisse")
+        self.caisse.clicked.connect(self.caisseFonction)
+        self.w14 = caisse()
+        self.PDA = QPushButton("PDA")
+        self.PDA.clicked.connect(self.PDAFonction)
+        self.w15 = PDA()
+
+        self.row5.addWidget(self.agencement)
+        self.row5.addWidget(self.caisse)
+        self.row5.addWidget(self.PDA)
+
+        self.r5.setLayout(self.row5)
+
+        #Sixième ligne de boutons
+        self.r6 = QWidget()
+        self.row6 = QHBoxLayout()
+
+        self.menace = QPushButton("Menace")
+        self.menace.clicked.connect(self.menaceFonction)
+        self.w16 = menace()
+        self.securite = QPushButton("Sécurité")
+        self.securite.clicked.connect(self.securiteFonction)
+        self.w17 = securite()
+        self.conceptCommercial = QPushButton("Concept commercial")
+        self.conceptCommercial.clicked.connect(self.cCommercial)
+        self.w18 = conceptCommercial()
+
+        self.row6.addWidget(self.menace)
+        self.row6.addWidget(self.securite)
+        self.row6.addWidget(self.conceptCommercial)
+
+        self.r6.setLayout(self.row6)
+
+        #Septième ligne de boutons
+        self.r7 = QWidget()
+        self.row7 = QHBoxLayout()
+
+        self.divers = QPushButton("Divers")
+        self.divers.clicked.connect(self.diversFonction)
+        self.w19 = divers()
+        self.numCommercant = QPushButton("Num commercant")
+        self.numCommercant.clicked.connect(self.nCommercant)
+        self.w20 = numCommercant()
+        self.colissimo = QPushButton("Colissimo")
+        self.colissimo.clicked.connect(self.colissimoFonction)
+        self.w21 = colissimo()
+
+        self.row7.addWidget(self.divers)
+        self.row7.addWidget(self.numCommercant)
+        self.row7.addWidget(self.colissimo)
+
+        self.r7.setLayout(self.row7)
+
+        #Huitième ligne de bouton
+        self.r8 = QWidget()
+        self.row8 = QHBoxLayout()
+
+        self.accidentTravail = QPushButton("Accident travail")
+        self.accidentTravail.clicked.connect(self.aTravail)
+        self.w22 = accidentTravail()
+
+        self.row8.addWidget(self.accidentTravail)
+
+        self.r8.setLayout(self.row8)
+
+        self.boutonConfirmer = QPushButton("Confirmer la création du dépôt")
+        self.boutonConfirmer.clicked.connect(self.confirmerCreation)
+
+        self.layout.addWidget(self.title, 0, 0, Qt.AlignmentFlag.AlignCenter)
+        self.layout.addWidget(self.r1)
+        self.layout.addWidget(self.r2)
+        self.layout.addWidget(self.r3)
+        self.layout.addWidget(self.r4)
+        self.layout.addWidget(self.r5)
+        self.layout.addWidget(self.r6)
+        self.layout.addWidget(self.r7)
+        self.layout.addWidget(self.r8)
+        self.layout.addWidget(self.boutonConfirmer)
 
         self.setLayout(self.layout)
 
-    ##TODO: Faire l'insertion des données dans le DataFrame
-    def insertionbdd(self):
-        print("Bibimbap")
-        print("Ajout des données dans le dataframe")
-        self.close()
+    def ldepot(self):
+        print("Liste dépôt")
+        self.w = self.w1
+        self.w.show()
+
+    def dSociales(self):
+        print("Données sociales")
+        self.w = self.w2
+        self.w.show()
+
+    def sSecurite(self):
+        print("Secteur sécurité")
+        self.w = self.w3
+        self.w.show()
+
+    def sLogistique(self):
+        print("")
+
+    def sAmenagement(self):
+        print("")
+
+    def sConstruction(self):
+        print("")
+
+    def sTechnique(self):
+        print("")
+    
+    def sAdministratif(self):
+        print("")
+
+    def sCaisse(self):
+        print("")
+
+    def RHFonction(self):
+        print("")
+
+    def dDepot(self):
+        print("")
+
+    def surfaceFonction(self):
+        print("")
+
+    def agencementFonction(self):
+        print("")
+
+    def caisseFonction(self):
+        print("")
+
+    def PDAFonction(self):
+        print("")
+
+    def menaceFonction(self):
+        print("")
+
+    def securiteFonction(self):
+        print("")
+
+    def cCommercial(self):
+        print("")
+
+    def diversFonction(self):
+        print("")
+
+    def nCommercant(self):
+        print("")    
+
+    def colissimoFonction(self):
+        print("")   
+
+    def aTravail(self):
+        print("")   
+
+    def confirmerCreation(self):
+        print("Confirmation")
+        #Cehcker si tt les données sont entrées
+
+
+class listeDepot(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle ("Liste dépôt")
+        self.layout = QHBoxLayout()
+        self.titre = QLabel("Liste Dépot")
+        self.test = QLineEdit()
+
+        self.layout.addWidget(self.titre)
+        self.layout.addWidget(self.test)
+        self.setLayout(self.layout)
+
+class donneesSociales(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Données sociales"
+
+class secteurSecurite(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Secteur sécurité"
+
+class secteurLogistique(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Secteur logistique"
+
+class secteurAmenagement(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Secteur amenagement"
+
+class secteurConstruction(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Secteur construction"
+
+class secteurTechnique(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Secteur technique"
+
+class secteurAdministratif(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Secteur administratif"
+
+class secteurCaisse(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Secteur caisse"
+
+class RH(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "RH"
+
+class donneesDepot(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Données dépôt"
+
+class surface(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Surface"
+
+class agencement(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Agencement"
+
+class caisse(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Caisse"
+
+class PDA(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "PDA"
+
+class menace(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Menace"
+
+class securite(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Sécurité"
+
+class conceptCommercial(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Concept commercial"
+
+class divers(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Divers"
+
+class numCommercant(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Numéro commercant"
+
+class colissimo(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Colissimo"
+
+class accidentTravail(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle = "Accident travail"
 
 ##TODO: Gérer le dimensionnement des fenêtres ou le placement statique
 class modifWindow(QWidget):
