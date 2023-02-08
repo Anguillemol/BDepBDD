@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import openpyxl
 
+##TODO: Améliorer passation des données
 class logWindow(QWidget):
     
 
@@ -385,6 +386,65 @@ class mainWindow(QWidget):
 ##TODO: Faire l'insertion des données dans le DataFrame
 class creaWindow(QWidget):
     def __init__(self):
+        super().__init__
+        self.setWindowTitle("Création d'un dépôt")
+        self.title = QLabel("Création d'un dépôt")
+        self.title.setFont(QFont('Arial', 18))
+
+        self.layout = QGridLayout()
+        
+        #Premiere ligne de boutons
+        self.row1 = QHBoxLayout()
+
+        self.listeDepot = QPushButton("Liste dépôt")
+
+        self.donneesSociales = QPushButton("Données sociales")
+
+        self.secteurSecurite = QPushButton("Secteur sécurité")
+
+        self.secteurLogistique = QPushButton("Secteur logistique")
+
+        self.secteurAmenagement = QPushButton("Sectuer aménagement")
+        
+        self.secteurConstruction = QPushButton("Secteur construction")
+
+        self.secteurTechnique = QPushButton("Secteur technique")
+
+        self.secteurAdministratif = QPushButton("Secteur administratif")
+
+        self.secteurCaisse = QPushButton("Secteur caisse")
+
+        self.RH = QPushButton("RH")
+
+        self.donneesDepot = QPushButton("Données dépôt")
+
+        self.surface = QPushButton("Surface")
+
+        self.agencement = QPushButton("Agencement")
+
+        self.caisse = QPushButton("Caisse")
+
+        self.PDA = QPushButton("PDA")
+
+        self.menace = QPushButton("Menace")
+
+        self.securite = QPushButton("Sécurité")
+
+        self.conceptCommercial = QPushButton("Concept commercial")
+
+        self.divers = QPushButton("Divers")
+
+        self.numCommercant = QPushButton("Num commercant")
+
+        self.colissimo = QPushButton("Colissimo")
+        
+        self.accidentTravail = QPushButton("Accident travail")
+
+
+
+
+class creaWindow1(QWidget):
+    def __init__(self):
         super().__init__()
         self.setWindowTitle("Création d'un dépôt")
         self.title = QLabel("Création d'un dépôt")
@@ -450,7 +510,7 @@ class creaWindow(QWidget):
         print("Ajout des données dans le dataframe")
         self.close()
 
-##TODO: Gérer le dimensionnement des fenêtres ou le palcement statique
+##TODO: Gérer le dimensionnement des fenêtres ou le placement statique
 class modifWindow(QWidget):
     sheet = pd.DataFrame
 
@@ -530,7 +590,6 @@ class modifWindow(QWidget):
         print("Modification faite")
         ##Fermeture de la fenetre et refresh de la dataframe
         self.close()
-
 
 class suppWindow(QWidget):
     def __init__(self):
