@@ -382,6 +382,7 @@ class mainWindow(QWidget):
         self.w = suppWindow()
         self.w.show()
 
+##TODO: Faire l'insertion des données dans le DataFrame
 class creaWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -449,6 +450,7 @@ class creaWindow(QWidget):
         print("Ajout des données dans le dataframe")
         self.close()
 
+##TODO: Gérer le dimensionnement des fenêtres ou le palcement statique
 class modifWindow(QWidget):
     sheet = pd.DataFrame
 
@@ -456,6 +458,7 @@ class modifWindow(QWidget):
         super().__init__()
         self.setWindowTitle("Modification d'un dépôt")
         self.title = QLabel("Modification d'un dépôt")
+        self.setFixedSize(200,80)
 
         ##TODO: Faire un stacked widget
         self.stack = QStackedWidget()
@@ -467,27 +470,32 @@ class modifWindow(QWidget):
         self.titre = QLabel("Sélection du dépôt à modifier")
         self.listedepots = QComboBox()
         self.listedesdepots = self.sheet["Dépôt"].values.tolist()
-        print(self.listedesdepots)
         self.listedepots.addItems(self.listedesdepots)
         self.listedepots.currentIndexChanged.connect(self.selectionDepot)
-        self.boutontest = QPushButton("test")
-        self.boutontest.clicked.connect(self.tesst)
+
 
 
         self.layout1.addWidget(self.titre)
         self.layout1.addWidget(self.listedepots)
-        self.layout1.addWidget(self.boutontest)
 
         self.widget1.setLayout(self.layout1)
         
         ##TODO: Widget 2 -> Affichage du dépot + possibilité de toujours le modifier
         self.widget2 = QWidget()
         self.layout2 = QGridLayout()
+        self.titre2 = QLabel("Sélection du dépôt à modifier")
         self.listedepots2 = QComboBox()
+        self.listedepots2.addItems(self.listedesdepots)
         self.affichageDep = QTableView()
 
         self.boutonConfirmation = QPushButton()
         self.boutonConfirmation.clicked.connect(self.choix)
+        #, Qt.AlignmentFlag.AlignCenter
+        self.layout2.addWidget(self.titre2, 0, 1)
+        self.layout2.addWidget(self.listedepots2, 1, 1,)
+        self.layout2.addWidget(self.affichageDep, 2, 0, 1, 3)
+        self.layout2.addWidget(self.boutonConfirmation, 3, 1)
+
 
         self.widget2.setLayout(self.layout2)
 
@@ -496,10 +504,11 @@ class modifWindow(QWidget):
         self.layout3 = QGridLayout()
 
         self.boutonCreer = QPushButton("Modifier le dépôt")
+        self.boutonCreer.clicked.connect(self.modif)
+        self.layout3.addWidget(self.boutonCreer)
 
         self.widget3.setLayout(self.layout3)
 
-        ##TODO: Le stackWidget
         self.mainlayout = QGridLayout()
         self.stack.addWidget(self.widget1)
         self.stack.addWidget(self.widget2)
@@ -507,26 +516,20 @@ class modifWindow(QWidget):
         self.mainlayout.addWidget(self.stack)
         self.setLayout(self.mainlayout)
 
-
-    def combo(self):
-        print("Combo")
-        #Charger les données dans self.affichageDep
-        self.stack.setCurrentIndex(1)
-
+    def selectionDepot(self):
+        ##Transition vers la seconde fenêtre
+        self.stack.setCurrentIndex(1)    
+        self.setFixedSize(720,440)
+    
     def choix(self):
-        print("Choxi")
+        ##Transition vers la fenêtre de choix des modifications
         self.stack.setCurrentIndex(2)
 
     def modif(self):
+        ##Application des modifications
         print("Modification faite")
+        ##Fermeture de la fenetre et refresh de la dataframe
         self.close()
-
-    def tesst(self):
-        print(self.sheet['Dépôt'][0])
-        print(self.listedesdepots)
-
-    def selectionDepot(self):
-        print("prout")
 
 
 class suppWindow(QWidget):
