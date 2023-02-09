@@ -660,6 +660,7 @@ class creaWindow(QWidget):
 class listeDepot(QWidget):
     def __init__(self):
         super().__init__()
+        self.setFixedSize(720,440)
         self.setWindowTitle ("Liste dépôt")
         self.layout = QGridLayout()
         self.titre = QLabel("Liste Dépot")
