@@ -634,6 +634,7 @@ class creaWindow(QWidget):
 
     def confirmerCreation(self):
         print("Confirmation")
+        print(self.w1.test.text())
         #Cehcker si tt les données sont entrées
 
 
@@ -652,107 +653,107 @@ class listeDepot(QWidget):
 class donneesSociales(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Données sociales"
+        self.setWindowTitle("Données sociales")
 
 class secteurSecurite(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Secteur sécurité"
+        self.setWindowTitle("Secteur sécurité")
 
 class secteurLogistique(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Secteur logistique"
+        self.setWindowTitle("Secteur logistique")
 
 class secteurAmenagement(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Secteur amenagement"
+        self.setWindowTitle("Secteur amenagement")
 
 class secteurConstruction(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Secteur construction"
+        self.setWindowTitle("Secteur construction")
 
 class secteurTechnique(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Secteur technique"
+        self.setWindowTitle("Secteur technique")
 
 class secteurAdministratif(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Secteur administratif"
+        self.setWindowTitle("Secteur administratif")
 
 class secteurCaisse(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Secteur caisse"
+        self.setWindowTitle("Secteur caisse")
 
 class RH(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "RH"
+        self.setWindowTitle("RH")
 
 class donneesDepot(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Données dépôt"
+        self.setWindowTitle("Données dépôt")
 
 class surface(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Surface"
-
+        self.setWindowTitle("Surface"
+)
 class agencement(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Agencement"
+        self.setWindowTitle("Agencement")
 
 class caisse(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Caisse"
+        self.setWindowTitle("Caisse")
 
 class PDA(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "PDA"
+        self.setWindowTitle("PDA")
 
 class menace(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Menace"
+        self.setWindowTitle("Menace")
 
 class securite(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Sécurité"
+        self.setWindowTitle("Sécurité")
 
 class conceptCommercial(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Concept commercial"
+        self.setWindowTitle("Concept commercial")
 
 class divers(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Divers"
+        self.setWindowTitle("Divers")
 
 class numCommercant(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Numéro commercant"
+        self.setWindowTitle("Numéro commercant")
 
 class colissimo(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Colissimo"
+        self.setWindowTitle("Colissimo")
 
 class accidentTravail(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle = "Accident travail"
+        self.setWindowTitle("Accident travail")
 
 ##TODO: Gérer le dimensionnement des fenêtres ou le placement statique
 class modifWindow(QWidget):
