@@ -1,32 +1,29 @@
-# First window
-from PyQt6.QtWidgets import QMainWindow, QPushButton
+from PyQt6.QtWidgets import *
+import sys
 
-class FirstWindow(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.button = QPushButton("Open Second Window", self)
-        self.button.clicked.connect(self.open_second_window)
+        self.setWindowTitle("Main Window")
+        self.setFixedSize(300, 200)
 
-    def open_second_window(self):
-        SecondWindow.data = "Hello from First Window"
-        self.second_window = SecondWindow()
-        self.second_window.show()
-        self.close()
+        # Create a scroll area widget
+        scroll_area = QScrollArea(self)
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setFixedSize(280, 180)
 
-# Second window
-from PyQt6.QtWidgets import QMainWindow, QLabel
+        # Create a widget to hold the contents
+        container_widget = QWidget(self)
+        container_layout = QVBoxLayout(container_widget)
 
-class SecondWindow(QMainWindow):
-    data = ""
+        # Add some widgets to the layout
+        for i in range(20):
+            container_layout.addWidget(QLabel("Label {}".format(i)))
 
-    def __init__(self):
-        super().__init__()
-        self.label = QLabel(SecondWindow.data, self)
+        # Set the container widget as the contents of the scroll area
+        scroll_area.setWidget(container_widget)
 
-# Main
-from PyQt6.QtWidgets import QApplication
-
-app = QApplication([])
-first_window = FirstWindow()
-first_window.show()
-app.exec()
+app = QApplication(sys.argv)
+window = MainWindow()
+window.show()
+sys.exit(app.exec())

@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 import openpyxl
 
-##TODO: Améliorer passation des données
+##DONE
 class logWindow(QWidget):
     
 
@@ -124,10 +124,15 @@ class logWindow(QWidget):
                 if self.inputPassword.text() == self.ddbmdp.loc[self.ddbmdp['Username'] == self.inputUser.text()]['Password'][nrow]:
                     self.Stack.setCurrentIndex(2)
                     if self.w is None:
-                        self.w=mainWindow()
-                        self.w.user = self.inputUser.text()
-                        self.w.password = self.inputPassword.text()
-                        self.w.role = role
+                        self.w=main
+                        main.user = self.inputUser.text()
+                        main.password = self.inputPassword.text()
+                        main.role = role
+                        main.demarrage()
+                        #self.w=mainWindow()
+                        #self.w.user = self.inputUser.text()
+                        #self.w.password = self.inputPassword.text()
+                        #self.w.role = role
                     self.w.show()
                     self.close()
                 else:
@@ -139,10 +144,15 @@ class logWindow(QWidget):
                 if self.inputPassword2.text() == self.ddbmdp.loc[self.ddbmdp['Username'] == self.inputUser2.text()]['Password'][nrow]:
                     self.Stack.setCurrentIndex(2)
                     if self.w is None:
-                        self.w=mainWindow()
-                        self.w.user = self.inputUser2.text()
-                        self.w.password = self.inputPassword2.text()
-                        self.w.role = role
+                        self.w=main
+                        main.user = self.inputUser2.text()
+                        main.password = self.inputPassword2.text()
+                        main.role = role
+                        main.demarrage()
+                        #self.w=mainWindow()
+                        #self.w.user = self.inputUser2.text()
+                        #self.w.password = self.inputPassword2.text()
+                        #self.w.role = role
                     self.w.show()
                     self.close()
                 else:
@@ -160,7 +170,7 @@ class logWindow(QWidget):
         self.inputPassword.setText("")
         self.inputPassword2.setText("")
 
-##TODO: Retirer l'écran annexe pour le chargement des données <!!>
+##DONE
 class mainWindow(QWidget):
     def __init__(self):
         self.submitClicked = pyqtSignal(str,str,str)
@@ -204,7 +214,7 @@ class mainWindow(QWidget):
         self.Stack = QStackedWidget (self)
         self.Stack.addWidget(self.loading)
         
-        self.Stack.setCurrentIndex(0)
+        self.Stack.setCurrentIndex(1)
         self.mainLayout.addWidget(self.Stack)
 
         self.setLayout(self.mainLayout)
@@ -380,8 +390,13 @@ class mainWindow(QWidget):
 
     def supprimerDepot(self):
         print("Suppression")
+        suppWindow.sheet=self.sheet
         self.w = suppWindow()
         self.w.show()
+
+    def closeEvent(self, event):
+        if self.w:
+            self.w.close()
 
 ##TODO: Faire l'insertion des données dans le DataFrame
 class creaWindow(QWidget):
@@ -656,11 +671,14 @@ class creaWindow(QWidget):
         print(self.w1.test.text())
         #Cehcker si tt les données sont entrées
 
+    def closeEvent(self, event):
+        if self.w:
+            self.w.close()
+
 ##DONE
 class listeDepot(QWidget):
     def __init__(self):
         super().__init__()
-        self.setFixedSize(720,440)
         self.setWindowTitle ("Liste dépôt")
         self.layout = QGridLayout()
         self.titre = QLabel("Liste Dépot")
@@ -1064,6 +1082,15 @@ class donneesDepot(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Données dépôt")
+        self.setFixedSize(520,400)
+        
+        #ScrollArea
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFixedSize(500,380)
+
+        #Widget
+        self.widget = QWidget()
         self.layout = QGridLayout()
         self.titre = QLabel("Données dépôt")
 
@@ -1286,13 +1313,23 @@ class donneesDepot(QWidget):
         self.layout.addWidget(self.labelProprietaireouLocataire, 43, 0)
         self.layout.addWidget(self.ProprietaireouLocataire, 43, 1, 1, 2)
 
-        self.setLayout(self.layout)
+        self.widget.setLayout(self.layout)
+
+        self.scroll_area.setWidget(self.widget)
 
 ##DONE: ATTENTION PRESENCE DE TRUC SVI ET DE /
 class surface(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Surface")
+
+        self.setFixedSize(520, 400)
+
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFixedSize(500, 380)
+
+        self.widget = QWidget()
         self.layout = QGridLayout()
         self.titre = QLabel("Surface")
 
@@ -1445,8 +1482,8 @@ class surface(QWidget):
         self.layout.addWidget(self.labelPlacesdeparking, 29, 0)
         self.layout.addWidget(self.Placesdeparking, 29, 1, 1, 2)
 
-        self.setLayout(self.layout)
-
+        self.widget.setLayout(self.layout)
+        self.scroll_area.setWidget(self.widget)
 ##DONE
 class agencement(QWidget):
     def __init__(self):
@@ -1653,6 +1690,15 @@ class securite(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Sécurité")
+
+        self.setFixedSize(520, 400)
+
+        # Create a scroll area widget
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFixedSize(500, 380)
+
+        self.widget=QWidget()
         self.layout = QGridLayout()
         self.titre = QLabel("Sécurité")
 
@@ -1830,13 +1876,25 @@ class securite(QWidget):
         self.layout.addWidget(self.labelAscenseurs, 34, 0)
         self.layout.addWidget(self.Ascenseurs, 34, 1, 1, 2)
 
-        self.setLayout(self.layout)
+        self.widget.setLayout(self.layout)
+        self.scroll_area.setWidget(self.widget)
 
 ##DONE
 class conceptCommercial(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Concept commercial")
+
+        self.setFixedSize(520, 400)
+
+        # Create a scroll area widget
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFixedSize(500, 380)
+        
+        self.widget = QWidget()
+
+
         self.layout = QGridLayout()
         self.titre = QLabel("Concept commercial")
 
@@ -2014,7 +2072,8 @@ class conceptCommercial(QWidget):
         self.layout.addWidget(self.labelCagesPalettes, 34, 0)
         self.layout.addWidget(self.CagesPalettes, 34, 1, 1, 2)
 
-        self.setLayout(self.layout)
+        self.widget.setLayout(self.layout)
+        self.scroll_area.setWidget(self.widget)
     
 ##DONE : Attention labelContexteComptage-TCUENTO
 class divers(QWidget):
@@ -2218,6 +2277,7 @@ class modifWindow(QWidget):
         self.titre2 = QLabel("Sélection du dépôt à modifier")
         self.listedepots2 = QComboBox()
         self.listedepots2.addItems(self.listedesdepots)
+        self.listedepots.currentIndexChanged.connect(self.chargementTableau)
         self.affichageDep = QTableView()
 
         self.boutonConfirmation = QPushButton()
@@ -2250,6 +2310,10 @@ class modifWindow(QWidget):
 
     def selectionDepot(self):
         ##Transition vers la seconde fenêtre
+        self.listedepots2.setCurrentIndex(self.listedepots.currentIndex())
+        ##Charger tableau
+
+        ##
         self.stack.setCurrentIndex(1)    
         self.setFixedSize(720,440)
     
@@ -2263,24 +2327,68 @@ class modifWindow(QWidget):
         ##Fermeture de la fenetre et refresh de la dataframe
         self.close()
 
+    def chargementTableau(self):
+        print("Chargement")
+
 class suppWindow(QWidget):
+    sheet = pd.DataFrame
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Suppression d'un dépôt")
+        self.title = QLabel("Suppression d'un dépôt")
+
+        self.setFixedSize(200,80)
 
         self.stack = QStackedWidget()
                 
         ##TODO: Widget 1 -> Sélection du dépot
-        self.layout1 = QGridLayout()
+        self.widget1 = QWidget()
+        self.layout1 = QVBoxLayout()
+
+        self.titre = QLabel("Sélection du dépôt à supprimer")
         self.listedepots = QComboBox()
+        self.listedesdepots = self.sheet["Dépôt"].values.tolist()
+        self.listedepots.addItems(self.listedesdepots)
+        self.listedepots.currentIndexChanged.connect(self.selectionDepot)
+
+        self.layout1.addWidget(self.titre)
+        self.layout1.addWidget(self.listedepots)
+
+        self.widget1.setLayout(self.layout1)
         
         ##TODO: Widget 2 -> Affichage du dépot + possibilité de toujours le modifier
+        self.widget2 = QWidget()
         self.layout2 = QGridLayout()
+        self.titre2 = QLabel("Sélection du dépôt à supprimer")
         self.listedepots2 = QComboBox()
+        self.listedepots2.addItems(self.listedesdepots)
         self.affichageDep = QTableView()
 
-        self.boutonConfirmation = QPushButton()
-        self.boutonConfirmation.clicked.connect(self.choix)
+        self.boutonConfirmation = QPushButton("Supprimer le dépôt")
+        self.boutonConfirmation.clicked.connect(self.suppression)
+        #, Qt.AlignmentFlag.AlignCenter
+        self.layout2.addWidget(self.titre2, 0, 1)
+        self.layout2.addWidget(self.listedepots2, 1, 1,)
+        self.layout2.addWidget(self.affichageDep, 2, 0, 1, 3)
+        self.layout2.addWidget(self.boutonConfirmation, 3, 1)
+
+
+        self.widget2.setLayout(self.layout2)
+
+        self.stack.addWidget(self.widget1)
+        self.stack.addWidget(self.widget2)
+
+        self.mainlayout = QGridLayout()
+        self.mainlayout.addWidget(self.stack)
+        self.setLayout(self.mainlayout)
+    def selectionDepot(self):
+        ##Transition vers la seconde fenêtre
+        self.listedepots2.setCurrentIndex(self.listedepots.currentIndex())
+        self.stack.setCurrentIndex(1)    
+        self.setFixedSize(720,440)
+
+    def suppression(self):
+        self.close()
 
         ##TODO: Faire une fenetre de confirmation
 
@@ -2314,10 +2422,12 @@ class pandasModel(QAbstractTableModel):
             return self._data.columns[col]
         return None
 
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-
+    
     form = logWindow()
+    main = mainWindow()
     form.show()
 
     sys.exit(app.exec())
