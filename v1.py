@@ -2274,10 +2274,11 @@ class modifWindow(QWidget):
         ##TODO: Widget 2 -> Affichage du dépot + possibilité de toujours le modifier
         self.widget2 = QWidget()
         self.layout2 = QGridLayout()
+
         self.titre2 = QLabel("Sélection du dépôt à modifier")
         self.listedepots2 = QComboBox()
         self.listedepots2.addItems(self.listedesdepots)
-        self.listedepots.currentIndexChanged.connect(self.chargementTableau)
+        self.listedepots2.currentIndexChanged.connect(self.chargementTableau)
         self.affichageDep = QTableView()
 
         self.boutonConfirmation = QPushButton()
@@ -2312,7 +2313,11 @@ class modifWindow(QWidget):
         ##Transition vers la seconde fenêtre
         self.listedepots2.setCurrentIndex(self.listedepots.currentIndex())
         ##Charger tableau
+        print(self.listedepots2.currentText())
+        self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()]
 
+        self.modelModif = pandasModel(self.sheet_tri)
+        self.affichageDep.setModel(self.modelModif)
         ##
         self.stack.setCurrentIndex(1)    
         self.setFixedSize(720,440)
@@ -2324,11 +2329,18 @@ class modifWindow(QWidget):
     def modif(self):
         ##Application des modifications
         print("Modification faite")
+
+
         ##Fermeture de la fenetre et refresh de la dataframe
         self.close()
 
     def chargementTableau(self):
         print("Chargement")
+        self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()]
+
+        self.modelModif = pandasModel(self.sheet_tri)
+        self.affichageDep.setModel(self.modelModif)
+        print("Chargement fini")
 
 class suppWindow(QWidget):
     sheet = pd.DataFrame

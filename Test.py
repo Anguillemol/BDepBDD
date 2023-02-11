@@ -1,29 +1,40 @@
-from PyQt6.QtWidgets import *
 import sys
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTableView, QComboBox
+from PyQt6.QtGui import QStandardItemModel, QStandardItem
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Main Window")
-        self.setFixedSize(300, 200)
 
-        # Create a scroll area widget
-        scroll_area = QScrollArea(self)
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setFixedSize(280, 180)
+        # Create a table view
+        self.tableView = QTableView(self)
 
-        # Create a widget to hold the contents
-        container_widget = QWidget(self)
-        container_layout = QVBoxLayout(container_widget)
+        # Create a combobox
+        self.comboBox = QComboBox(self)
+        self.comboBox.addItem("Data 1")
+        self.comboBox.addItem("Data 2")
 
-        # Add some widgets to the layout
-        for i in range(20):
-            container_layout.addWidget(QLabel("Label {}".format(i)))
+        # Connect the currentIndexChanged signal to the updateData slot function
+        self.comboBox.currentIndexChanged.connect(self.updateData)
 
-        # Set the container widget as the contents of the scroll area
-        scroll_area.setWidget(container_widget)
+        # Set the layout
+        self.setCentralWidget(self.tableView)
+        self.comboBox.move(0, 0)
 
-app = QApplication(sys.argv)
-window = MainWindow()
-window.show()
-sys.exit(app.exec())
+    def updateData(self, index):
+        # Get the selected data from the combobox
+        data = ["Data 1", "Data 2"][index]
+
+        # Update the data in the table view
+        model = QStandardItemModel(4, 4)
+        for row in range(4):
+            for column in range(4):
+                item = QStandardItem(f"{data} - ({row}, {column})")
+                model.setItem(row, column, item)
+        self.tableView.setModel(model)
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
