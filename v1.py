@@ -2374,6 +2374,7 @@ class suppWindow(QWidget):
         self.titre2 = QLabel("Sélection du dépôt à supprimer")
         self.listedepots2 = QComboBox()
         self.listedepots2.addItems(self.listedesdepots)
+        self.listedepots2.currentIndexChanged.connect(self.chargementTableau)
         self.affichageDep = QTableView()
 
         self.boutonConfirmation = QPushButton("Supprimer le dépôt")
@@ -2396,6 +2397,12 @@ class suppWindow(QWidget):
     def selectionDepot(self):
         ##Transition vers la seconde fenêtre
         self.listedepots2.setCurrentIndex(self.listedepots.currentIndex())
+
+        self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()]
+
+        self.modelModif = pandasModel(self.sheet_tri)
+        self.affichageDep.setModel(self.modelModif)
+
         self.stack.setCurrentIndex(1)    
         self.setFixedSize(720,440)
 
@@ -2403,6 +2410,14 @@ class suppWindow(QWidget):
         self.close()
 
         ##TODO: Faire une fenetre de confirmation
+
+    def chargementTableau(self):
+        print("Chargement")
+        self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()]
+
+        self.modelModif = pandasModel(self.sheet_tri)
+        self.affichageDep.setModel(self.modelModif)
+        print("Chargement fini")
 
     def choix(self):
         print("supp")
