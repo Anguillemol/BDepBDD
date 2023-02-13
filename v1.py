@@ -21,7 +21,8 @@ class logWindow(QWidget):
         self.submitClicked = pyqtSignal(str,str,str)
 
         ########## Gathering the account DataBase ##########
-        self.ddbmdp = pd.read_excel('C:/Users/lucas/Test.xlsx', sheet_name='MDP')      
+        #self.ddbmdp = pd.read_excel('C:/Users/lucas/Test.xlsx', sheet_name='MDP')      
+        self.ddbmdp = pd.read_excel('C:/Users/lucas/Test.xlsx', sheet_name='MDPFINAUX')  
         
         ##### Static text #####
         title = QLabel("Authentification BDD")
@@ -121,6 +122,7 @@ class logWindow(QWidget):
             else:
                 nrow = self.ddbmdp[self.ddbmdp['Username'] == self.inputUser.text()].index.values.astype(int)[0]
                 role = self.ddbmdp['Role'][nrow]
+                denom = self.ddbmdp['Denom'][nrow]
                 if self.inputPassword.text() == self.ddbmdp.loc[self.ddbmdp['Username'] == self.inputUser.text()]['Password'][nrow]:
                     self.Stack.setCurrentIndex(2)
                     if self.w is None:
@@ -128,6 +130,7 @@ class logWindow(QWidget):
                         main.user = self.inputUser.text()
                         main.password = self.inputPassword.text()
                         main.role = role
+                        main.denom = denom
                         main.demarrage()
                         #self.w=mainWindow()
                         #self.w.user = self.inputUser.text()
@@ -141,6 +144,7 @@ class logWindow(QWidget):
             if not (self.ddbmdp.loc[self.ddbmdp['Username'] == self.inputUser2.text()].empty):
                 nrow = self.ddbmdp[self.ddbmdp['Username'] == self.inputUser2.text()].index.values.astype(int)[0]
                 role = self.ddbmdp['Role'][nrow]
+                denom = self.ddbmdp['Denom'][nrow]
                 if self.inputPassword2.text() == self.ddbmdp.loc[self.ddbmdp['Username'] == self.inputUser2.text()]['Password'][nrow]:
                     self.Stack.setCurrentIndex(2)
                     if self.w is None:
@@ -148,6 +152,7 @@ class logWindow(QWidget):
                         main.user = self.inputUser2.text()
                         main.password = self.inputPassword2.text()
                         main.role = role
+                        main.denom = denom
                         main.demarrage()
                         #self.w=mainWindow()
                         #self.w.user = self.inputUser2.text()
@@ -182,6 +187,7 @@ class mainWindow(QWidget):
         self.user = ""
         self.password = ""
         self.role = ""
+        self.denom = ""
 
         ##### Loading and filtering the data #####
         self.loadExcel()
@@ -222,9 +228,10 @@ class mainWindow(QWidget):
 
         
     def demarrage(self):
-        print(self.user)
-        print(self.password)
-        print(self.role)
+        print("Username: " + self.user)
+        print("Password: " + self.password)
+        print("Role: " + self.role)
+        print("Denomination: " + self.denom)
         self.setFixedSize(1280,720)
         self.center()
         #TODO: Recentrer la fenêtre au milieu de l'écran
@@ -240,14 +247,14 @@ class mainWindow(QWidget):
         self.sheet = pd.read_excel('C:/Solutec/1/BDD.xlsx', sheet_name='BDD')
 
         if self.role != "Admin":
-            if self.role == "Region":
+            if self.role == "Région":
                 ##### Gathering only the lines for a specific regional manager
-                self.sheet_tri = self.sheet.loc[self.sheet['Directeur Régional'] == "Cyril ROBINET"]
+                self.sheet_tri = self.sheet.loc[self.sheet['Directeur Régional'] == self.denom]
                 print (self.sheet_tri)
                 self.model = pandasModel(self.sheet_tri)
-            elif self.role == "Magasin":
+            elif self.role == "Dépôt":
                 ##### Gathering only the lines for a site #####
-                self.sheet_tri = self.sheet.loc[self.sheet['Directeur dépôt'] == "YANNICK PIERRE"]
+                self.sheet_tri = self.sheet.loc[self.sheet['Directeur dépôt'] == self.denom]
                 self.model = pandasModel(self.sheet_tri)
         else:
             self.model = pandasModel(self.sheet)
@@ -395,6 +402,7 @@ class mainWindow(QWidget):
         self.w.show()
 
     def closeEvent(self, event):
+        self.w = ''
         if self.w:
             self.w.close()
 
@@ -672,6 +680,7 @@ class creaWindow(QWidget):
         #Cehcker si tt les données sont entrées
 
     def closeEvent(self, event):
+        self.w=''
         if self.w:
             self.w.close()
 
@@ -2344,6 +2353,7 @@ class modifWindow(QWidget):
 
 class suppWindow(QWidget):
     sheet = pd.DataFrame
+    
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Suppression d'un dépôt")
@@ -2352,7 +2362,7 @@ class suppWindow(QWidget):
         self.setFixedSize(200,80)
 
         self.stack = QStackedWidget()
-                
+        self.i= 5
         ##TODO: Widget 1 -> Sélection du dépot
         self.widget1 = QWidget()
         self.layout1 = QVBoxLayout()
@@ -2377,6 +2387,9 @@ class suppWindow(QWidget):
         self.listedepots2.currentIndexChanged.connect(self.chargementTableau)
         self.affichageDep = QTableView()
 
+        self.boutonTest = QPushButton("Test")
+        self.boutonTest.clicked.connect(self.test)
+
         self.boutonConfirmation = QPushButton("Supprimer le dépôt")
         self.boutonConfirmation.clicked.connect(self.suppression)
         #, Qt.AlignmentFlag.AlignCenter
@@ -2384,6 +2397,7 @@ class suppWindow(QWidget):
         self.layout2.addWidget(self.listedepots2, 1, 1,)
         self.layout2.addWidget(self.affichageDep, 2, 0, 1, 3)
         self.layout2.addWidget(self.boutonConfirmation, 3, 1)
+        self.layout2.addWidget(self.boutonTest, 4, 1)
 
 
         self.widget2.setLayout(self.layout2)
@@ -2410,6 +2424,11 @@ class suppWindow(QWidget):
         self.close()
 
         ##TODO: Faire une fenetre de confirmation
+
+    def test(self):
+        print("test")
+        self.widgettest = QLabel("SALUT PROUT")
+        self.layout2.addWidget(self.widgettest, self.i, 1)
 
     def chargementTableau(self):
         print("Chargement")
