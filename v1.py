@@ -2436,6 +2436,10 @@ class suppWindow(QWidget):
 
         self.modelModif = pandasModel(self.sheet_tri)
         self.affichageDep.setModel(self.modelModif)
+        self.header = self.affichageDep.horizontalHeader()
+        self.header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         print("Chargement fini")
 
     def choix(self):
