@@ -1,74 +1,85 @@
-from PyQt5.QtCore import QAbstractTableModel, Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableView, QMenu, QLineEdit, QVBoxLayout, QWidget, QAction, QFileDialog
+from PyQt5.QtCore import Qt, QSortFilterProxyModel
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
+import sys
 
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-class PandasModelEditable(QAbstractTableModel):
+        # Set up the window
+        self.setWindowTitle('Table with Filters')
+        self.setGeometry(100, 100, 800, 600)
 
-    def __init__(self, data):
-        QAbstractTableModel.__init__(self)
-        self._data = data
+        # Create the table view
+        self.table_view = QTableView()
+        self.model = QStandardItemModel()
+        self.table_view.setModel(self.model)
 
-    def rowCount(self, parent=None):
-        return self._data.shape[0]
+        # Set up the table view
+        self.table_view.horizontalHeader().setSectionsClickable(True)
+        self.table_view.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu) # Set the context menu policy for the header
+        self.table_view.horizontalHeader().customContextMenuRequested.connect(self.show_filter_menu)
 
-    def columnCount(self, parnet=None):
-        return self._data.shape[1]
+        # Add some data to the table
+        self.model.setHorizontalHeaderLabels(['Name', 'Age', 'Gender'])
+        for row in range(10):
+            name_item = QStandardItem(f'Person {row}')
+            age_item = QStandardItem(str(20 + row))
+            gender_item = QStandardItem('Male' if row % 2 == 0 else 'Female')
+            self.model.appendRow([name_item, age_item, gender_item])
 
-    def data(self, index, role=Qt.DisplayRole):
-        if index.isValid():
-            if role == Qt.DisplayRole:
-                return str(self._data.iloc[index.row(), index.column()])
+        # Set the layout
+        central_widget = QWidget()
+        layout = QVBoxLayout()
+        layout.addWidget(self.table_view)
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
 
-            column_count = self.columnCount()
-            for column in range(0, column_count):
-                if (index.column() == column and role == Qt.TextAlignmentRole):
-                    return Qt.AlignHCenter | Qt.AlignVCenter
+    # Show the filter menu for a specific column
+    def show_filter_menu(self, position):
+        column = self.table_view.horizontalHeader().logicalIndexAt(position)
+        filter_menu = QMenu()
+        filter_widget = QLineEdit()
+        filter_widget.textChanged.connect(self.model.layoutChanged.emit)
+        filter_widget.textChanged.connect(lambda text: setattr(filter_widget, 'filter', text))
+        filter_widget.returnPressed.connect(filter_menu.close)
+        filter_widget.installEventFilter(self)
+        filter_action = QAction('Filter', self)
+        #filter_action.setDefaultWidget(filter_widget)
+        filter_widget.setWindowRole(QAction.ActionPosition)
+        filter_action.setShortcut('Ctrl+F')
+        filter_menu.addAction(filter_action)
+        filter_menu.addSeparator()
+        filter_model = QSortFilterProxyModel()
+        filter_model.setSourceModel(self.model)
+        filter_model.setFilterKeyColumn(column)
+        filter_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.table_view.setModel(filter_model)
+        self.table_view.horizontalHeader().setSectionResizeMode(QTableView.ResizeToContents)
+        filter_widget.setFocus()
+        filter_widget.selectAll()
+        filter_widget.filter = ''
+        self.table_view.horizontalHeader().viewport().update()
+        filter_menu.exec_(self.table_view.horizontalHeader().mapToGlobal(position))
 
-        return None
+    # Create the filter menu for a specific column
+    def create_filter_menu(self, filter_model, filter_column):
+        filter_menu = QMenu()
+        filter_widget = QLineEdit()
+        filter_widget.textChanged.connect(filter_model.setFilterFixedString)
+        filter_action = QAction('Filter', self)
+        filter_action.triggered.connect(filter_widget.setFocus)
+        filter_menu.addAction(filter_action)
 
-    def headerData(self, col, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self._data.columns[col]
-        
-        return None
+        filter_model.setFilterKeyColumn(filter_column)
+        filter_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        filter_model.setFilterRole(Qt.DisplayRole)
 
-    def setData(self, index, value, role):
-        if not index.isValid():
-            return False
-        
-        if role != Qt.EditRole:
-            return False
-        
-        row = index.row()
-        if row < 0 or row >= len(self._data.values):
-            return False
-        
-        column = index.column()
-        if column < 0 or column >= self._data.columns.size:
-            return False
-        
-        self._data.values[row][column] = value
-        self.dataChanged.emit(index, index)
-        return True
-    
-    def flags(self, index):
-        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
-
+        return filter_menu
 
 if __name__ == '__main__':
-    
-    import sys
-    import pandas as pd
-    from PyQt5.QtWidgets import QApplication, QTableView
-
-    df = pd.DataFrame({'x': range(5),
-                       'x²': [i**2 for i in range(5)],
-                       'x³': [i**3 for i in range(5)]
-                       })
-
     app = QApplication(sys.argv)
-    model = PandasModelEditable(df)
-    view = QTableView()
-    view.setModel(model)
-    view.resize(350, 200)
-view.show()
-sys.exit(app.exec_())
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())

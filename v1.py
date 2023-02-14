@@ -294,6 +294,7 @@ class mainWindow(QWidget):
             self.middleLayout = QVBoxLayout()
             self.tab = QTableView()
             self.tab.setModel(self.model)
+            self.tab.resizeColumnsToContents()
             self.middleLayout.addWidget(self.tab)
             self.middle.setLayout(self.middleLayout)
 
@@ -348,12 +349,14 @@ class mainWindow(QWidget):
             self.middleLayout = QVBoxLayout()
             self.tab = QTableView()
             self.tab.setModel(self.model)
+            self.tab.resizeColumnsToContents()
             self.middleLayout.addWidget(self.tab)
             
             self.middle.setLayout(self.middleLayout)
 
             ##### Push buttons #####
             self.requete = QPushButton("Demander un changement")
+            self.requete.clicked.connect(self.demandeChangement)
 
             self.bandeau = QWidget()
             self.bandeauBoutons = QHBoxLayout()
@@ -382,6 +385,7 @@ class mainWindow(QWidget):
         print(self.sheet['Dépôt'][0])
         self.sheet['Dépôt'][0] = "Prout"
         self.tab.setModel(self.model)
+        self.tab.resizeColumnsToContents()
         print("Nouvelle valeur:")
         print(self.sheet['Dépôt'][0])
 
@@ -400,6 +404,12 @@ class mainWindow(QWidget):
         print("Suppression")
         suppWindow.sheet=self.sheet
         self.w = suppWindow()
+        self.w.show()
+
+    def demandeChangement(self):
+        print("Formulaire demande changement")
+        demandeChangement.sheet = self.sheet_tri
+        self.w = demandeChangement()
         self.w.show()
 
     def closeEvent(self, event):
@@ -2328,6 +2338,7 @@ class modifWindow(QWidget):
 
         self.modelModif = pandasEditableModel(self.sheet_tri)
         self.affichageDep.setModel(self.modelModif)
+        self.affichageDep.resizeColumnsToContents()
         ##
         self.stack.setCurrentIndex(1)    
         self.setFixedSize(720,440)
@@ -2350,6 +2361,7 @@ class modifWindow(QWidget):
 
         self.modelModif = pandasEditableModel(self.sheet_tri)
         self.affichageDep.setModel(self.modelModif)
+        self.affichageDep.resizeColumnsToContents()
         print("Chargement fini")
 
 class suppWindow(QWidget):
@@ -2417,6 +2429,7 @@ class suppWindow(QWidget):
 
         self.modelModif = pandasModel(self.sheet_tri)
         self.affichageDep.setModel(self.modelModif)
+        self.affichageDep.resizeColumnsToContents()
 
         self.stack.setCurrentIndex(1)    
         self.setFixedSize(720,440)
@@ -2437,6 +2450,7 @@ class suppWindow(QWidget):
 
         self.modelModif = pandasModel(self.sheet_tri)
         self.affichageDep.setModel(self.modelModif)
+        self.affichageDep.resizeColumnsToContents()
         self.header = self.affichageDep.horizontalHeader()
         self.header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
@@ -2447,9 +2461,39 @@ class suppWindow(QWidget):
         print("supp")
 
 class demandeChangement(QWidget):
+    sheet = pd.DataFrame
     def __init__(self):
         super().__init__()
+        self.setFixedSize(720,440)
+
         self.setWindowTitle("Requête changement donnée")
+
+        self.layout = QGridLayout()
+
+        self.Titre = QLabel("Demande de changement de données")
+
+        self.texte = QLabel("Modifier les données dans le tableau ci-dessous")
+        self.table = QTableView()
+        self.model = pandasEditableModel(self.sheet)
+        self.table.setModel(self.model)
+        self.table.resizeColumnsToContents()
+
+        self.valider = QPushButton("Valider la demande de changement de données")
+        self.valider.clicked.connect(self.transmettre)
+        
+        self.layout.addWidget(self.Titre, 0, 1)
+        self.layout.addWidget(self.texte, 1, 1)
+        self.layout.addWidget(self.table, 2, 0, 1, 3)
+        self.layout.addWidget(self.valider, 3, 1)
+
+        self.setLayout(self.layout)
+
+    def transmettre(self):
+        ##Envoyer le set de données quelque part avec le user qui demande et la date
+        
+        self.close()
+
+
 
 class pandasModel(QAbstractTableModel):
     def __init__(self, data):
