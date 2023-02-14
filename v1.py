@@ -258,7 +258,8 @@ class mainWindow(QWidget):
                 self.model = pandasModel(self.sheet_tri)
         else:
             self.model = pandasModel(self.sheet)
-            print("Model créé Admin")
+            #self.model = pandasEditableModel(self.sheet)
+            print("Model créé Admin en lecture écriture")
 
     def loadGUI(self):
         if self.role == "Admin":
@@ -2290,7 +2291,7 @@ class modifWindow(QWidget):
         self.listedepots2.currentIndexChanged.connect(self.chargementTableau)
         self.affichageDep = QTableView()
 
-        self.boutonConfirmation = QPushButton()
+        self.boutonConfirmation = QPushButton("Confirmer la modification")
         self.boutonConfirmation.clicked.connect(self.choix)
         #, Qt.AlignmentFlag.AlignCenter
         self.layout2.addWidget(self.titre2, 0, 1)
@@ -2325,7 +2326,7 @@ class modifWindow(QWidget):
         print(self.listedepots2.currentText())
         self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()]
 
-        self.modelModif = pandasModel(self.sheet_tri)
+        self.modelModif = pandasEditableModel(self.sheet_tri)
         self.affichageDep.setModel(self.modelModif)
         ##
         self.stack.setCurrentIndex(1)    
@@ -2347,7 +2348,7 @@ class modifWindow(QWidget):
         print("Chargement")
         self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()]
 
-        self.modelModif = pandasModel(self.sheet_tri)
+        self.modelModif = pandasEditableModel(self.sheet_tri)
         self.affichageDep.setModel(self.modelModif)
         print("Chargement fini")
 
@@ -2471,6 +2472,36 @@ class pandasModel(QAbstractTableModel):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return self._data.columns[col]
         return None
+
+class pandasEditableModel(QAbstractTableModel):
+    def __init__(self, data):
+        super().__init__()
+        self._data = data
+
+    def rowCount(self, index):
+        return self._data.shape[0]
+
+    def columnCount(self, parent=None):
+        return self._data.shape[1]
+    
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
+        if index.isValid():
+            if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
+                value = self._data.iloc[index.row(), index.column()]
+                return str(value)
+            
+    def setData(self, index, value, role):
+        if role == Qt.ItemDataRole.EditRole:
+            self._data.iloc[index.row(), index.column()] = value
+            return True
+        return False
+    
+    def headerData(self, col, orientation, role):
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
+            return self._data.columns[col]
+        
+    def flags(self, index):
+        return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsEditable
 
 
 if __name__ == '__main__':
