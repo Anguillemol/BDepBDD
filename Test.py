@@ -2,15 +2,24 @@
 
 import pandas as pd
 import numpy as np
-import PySimpleGUI as sg
 
+from pathlib import Path
+
+p = str(Path.cwd())
+p = p.replace('\\', "/")
+
+print("Le path c'est: "+p+" ET RIEN D'AUTRE")
 username = ""
 password = ""
 
+sheet = pd.read_excel(p+'/Test.xlsx', sheet_name='MDPFINAUX') 
+"""
 ####################################################### Récupération des données depuis la BDD  ####################################################### 
 
 #Commande locale
 sheet = pd.read_excel('C:/Users/lucas/Test.xlsx', sheet_name='Données')
+
+
 
 #Commande Sharepoint
 #
@@ -48,7 +57,7 @@ with pd.ExcelWriter('C:/Users/lucas/Test.xlsx', mode='a', if_sheet_exists='repla
 
 ########################################################### AFFICHAGE TEMPORAIRE ######################################################
 
-"""
+
 
 headings = list(sheet.columns)
 print(headings)
