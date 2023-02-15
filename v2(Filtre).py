@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
@@ -8,6 +9,8 @@ import pandas as pd
 import numpy as np
 import openpyxl
 
+p = str(Path.cwd())
+p = p.replace('\\', "/")
 ##TODO: Gestion des filtres sur les QTableView()
 ##TODO:
 
@@ -25,7 +28,7 @@ class logWindow(QWidget):
 
         ########## Gathering the account DataBase ##########
         #self.ddbmdp = pd.read_excel('C:/Users/lucas/Test.xlsx', sheet_name='MDP')      
-        self.ddbmdp = pd.read_excel('C:/Users/lucas/Test.xlsx', sheet_name='MDPFINAUX')  
+        self.ddbmdp = pd.read_excel(p+'/Test.xlsx', sheet_name='MDPFINAUX')  
         
         ##### Static text #####
         title = QLabel("Authentification BDD")
@@ -247,7 +250,7 @@ class mainWindow(QWidget):
         
     ##### Function used to load the Excel data file #####
     def loadExcel(self):
-        self.sheet = pd.read_excel('C:/Solutec/1/BDD.xlsx', sheet_name='BDD')
+        self.sheet = pd.read_excel(p+'/BDD.xlsx', sheet_name='BDD')
 
         if self.role != "Admin":
             if self.role == "Région":

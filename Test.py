@@ -13,6 +13,8 @@ username = ""
 password = ""
 
 sheet = pd.read_excel(p+'/Test.xlsx', sheet_name='MDPFINAUX') 
+
+print (sheet)
 """
 ####################################################### Récupération des données depuis la BDD  ####################################################### 
 
