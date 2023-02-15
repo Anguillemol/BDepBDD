@@ -428,12 +428,19 @@ class mainWindow(QWidget):
         self.w = demandeChangement()
         self.w.show()
 
+    def chargerModif(self):
+        self.model = pandasModel(self.sheet)
+        self.tab.setModel(self.model)
+        self.tab.resizeColumnsToContents()
+
+
     def closeEvent(self, event):
         self.w = ''
         if self.w:
             self.w.close()
 
 ##TODO: Faire l'insertion des données dans le DataFrame concat()
+##TODO: Prendre toutes les données de toutes les classes et les poser dans un df d'1 ligne
 class creaWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -703,8 +710,8 @@ class creaWindow(QWidget):
 
     def confirmerCreation(self):
         print("Confirmation")
-        print(self.w1.test.text())
-        #Cehcker si tt les données sont entrées
+        #Checker si tt les données sont entrées
+
 
     def closeEvent(self, event):
         self.w=''
@@ -2277,7 +2284,7 @@ class accidentTravail(QWidget):
 
         self.setLayout(self.layout)
 
-##TODO: Appliquer les modifications sur la mainWindow
+##TODO:charger direct
 class modifWindow(QWidget):
     sheet = pd.DataFrame
 
@@ -2319,7 +2326,7 @@ class modifWindow(QWidget):
 
         self.boutonConfirmation = QPushButton("Confirmer la modification")
         self.boutonConfirmation.clicked.connect(self.choix)
-        #, Qt.AlignmentFlag.AlignCenter
+
         self.layout2.addWidget(self.titre2, 0, 1)
         self.layout2.addWidget(self.listedepots2, 1, 1,)
         self.layout2.addWidget(self.affichageDep, 2, 0, 1, 3)
@@ -2328,20 +2335,9 @@ class modifWindow(QWidget):
 
         self.widget2.setLayout(self.layout2)
 
-        ##TODO: Widget 2 -> Accès aux infos du Widget, modification des infos et bouton confirmation
-        self.widget3 = QWidget()
-        self.layout3 = QGridLayout()
-
-        self.boutonCreer = QPushButton("Modifier le dépôt")
-        self.boutonCreer.clicked.connect(self.modif)
-        self.layout3.addWidget(self.boutonCreer)
-
-        self.widget3.setLayout(self.layout3)
-
         self.mainlayout = QGridLayout()
         self.stack.addWidget(self.widget1)
         self.stack.addWidget(self.widget2)
-        self.stack.addWidget(self.widget3)
         self.mainlayout.addWidget(self.stack)
         self.setLayout(self.mainlayout)
 
@@ -2349,37 +2345,38 @@ class modifWindow(QWidget):
         ##Transition vers la seconde fenêtre
         self.listedepots2.setCurrentIndex(self.listedepots.currentIndex())
         ##Charger tableau
-        print(self.listedepots2.currentText())
         self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()]
+        self.sheet_tri_index = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()].index[0]
 
         self.modelModif = pandasEditableModel(self.sheet_tri)
         self.affichageDep.setModel(self.modelModif)
         self.affichageDep.resizeColumnsToContents()
-        ##
+
         self.stack.setCurrentIndex(1)    
-        self.setFixedSize(720,440)
-    
-    def choix(self):
-        ##Transition vers la fenêtre de choix des modifications
-        self.stack.setCurrentIndex(2)
-
-    def modif(self):
-        ##Application des modifications
-        print("Modification faite")
-
-
-        ##Fermeture de la fenetre et refresh de la dataframe
-        self.close()
+        self.setFixedSize(720,440)           
 
     def chargementTableau(self):
-        print("Chargement")
         self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()]
+        self.sheet_tri_index = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()].index[0]
 
         self.modelModif = pandasEditableModel(self.sheet_tri)
         self.affichageDep.setModel(self.modelModif)
         self.affichageDep.resizeColumnsToContents()
-        print("Chargement fini")
 
+    def choix(self):
+    ##Application des modifications sur la sheet de la classe
+        rowIndex = self.sheet_tri_index
+        listHeaders = self.sheet.columns.values.tolist()
+
+        for i in range(len(listHeaders)):
+            self.sheet[listHeaders[i]][rowIndex] = self.sheet_tri[listHeaders[i]][rowIndex]
+                
+    ##Transmission de la nouvelle sheet à la fenêtre principale
+        main.sheet = self.sheet
+        main.chargerModif()
+
+        self.close()
+    
 ##TODO: Supprimer la ligne dans le dataframe
 class suppWindow(QWidget):
     sheet = pd.DataFrame
