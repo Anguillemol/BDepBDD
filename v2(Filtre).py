@@ -435,6 +435,7 @@ class mainWindow(QWidget):
         self.model = pandasModel(self.sheet)
         self.tab.setModel(self.model)
         self.tab.resizeColumnsToContents()
+        print("Model chargé")
 
 
     def closeEvent(self, event):
@@ -1530,6 +1531,7 @@ class surface(QWidget):
 
         self.widget.setLayout(self.layout)
         self.scroll_area.setWidget(self.widget)
+
 ##DONE
 class agencement(QWidget):
     def __init__(self):
@@ -2287,7 +2289,7 @@ class accidentTravail(QWidget):
 
         self.setLayout(self.layout)
 
-##TODO:charger direct
+##TODO: Voir l'efficacité
 class modifWindow(QWidget):
     sheet = pd.DataFrame
 
@@ -2307,6 +2309,7 @@ class modifWindow(QWidget):
         self.titre = QLabel("Sélection du dépôt à modifier")
         self.listedepots = QComboBox()
         self.listedesdepots = self.sheet["Dépôt"].values.tolist()
+        self.listedepots.addItem('')
         self.listedepots.addItems(self.listedesdepots)
         self.listedepots.currentIndexChanged.connect(self.selectionDepot)
 
@@ -2346,7 +2349,7 @@ class modifWindow(QWidget):
 
     def selectionDepot(self):
         ##Transition vers la seconde fenêtre
-        self.listedepots2.setCurrentIndex(self.listedepots.currentIndex())
+        self.listedepots2.setCurrentIndex(self.listedepots.currentIndex()-1)
         ##Charger tableau
         self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()]
         self.sheet_tri_index = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()].index[0]
@@ -2400,6 +2403,7 @@ class suppWindow(QWidget):
         self.titre = QLabel("Sélection du dépôt à supprimer")
         self.listedepots = QComboBox()
         self.listedesdepots = self.sheet["Dépôt"].values.tolist()
+        self.listedepots.addItem('')
         self.listedepots.addItems(self.listedesdepots)
         self.listedepots.currentIndexChanged.connect(self.selectionDepot)
 
@@ -2417,9 +2421,6 @@ class suppWindow(QWidget):
         self.listedepots2.currentIndexChanged.connect(self.chargementTableau)
         self.affichageDep = QTableView()
 
-        self.boutonTest = QPushButton("Test")
-        self.boutonTest.clicked.connect(self.test)
-
         self.boutonConfirmation = QPushButton("Supprimer le dépôt")
         self.boutonConfirmation.clicked.connect(self.suppression)
         #, Qt.AlignmentFlag.AlignCenter
@@ -2427,8 +2428,6 @@ class suppWindow(QWidget):
         self.layout2.addWidget(self.listedepots2, 1, 1,)
         self.layout2.addWidget(self.affichageDep, 2, 0, 1, 3)
         self.layout2.addWidget(self.boutonConfirmation, 3, 1)
-        self.layout2.addWidget(self.boutonTest, 4, 1)
-
 
         self.widget2.setLayout(self.layout2)
 
@@ -2440,9 +2439,10 @@ class suppWindow(QWidget):
         self.setLayout(self.mainlayout)
     def selectionDepot(self):
         ##Transition vers la seconde fenêtre
-        self.listedepots2.setCurrentIndex(self.listedepots.currentIndex())
+        self.listedepots2.setCurrentIndex(self.listedepots.currentIndex()-1)
 
         self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()]
+        self.sheet_tri_index = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()].index[0]
 
         self.modelModif = pandasModel(self.sheet_tri)
         self.affichageDep.setModel(self.modelModif)
@@ -2451,19 +2451,10 @@ class suppWindow(QWidget):
         self.stack.setCurrentIndex(1)    
         self.setFixedSize(720,440)
 
-    def suppression(self):
-        self.close()
-
-        ##TODO: Faire une fenetre de confirmation
-
-    def test(self):
-        print("test")
-        self.widgettest = QLabel("SALUT PROUT")
-        self.layout2.addWidget(self.widgettest, self.i, 1)
-
     def chargementTableau(self):
         print("Chargement")
         self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()]
+        self.sheet_tri_index = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()].index[0]
 
         self.modelModif = pandasModel(self.sheet_tri)
         self.affichageDep.setModel(self.modelModif)
@@ -2474,8 +2465,15 @@ class suppWindow(QWidget):
         self.header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         print("Chargement fini")
 
-    def choix(self):
-        print("supp")
+    def suppression(self):
+        rowIndex = self.sheet_tri_index
+        main.sheet = main.sheet.drop(rowIndex)
+
+        main.chargerModif()
+
+        self.close()
+
+        ##TODO: Faire une fenetre de confirmation
 
 ##TODO: Transmission du sheet_tri 
 class demandeChangement(QWidget):
