@@ -8,7 +8,10 @@ import pandas as pd
 import numpy as np
 import openpyxl
 
-##DONE
+##TODO: Gestion des filtres sur les QTableView()
+##TODO:
+
+##TODO: Faire l'ouverture du fichier Excel sur Sharepoint
 class logWindow(QWidget):
     
 
@@ -175,7 +178,7 @@ class logWindow(QWidget):
         self.inputPassword.setText("")
         self.inputPassword2.setText("")
 
-##DONE
+##TODO: Rajouter un bouton de validation et la fonction qui enregistre le Dataframe sur Sharepoint en répartissant dans tous les onglets (rajouter nom de l'onglet dans chaque classe)
 class mainWindow(QWidget):
     def __init__(self):
         self.submitClicked = pyqtSignal(str,str,str)
@@ -417,7 +420,7 @@ class mainWindow(QWidget):
         if self.w:
             self.w.close()
 
-##TODO: Faire l'insertion des données dans le DataFrame
+##TODO: Faire l'insertion des données dans le DataFrame concat()
 class creaWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -2261,7 +2264,7 @@ class accidentTravail(QWidget):
 
         self.setLayout(self.layout)
 
-##TODO: Gérer le dimensionnement des fenêtres ou le placement statique
+##TODO: Appliquer les modifications sur la mainWindow
 class modifWindow(QWidget):
     sheet = pd.DataFrame
 
@@ -2364,6 +2367,7 @@ class modifWindow(QWidget):
         self.affichageDep.resizeColumnsToContents()
         print("Chargement fini")
 
+##TODO: Supprimer la ligne dans le dataframe
 class suppWindow(QWidget):
     sheet = pd.DataFrame
     
@@ -2460,6 +2464,7 @@ class suppWindow(QWidget):
     def choix(self):
         print("supp")
 
+##TODO: Transmission du sheet_tri 
 class demandeChangement(QWidget):
     sheet = pd.DataFrame
     def __init__(self):
@@ -2492,8 +2497,6 @@ class demandeChangement(QWidget):
         ##Envoyer le set de données quelque part avec le user qui demande et la date
         
         self.close()
-
-
 
 class pandasModel(QAbstractTableModel):
     def __init__(self, data):
