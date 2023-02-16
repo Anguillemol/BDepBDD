@@ -410,6 +410,7 @@ class mainWindow(QWidget):
 
     def creerDepot(self):
         print("Création")
+        creaWindow.sheet = self.sheet
         self.w = creaWindow()
         self.w.show()
 
@@ -446,6 +447,7 @@ class mainWindow(QWidget):
 ##TODO: Faire l'insertion des données dans le DataFrame concat()
 ##TODO: Prendre toutes les données de toutes les classes et les poser dans un df d'1 ligne
 class creaWindow(QWidget):
+    sheet = pd.DataFrame
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Création d'un dépôt")
@@ -714,37 +716,50 @@ class creaWindow(QWidget):
 
     def confirmerCreation(self):
         print("Confirmation")
-        #Checker si tt les données sont entrées
 
+        #Récupération des données
+
+        data = []
+        data.append(self.w1.codeBRICO.text())
+        data.append(self.w1.codeEASIER.text())
+
+        print(data)
+        #Création d'un DF Annexe contenant toutes les données
+        #newRow = pd.DataFrame(data, columns=self.sheet.columns)
+
+
+
+
+       # print(newRow)
 
     def closeEvent(self, event):
         self.w=''
         if self.w:
             self.w.close()
 
-##DONE
+##DONE1
 class listeDepot(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle ("Liste dépôt")
         self.layout = QGridLayout()
         self.titre = QLabel("Liste Dépot")
-        self.labelcodeBrico = QLabel("Code BRICO:")
+        self.labelcodeBrico = QLabel("Code BRICO")
         self.codeBRICO = QLineEdit()
         self.codeBRICO.setPlaceholderText("Code BRICO")
-        self.labelcodeEASIER = QLabel("Code EASIER:")
+        self.labelcodeEASIER = QLabel("Code EASIER")
         self.codeEASIER = QLineEdit()
         self.codeEASIER.setPlaceholderText("Code EASIER")
-        self.labelDepot = QLabel("Dépôt:")
+        self.labelDepot = QLabel("Dépôt")
         self.depot = QLineEdit()
         self.depot.setPlaceholderText("Dépôt")
-        self.labelregionAdministrative = QLabel("Région administrative:")
+        self.labelregionAdministrative = QLabel("Région administrative")
         self.regionAdministrative = QLineEdit() 
         self.regionAdministrative.setPlaceholderText("Région administrative")
-        self.labelregion2022 = QLabel("Région 2022:")
+        self.labelregion2022 = QLabel("Région 2022")
         self.region2022 = QLineEdit()
         self.region2022.setPlaceholderText("Région 2022")
-        self.labelStatut = QLabel("Statut:")
+        self.labelStatut = QLabel("Statut")
         self.statut = QLineEdit()
         self.statut.setPlaceholderText("Statut")
 
@@ -764,7 +779,7 @@ class listeDepot(QWidget):
         
         self.setLayout(self.layout)
 
-##DONE
+##DONE2
 class donneesSociales(QWidget):
     def __init__(self):
         super().__init__()
@@ -807,7 +822,7 @@ class donneesSociales(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE
+##DONE3
 class secteurSecurite(QWidget):
     def __init__(self):
         super().__init__()
@@ -851,7 +866,7 @@ class secteurSecurite(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE
+##DONE 4
 class secteurLogistique(QWidget):
     def __init__(self):
         super().__init__()
@@ -895,7 +910,7 @@ class secteurLogistique(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE
+##DONE 5
 class secteurAmenagement(QWidget):
     def __init__(self):
         super().__init__()
@@ -934,7 +949,7 @@ class secteurAmenagement(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE
+##DONE6
 class secteurConstruction(QWidget):
     def __init__(self):
         super().__init__()
@@ -973,7 +988,7 @@ class secteurConstruction(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE
+##DONE7
 class secteurTechnique(QWidget):
     def __init__(self):
         super().__init__()
@@ -1012,7 +1027,7 @@ class secteurTechnique(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE
+##DONE8
 class secteurAdministratif(QWidget):
     def __init__(self):
         super().__init__()
@@ -1051,7 +1066,7 @@ class secteurAdministratif(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE
+##DONE9
 class secteurCaisse(QWidget):
     def __init__(self):
         super().__init__()
@@ -1090,7 +1105,7 @@ class secteurCaisse(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE
+##DONE10
 class RH(QWidget):
     def __init__(self):
         super().__init__()
@@ -1124,7 +1139,7 @@ class RH(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE: ATTENTION PRESENCE DE ' , de () et de +SIRET (remplacé par SIRET)
+##DONE: ATTENTION PRESENCE DE ' , de () et de +SIRET (remplacé par SIRET) 11
 class donneesDepot(QWidget):
     def __init__(self):
         super().__init__()
@@ -1364,7 +1379,7 @@ class donneesDepot(QWidget):
 
         self.scroll_area.setWidget(self.widget)
 
-##DONE: ATTENTION PRESENCE DE TRUC SVI ET DE /
+##DONE: ATTENTION PRESENCE DE TRUC SVI ET DE / 12
 class surface(QWidget):
     def __init__(self):
         super().__init__()
@@ -1532,7 +1547,7 @@ class surface(QWidget):
         self.widget.setLayout(self.layout)
         self.scroll_area.setWidget(self.widget)
 
-##DONE
+##DONE 13
 class agencement(QWidget):
     def __init__(self):
         super().__init__()
@@ -1561,7 +1576,7 @@ class agencement(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE
+##DONE 14
 class caisse(QWidget):
     def __init__(self):
         super().__init__()
@@ -1635,7 +1650,7 @@ class caisse(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE
+##DONE 15
 class PDA(QWidget):
     def __init__(self):
         super().__init__()
@@ -1674,7 +1689,7 @@ class PDA(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE
+##DONE16
 class menace(QWidget):
     def __init__(self):
         super().__init__()
@@ -1733,7 +1748,7 @@ class menace(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE
+##DONE17
 class securite(QWidget):
     def __init__(self):
         super().__init__()
@@ -1927,7 +1942,7 @@ class securite(QWidget):
         self.widget.setLayout(self.layout)
         self.scroll_area.setWidget(self.widget)
 
-##DONE
+##DONE18
 class conceptCommercial(QWidget):
     def __init__(self):
         super().__init__()
@@ -2123,7 +2138,7 @@ class conceptCommercial(QWidget):
         self.widget.setLayout(self.layout)
         self.scroll_area.setWidget(self.widget)
     
-##DONE : Attention labelContexteComptage-TCUENTO
+##DONE : Attention labelContexteComptage-TCUENTO19
 class divers(QWidget):
     def __init__(self):
         super().__init__()
@@ -2162,7 +2177,7 @@ class divers(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE : ° remplacé par deg
+##DONE : ° remplacé par deg20
 class numCommercant(QWidget):
     def __init__(self):
         super().__init__()
@@ -2216,7 +2231,7 @@ class numCommercant(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE
+##DONE21
 class colissimo(QWidget):
     def __init__(self):
         super().__init__()
@@ -2240,7 +2255,7 @@ class colissimo(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE
+##DONE22
 class accidentTravail(QWidget):
     def __init__(self):
         super().__init__()
