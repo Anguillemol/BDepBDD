@@ -129,21 +129,34 @@ w22=['self.labelTauxdAT2015 = QLabel("Taux dAT 2015")','self.TauxdAT2015 = QLine
 allW = [w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12,w13,w14,w15,w16,w17,w18,w19,w20,w21,w22]
 allName = ["w1","w2","w3","w4","w5","w6","w7","w8","w9","w10","w11","w12","w13","w14","w15","w16","w17","w18","w19","w20","w21","w22"]
 
-textToBeSearched = " = QlineEdit()"
+textToBeSearched = " = QLineEdit()"
 
-for i in range(len(allW)):
-    currentList = allW[i]
-    currentName = allName[i]
-    for j in range(len(currentList)):
-        #Traitement texte
-        txt = currentList[j]
+with open("gene.txt", "w") as f:
+    for i in range(len(allW)):
+        currentList = allW[i]
+        currentName = allName[i]
+        for j in range(len(currentList)):
+            #Traitement texte
+            txt = currentList[j]
+            
 
-        if textToBeSearched in txt:
-            txt = txt.replace (' = QLineEdit()', '.text()')
-            txt = txt.replace ('self.', 'self.'+ currentName + '.')
+            #print (txt)
+            if textToBeSearched in txt:
+                txt = txt.replace (' = QLineEdit()', '.text()')
+                txt = txt.replace ('self.', 'self.'+ currentName + '.')
+                txt = "data.append(" + txt + ")"
+                print(txt)
+                f.write(txt)
+                f.write("\n")
 
         #Ajout dans fichier texte
 
+# Ouvre le fichier en mode écriture
+with open("mon_fichier.txt", "w") as fichier:
+    # Utilise une boucle for pour écrire plusieurs lignes
+    for i in range(10):
+        # Écrit une ligne dans le fichier
+        fichier.write(f"Ligne {i+1}\n")
 
 
 
