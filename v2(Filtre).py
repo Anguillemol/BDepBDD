@@ -968,6 +968,8 @@ class creaWindow(QWidget):
 
         print(data)
         print(len(data))
+        lst = self.sheet.columns.tolist()
+        print(len(lst))
         #Création d'un DF Annexe contenant toutes les données
         #newRow = pd.DataFrame(data, columns=self.sheet.columns)
 
