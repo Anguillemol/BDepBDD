@@ -5,19 +5,21 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.uic import loadUi
 
+from office365.runtime.auth.authentication_context import AuthenticationContext
+from office365.sharepoint.client_context import ClientContext
+from office365.runtime.client_request import ClientRequest
+
 import pandas as pd
 import numpy as np
-import openpyxl
+
 
 p = str(Path.cwd())
 p = p.replace('\\', "/")
-##TODO: Gestion des filtres sur les QTableView()
-##TODO:
 
 ##TODO: Faire l'ouverture du fichier Excel sur Sharepoint
 class logWindow(QWidget):
-    
 
+    
     def __init__(self):
         super().__init__()
 
@@ -183,6 +185,8 @@ class logWindow(QWidget):
 
 ##TODO: Rajouter un bouton de validation et la fonction qui enregistre le Dataframe sur Sharepoint en répartissant dans tous les onglets (rajouter nom de l'onglet dans chaque classe)
 class mainWindow(QWidget):
+
+
     def __init__(self):
         self.submitClicked = pyqtSignal(str,str,str)
         super().__init__()
@@ -263,9 +267,9 @@ class mainWindow(QWidget):
                 self.sheet_tri = self.sheet.loc[self.sheet['Directeur dépôt'] == self.denom]
                 self.model = pandasModel(self.sheet_tri)
         else:
-            self.model = pandasModel(self.sheet)
-            #self.model = pandasEditableModel(self.sheet)
-            print("Model créé Admin en lecture écriture pas forcement")
+            #self.model = pandasModel(self.sheet)
+            self.model = pandasEditableModel(self.sheet)
+            print("Model créé Admin en lecture écriture")
 
     def loadGUI(self):
         if self.role == "Admin":
@@ -2587,7 +2591,13 @@ class modifWindow(QWidget):
 
         self.titre = QLabel("Sélection du dépôt à modifier")
         self.listedepots = QComboBox()
+        
         self.listedesdepots = self.sheet["Dépôt"].values.tolist()
+        self.listeCodeBRICO = self.sheet["Code BRICO"].values.tolist()
+
+        for i in range (len(self.listedesdepots)):
+            self.listedesdepots[i] = str(self.listeCodeBRICO[i]) + "-" + self.listedesdepots[i]
+
         self.listedepots.addItem('')
         self.listedepots.addItems(self.listedesdepots)
         self.listedepots.currentIndexChanged.connect(self.selectionDepot)
