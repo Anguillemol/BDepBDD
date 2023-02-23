@@ -2640,8 +2640,11 @@ class modifWindow(QWidget):
         ##Transition vers la seconde fenêtre
         self.listedepots2.setCurrentIndex(self.listedepots.currentIndex()-1)
         ##Charger tableau
-        self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()]
-        self.sheet_tri_index = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()].index[0]
+        depot = self.listedepots2.currentText()
+        depot = str(depot.split('-')[1])
+
+        self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == depot]
+        self.sheet_tri_index = self.sheet.loc[self.sheet['Dépôt'] == depot].index[0]
 
         self.modelModif = pandasEditableModel(self.sheet_tri)
         self.affichageDep.setModel(self.modelModif)
@@ -2651,8 +2654,11 @@ class modifWindow(QWidget):
         self.setFixedSize(720,440)           
 
     def chargementTableau(self):
-        self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()]
-        self.sheet_tri_index = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()].index[0]
+        depot = self.listedepots2.currentText()
+        depot = str(depot.split('-')[1])
+
+        self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == depot]
+        self.sheet_tri_index = self.sheet.loc[self.sheet['Dépôt'] == depot].index[0]
 
         self.modelModif = pandasEditableModel(self.sheet_tri)
         self.affichageDep.setModel(self.modelModif)
@@ -2692,6 +2698,11 @@ class suppWindow(QWidget):
         self.titre = QLabel("Sélection du dépôt à supprimer")
         self.listedepots = QComboBox()
         self.listedesdepots = self.sheet["Dépôt"].values.tolist()
+        self.listeCodeBRICO = self.sheet["Code BRICO"].values.tolist()
+
+        for i in range (len(self.listedesdepots)):
+            self.listedesdepots[i] = str(self.listeCodeBRICO[i]) + "-" + self.listedesdepots[i]
+            
         self.listedepots.addItem('')
         self.listedepots.addItems(self.listedesdepots)
         self.listedepots.currentIndexChanged.connect(self.selectionDepot)
@@ -2730,8 +2741,11 @@ class suppWindow(QWidget):
         ##Transition vers la seconde fenêtre
         self.listedepots2.setCurrentIndex(self.listedepots.currentIndex()-1)
 
-        self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()]
-        self.sheet_tri_index = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()].index[0]
+        depot = self.listedepots2.currentText()
+        depot = str(depot.split('-')[1])
+
+        self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == depot]
+        self.sheet_tri_index = self.sheet.loc[self.sheet['Dépôt'] == depot].index[0]
 
         self.modelModif = pandasModel(self.sheet_tri)
         self.affichageDep.setModel(self.modelModif)
@@ -2742,8 +2756,12 @@ class suppWindow(QWidget):
 
     def chargementTableau(self):
         print("Chargement")
-        self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()]
-        self.sheet_tri_index = self.sheet.loc[self.sheet['Dépôt'] == self.listedepots2.currentText()].index[0]
+
+        depot = self.listedepots2.currentText()
+        depot = str(depot.split('-')[1])
+
+        self.sheet_tri = self.sheet.loc[self.sheet['Dépôt'] == depot]
+        self.sheet_tri_index = self.sheet.loc[self.sheet['Dépôt'] == depot].index[0]
 
         self.modelModif = pandasModel(self.sheet_tri)
         self.affichageDep.setModel(self.modelModif)
