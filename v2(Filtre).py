@@ -5,12 +5,52 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.uic import loadUi
 
-from office365.runtime.auth.authentication_context import AuthenticationContext
+import io
+
 from office365.sharepoint.client_context import ClientContext
-from office365.runtime.client_request import ClientRequest
+from office365.runtime.auth.client_credential import ClientCredential
+from office365.sharepoint.files.file import File 
 
 import pandas as pd
 import numpy as np
+
+username = '50bbb53b-67ef-488d-9303-d6afcfd77bc8'
+password = '7ATT8OvZyqU1jbWSFxsgiDMZXrqJ4KekP/JMkgFRQCc='
+
+test_team_site_url = "https://sgzkl.sharepoint.com/sites/SiteTest"
+
+
+ctx = ClientContext(test_team_site_url).with_credentials(ClientCredential(username, password))
+bdd_URL = "/sites/SiteTest/Documents%20partages/Test/BDD.xlsx"
+
+mdp_URL = "/sites/SiteTest/Documents%20partages/Test/MDP.xlsx"
+
+requete_URL = "/sites/SiteTest/Documents%20partages/Test/REQ.xlsx"
+
+response = File.open_binary(ctx, bdd_URL)
+
+bytes_file_obj_bdd = io.BytesIO()
+bytes_file_obj_bdd.write(response.content)
+bytes_file_obj_bdd.seek(0)
+
+response = File.open_binary(ctx, mdp_URL)
+
+bytes_file_obj_mdp = io.BytesIO()
+bytes_file_obj_mdp.write(response.content)
+bytes_file_obj_mdp.seek(0)
+
+response = File.open_binary(ctx, requete_URL)
+
+bytes_file_obj_req = io.BytesIO()
+bytes_file_obj_req.write(response.content)
+bytes_file_obj_req.seek(0)
+
+#Read
+bdd = bytes_file_obj_bdd
+mdp = bytes_file_obj_mdp
+req = bytes_file_obj_req
+
+
 
 
 p = str(Path.cwd())
@@ -29,8 +69,10 @@ class logWindow(QWidget):
         self.submitClicked = pyqtSignal(str,str,str)
 
         ########## Gathering the account DataBase ##########
-        #self.ddbmdp = pd.read_excel('C:/Users/lucas/Test.xlsx', sheet_name='MDP')      
-        self.ddbmdp = pd.read_excel(p+'/Test.xlsx', sheet_name='MDPFINAUX')  
+     
+        #self.ddbmdp = pd.read_excel(p+'/Test.xlsx', sheet_name='MDPFINAUX')  
+
+        self.ddbmdp = pd.read_excel(mdp, sheet_name='MDPFINAUX')
         
         ##### Static text #####
         title = QLabel("Authentification BDD")
@@ -2702,7 +2744,7 @@ class suppWindow(QWidget):
 
         for i in range (len(self.listedesdepots)):
             self.listedesdepots[i] = str(self.listeCodeBRICO[i]) + "-" + self.listedesdepots[i]
-            
+
         self.listedepots.addItem('')
         self.listedepots.addItems(self.listedesdepots)
         self.listedepots.currentIndexChanged.connect(self.selectionDepot)
