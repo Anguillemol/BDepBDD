@@ -13,6 +13,8 @@ from office365.sharepoint.files.file import File
 
 import pandas as pd
 import numpy as np
+import openpyxl
+from openpyxl.utils.dataframe import dataframe_to_rows
 
 username = '50bbb53b-67ef-488d-9303-d6afcfd77bc8'
 password = '7ATT8OvZyqU1jbWSFxsgiDMZXrqJ4KekP/JMkgFRQCc='
@@ -21,6 +23,9 @@ test_team_site_url = "https://sgzkl.sharepoint.com/sites/SiteTest"
 
 
 ctx = ClientContext(test_team_site_url).with_credentials(ClientCredential(username, password))
+
+print ("Contexte de connexion établi")
+
 bdd_URL = "/sites/SiteTest/Documents%20partages/Test/BDD.xlsx"
 
 mdp_URL = "/sites/SiteTest/Documents%20partages/Test/MDP.xlsx"
@@ -29,21 +34,33 @@ requete_URL = "/sites/SiteTest/Documents%20partages/Test/REQ.xlsx"
 
 response = File.open_binary(ctx, bdd_URL)
 
+print("Reponse trouvée")
+
 bytes_file_obj_bdd = io.BytesIO()
 bytes_file_obj_bdd.write(response.content)
 bytes_file_obj_bdd.seek(0)
 
+print("BDD chargée")
+
 response = File.open_binary(ctx, mdp_URL)
+
+print("Reponse trouvée")
 
 bytes_file_obj_mdp = io.BytesIO()
 bytes_file_obj_mdp.write(response.content)
 bytes_file_obj_mdp.seek(0)
 
+print ("MDP chargés")
+
 response = File.open_binary(ctx, requete_URL)
+
+print("Reponse trouvée")
 
 bytes_file_obj_req = io.BytesIO()
 bytes_file_obj_req.write(response.content)
 bytes_file_obj_req.seek(0)
+
+print ("Requêtes chargées")
 
 #Read
 bdd = bytes_file_obj_bdd
@@ -286,8 +303,14 @@ class mainWindow(QWidget):
         print("Denomination: " + self.denom)
         self.setFixedSize(1280,720)
         self.center()
-        #TODO: Recentrer la fenêtre au milieu de l'écran
-        
+        ##### Loading
+        excel = pd.ExcelFile(bdd)
+        lst_sheet = excel.sheet_names
+        self.d = {}
+        for i in range(len(lst_sheet)):
+            if lst_sheet[i] != "Accueil" and lst_sheet[i] != "BDD":
+                self.d[lst_sheet[i]] = pd.read_excel(bdd, sheet_name=lst_sheet[i])
+
         ##### Generation of the dataFrame #####
         self.loadExcel()
 
@@ -296,7 +319,9 @@ class mainWindow(QWidget):
         
     ##### Function used to load the Excel data file #####
     def loadExcel(self):
-        self.sheet = pd.read_excel(p+'/BDD.xlsx', sheet_name='BDD')
+        #self.sheet = pd.read_excel(p+'/BDD.xlsx', sheet_name='BDD')
+        self.sheet = pd.read_excel(bdd, sheet_name='BDD')
+        self.sheet_columns = self.sheet.columns.to_list()
 
         if self.role != "Admin":
             if self.role == "Région":
@@ -335,9 +360,9 @@ class mainWindow(QWidget):
 
             self.topBanner = QWidget()
             self.topLayout = QHBoxLayout()
-            self.topLayout.addWidget(self.logo)
-            self.topLayout.addWidget(self.titre)
-            self.topLayout.addWidget(self.infos)
+            self.topLayout.addWidget(self.logo, Qt.AlignmentFlag.AlignLeft)
+            self.topLayout.addWidget(self.titre, Qt.AlignmentFlag.AlignCenter)
+            self.topLayout.addWidget(self.infos, Qt.AlignmentFlag.AlignRight)
 
             self.topBanner.setLayout(self.topLayout)
 
@@ -379,11 +404,15 @@ class mainWindow(QWidget):
 
             self.bandeau.setLayout(self.bandeauBoutons)
 
+            self.boutonValidation = QPushButton("Confirmer modification")
+            self.boutonValidation.clicked.connect(self.saveData)
+
             ##### Setting up the Widget #####
             self.layoutAdminGUI = QVBoxLayout()
             self.layoutAdminGUI.addWidget(self.topBanner)
             self.layoutAdminGUI.addWidget(self.middle)
             self.layoutAdminGUI.addWidget(self.bandeau)
+            self.layoutAdminGUI.addWidget(self.boutonValidation)
             self.adminGUI.setLayout(self.layoutAdminGUI)
 
             ##### Adding the interface to the StackedWidget #####
@@ -483,6 +512,35 @@ class mainWindow(QWidget):
         self.tab.setModel(self.model)
         self.tab.resizeColumnsToContents()
         print("Model chargé")
+
+    def saveData(self):
+        print("Saving...")
+        my_set = set(self.sheet_columns)
+        count = 0
+        for key in self.d.keys():
+            #d[key] = dataframe
+            #key = nom colonne
+            lst_columns = self.d[key].columns.to_list()
+            lst_clean = []
+            for i in range(len(lst_columns)):
+                if lst_columns[i] in my_set:
+                    lst_clean.append(lst_columns[i])
+                
+            #Suppression des colonnes qui ne sont pas dans le dataframe global
+
+            #print(lst_clean)
+            count = count + len(lst_clean)
+
+
+
+            self.d[key].index = self.sheet.index
+            self.d[key][lst_clean] = self.sheet[lst_clean]
+        
+        """
+        for key in self.d.keys():
+            print (self.d[key])
+            break
+        """
 
 
     def closeEvent(self, event):
@@ -1011,10 +1069,7 @@ class creaWindow(QWidget):
         my_dict[self.w22.labelTauxdAT2020.text()] = self.w22.TauxdAT2020.text()
         my_dict[self.w22.labelTauxdAT2021.text()] = self.w22.TauxdAT2021.text()
         
-        """
-        print (my_dict)
-        print (len(my_dict))
-        """
+
         s = pd.Series(my_dict)
         newRow = s.to_frame().T
 
@@ -1043,6 +1098,7 @@ class creaWindow(QWidget):
 
 ##DONE1
 class listeDepot(QWidget):
+    excel_sheet = "Liste_depots"
     def __init__(self):
         super().__init__()
         self.setWindowTitle ("Liste dépôt")
@@ -1086,6 +1142,7 @@ class listeDepot(QWidget):
 
 ##DONE2
 class donneesSociales(QWidget):
+    excel_sheet = "donnees_sociales"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Données sociales")
@@ -1129,6 +1186,7 @@ class donneesSociales(QWidget):
 
 ##DONE3
 class secteurSecurite(QWidget):
+    excel_sheet = "secteur_securite"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Secteur sécurité")
@@ -1173,6 +1231,7 @@ class secteurSecurite(QWidget):
 
 ##DONE 4
 class secteurLogistique(QWidget):
+    excel_sheet = "secteur_logistique"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Secteur logistique")
@@ -1217,6 +1276,7 @@ class secteurLogistique(QWidget):
 
 ##DONE 5
 class secteurAmenagement(QWidget):
+    excel_sheet = "secteur_amenagement"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Secteur aménagement")
@@ -1256,6 +1316,7 @@ class secteurAmenagement(QWidget):
 
 ##DONE6
 class secteurConstruction(QWidget):
+    excel_sheet = "secteur_construction"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Secteur construction")
@@ -1295,6 +1356,7 @@ class secteurConstruction(QWidget):
 
 ##DONE7
 class secteurTechnique(QWidget):
+    excel_sheet = "secteur_technique"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Secteur technique")
@@ -1334,6 +1396,7 @@ class secteurTechnique(QWidget):
 
 ##DONE8
 class secteurAdministratif(QWidget):
+    excel_sheet = "secteur_administratif"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Secteur administratif")
@@ -1373,6 +1436,7 @@ class secteurAdministratif(QWidget):
 
 ##DONE9
 class secteurCaisse(QWidget):
+    excel_sheet = "secteur_caisse"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Secteur caisse")
@@ -1412,6 +1476,7 @@ class secteurCaisse(QWidget):
 
 ##DONE10
 class RH(QWidget):
+    excel_sheet = "RH"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("RH")
@@ -1446,6 +1511,7 @@ class RH(QWidget):
 
 ##DONE: ATTENTION PRESENCE DE ' , de () et de +SIRET (remplacé par SIRET) 11
 class donneesDepot(QWidget):
+    excel_sheet = "donnees_depots"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Données dépôt")
@@ -1686,6 +1752,7 @@ class donneesDepot(QWidget):
 
 ##DONE: ATTENTION PRESENCE DE TRUC SVI ET DE / 12
 class surface(QWidget):
+    excel_sheet = "surface"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Surface")
@@ -1859,6 +1926,7 @@ class surface(QWidget):
 
 ##DONE 13
 class agencement(QWidget):
+    excel_sheet = "agencement"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Agencement")
@@ -1888,6 +1956,7 @@ class agencement(QWidget):
 
 ##DONE 14
 class caisse(QWidget):
+    excel_sheet = "caisses"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Caisse")
@@ -1962,6 +2031,7 @@ class caisse(QWidget):
 
 ##DONE 15
 class PDA(QWidget):
+    excel_sheet = "PDA"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("PDA")
@@ -2001,6 +2071,7 @@ class PDA(QWidget):
 
 ##DONE16
 class menace(QWidget):
+    excel_sheet = "menace"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Menace")
@@ -2060,6 +2131,7 @@ class menace(QWidget):
 
 ##DONE17
 class securite(QWidget):
+    excel_sheet = "securite"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Sécurité")
@@ -2254,6 +2326,7 @@ class securite(QWidget):
 
 ##DONE18
 class conceptCommercial(QWidget):
+    excel_sheet = "concept_commercial"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Concept commercial")
@@ -2450,6 +2523,7 @@ class conceptCommercial(QWidget):
     
 ##DONE : Attention labelContexteComptage-TCUENTO19
 class divers(QWidget):
+    excel_sheet = "divers"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Divers")
@@ -2489,6 +2563,7 @@ class divers(QWidget):
 
 ##DONE : ° remplacé par deg20
 class numCommercant(QWidget):
+    excel_sheet = "N_commercant"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Numéro commercant")
@@ -2543,6 +2618,7 @@ class numCommercant(QWidget):
 
 ##DONE21
 class colissimo(QWidget):
+    excel_sheet = "colissimo"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Colissimo")
@@ -2567,6 +2643,7 @@ class colissimo(QWidget):
 
 ##DONE22
 class accidentTravail(QWidget):
+    excel_sheet = "accidents_travail"
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Accident travail")
