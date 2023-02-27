@@ -72,7 +72,7 @@ req = bytes_file_obj_req
 p = str(Path.cwd())
 p = p.replace('\\', "/")
 
-##TODO: Faire l'ouverture du fichier Excel sur Sharepoint
+##DONE
 class logWindow(QWidget):
 
     
@@ -547,8 +547,7 @@ class mainWindow(QWidget):
         if self.w:
             self.w.close()
 
-##TODO: Faire l'insertion des données dans le DataFrame concat()
-##TODO: Prendre toutes les données de toutes les classes et les poser dans un df d'1 ligne
+##TODO: Améliorer performance
 class creaWindow(QWidget):
     sheet = pd.DataFrame
     def __init__(self):
@@ -1095,7 +1094,7 @@ class creaWindow(QWidget):
         # Fermer cette fenêtre
         self.close()
 
-##DONE1
+##DONE 1
 class listeDepot(QWidget):
     excel_sheet = "Liste_depots"
     def __init__(self):
@@ -1139,7 +1138,7 @@ class listeDepot(QWidget):
         
         self.setLayout(self.layout)
 
-##DONE2
+##DONE 2
 class donneesSociales(QWidget):
     excel_sheet = "donnees_sociales"
     def __init__(self):
@@ -1183,7 +1182,7 @@ class donneesSociales(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE3
+##DONE 3
 class secteurSecurite(QWidget):
     excel_sheet = "secteur_securite"
     def __init__(self):
@@ -1313,7 +1312,7 @@ class secteurAmenagement(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE6
+##DONE 6
 class secteurConstruction(QWidget):
     excel_sheet = "secteur_construction"
     def __init__(self):
@@ -1353,7 +1352,7 @@ class secteurConstruction(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE7
+##DONE 7
 class secteurTechnique(QWidget):
     excel_sheet = "secteur_technique"
     def __init__(self):
@@ -1393,7 +1392,7 @@ class secteurTechnique(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE8
+##DONE 8
 class secteurAdministratif(QWidget):
     excel_sheet = "secteur_administratif"
     def __init__(self):
@@ -1433,7 +1432,7 @@ class secteurAdministratif(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE9
+##DONE 9
 class secteurCaisse(QWidget):
     excel_sheet = "secteur_caisse"
     def __init__(self):
@@ -1473,7 +1472,7 @@ class secteurCaisse(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE10
+##DONE 10
 class RH(QWidget):
     excel_sheet = "RH"
     def __init__(self):
@@ -1749,7 +1748,7 @@ class donneesDepot(QWidget):
 
         self.scroll_area.setWidget(self.widget)
 
-##DONE: ATTENTION PRESENCE DE TRUC SVI ET DE / 12
+##DONE: ATTENTION PRESENCE DE SVI ET DE / 12
 class surface(QWidget):
     excel_sheet = "surface"
     def __init__(self):
@@ -2068,7 +2067,7 @@ class PDA(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE16
+##DONE 16
 class menace(QWidget):
     excel_sheet = "menace"
     def __init__(self):
@@ -2128,7 +2127,7 @@ class menace(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE17
+##DONE 17
 class securite(QWidget):
     excel_sheet = "securite"
     def __init__(self):
@@ -2323,7 +2322,7 @@ class securite(QWidget):
         self.widget.setLayout(self.layout)
         self.scroll_area.setWidget(self.widget)
 
-##DONE18
+##DONE 18
 class conceptCommercial(QWidget):
     excel_sheet = "concept_commercial"
     def __init__(self):
@@ -2520,7 +2519,7 @@ class conceptCommercial(QWidget):
         self.widget.setLayout(self.layout)
         self.scroll_area.setWidget(self.widget)
     
-##DONE : Attention labelContexteComptage-TCUENTO19
+##DONE : Attention labelContexteComptage-TCUENTO 19
 class divers(QWidget):
     excel_sheet = "divers"
     def __init__(self):
@@ -2560,7 +2559,7 @@ class divers(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE : ° remplacé par deg20
+##DONE : ° remplacé par deg 20
 class numCommercant(QWidget):
     excel_sheet = "N_commercant"
     def __init__(self):
@@ -2615,7 +2614,7 @@ class numCommercant(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE21
+##DONE 21
 class colissimo(QWidget):
     excel_sheet = "colissimo"
     def __init__(self):
@@ -2640,7 +2639,7 @@ class colissimo(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE22
+##DONE 22
 class accidentTravail(QWidget):
     excel_sheet = "accidents_travail"
     def __init__(self):
@@ -2690,7 +2689,7 @@ class accidentTravail(QWidget):
 
         self.setLayout(self.layout)
 
-##TODO: Voir l'efficacité
+##TODO: Améliorer performance
 class modifWindow(QWidget):
     sheet = pd.DataFrame
 
@@ -2796,7 +2795,7 @@ class modifWindow(QWidget):
 
         self.close()
     
-##TODO: Supprimer la ligne dans le dataframe
+##TODO: Améliorer performance
 class suppWindow(QWidget):
     sheet = pd.DataFrame
     
