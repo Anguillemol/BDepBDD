@@ -13,8 +13,7 @@ from office365.sharepoint.files.file import File
 
 import pandas as pd
 import numpy as np
-import openpyxl
-from openpyxl.utils.dataframe import dataframe_to_rows
+
 
 username = '50bbb53b-67ef-488d-9303-d6afcfd77bc8'
 password = '7ATT8OvZyqU1jbWSFxsgiDMZXrqJ4KekP/JMkgFRQCc='

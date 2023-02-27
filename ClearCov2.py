@@ -2,6 +2,8 @@ import os
 import tempfile
 import pandas as pd
 import io
+import openpyxl
+from openpyxl import load_workbook
 
 from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.client_credential import ClientCredential
@@ -11,18 +13,35 @@ username = '50bbb53b-67ef-488d-9303-d6afcfd77bc8'
 password = '7ATT8OvZyqU1jbWSFxsgiDMZXrqJ4KekP/JMkgFRQCc='
 
 test_team_site_url = "https://sgzkl.sharepoint.com/sites/SiteTest"
-
-ctx = ClientContext(test_team_site_url).with_credentials(ClientCredential(username, password))
 file_url = "/sites/SiteTest/Documents%20partages/Test/BDD.xlsx"
 
-#Ca ca marche 
+ctx = ClientContext(test_team_site_url).with_credentials(ClientCredential(username, password))
+print('auth reussie')
+
+response = File.open_binary(ctx, file_url)
+
+file_object = io.BytesIO(response.content)
+
+bytes_file_obj = io.BytesIO()
+bytes_file_obj.write(response.content)
+bytes_file_obj.seek(0)
+
+df = pd.read_excel(bytes_file_obj, sheet_name='Liste_depots')
+print(df)
+
+
+workbook = load_workbook(filename=file_object)
+print("workbook loadé")
+#df = pd.read_excel(workbook, sheet_name='BDD')
+
+
 """
 download_path = os.path.join(tempfile.mkdtemp(), os.path.basename(file_url))
 with open(download_path, "wb") as local_file:
     file = ctx.web.get_file_by_server_relative_url(file_url).download(local_file).execute_query()
 
 print("[Ok] file has been downloaded into: {0}".format(download_path))
-"""
+
 
 response = File.open_binary(ctx, file_url)
 
@@ -34,6 +53,9 @@ bytes_file_obj.seek(0)
 df = pd.read_excel(bytes_file_obj, sheet_name='Liste_depots')
 
 print(df)
+"""
+#print("Correct jusqu'ici")
+
 
 
 
