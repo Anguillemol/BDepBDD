@@ -1,0 +1,35 @@
+import os
+import tempfile
+#name = PythonConsole
+from office365.sharepoint.client_context import ClientContext
+
+from office365.runtime.auth.client_credential import ClientCredential
+from office365.sharepoint.files.file import File 
+
+# Informations d'identification SharePoint ancien
+username = '50bbb53b-67ef-488d-9303-d6afcfd77bc8'
+password = '7ATT8OvZyqU1jbWSFxsgiDMZXrqJ4KekP/JMkgFRQCc='
+url = 'https://sgzkl.sharepoint.com/sites/SiteTest'
+
+test_client_credentials = ClientCredential(username, password)
+test_team_site_url = url
+
+
+
+
+ctx = ClientContext(test_team_site_url).with_credentials(test_client_credentials)
+file_url = "/sites/SiteTest/Documents%20partages/Test/BDD.xlsx"
+download_path = os.path.join(tempfile.mkdtemp(), os.path.basename(file_url))
+with open(download_path, "wb") as local_file:
+    file = ctx.web.get_file_by_server_relative_url(file_url).download(local_file).execute_query()
+    #file = ctx.web.get_file_by_server_relative_url(file_url).download(local_file).execute_query()
+print("[Ok] file has been downloaded into: {0}".format(download_path))
+
+path = download_path
+with open(path, 'rb') as content_file:
+    file_content = content_file.read()
+
+targer_folder = ctx.web.get_folder_by_server_relative_path("/sites/SiteTest/Documents%20partages/Test")
+name = os.path.basename(path)
+target_file = targer_folder.upload_file(name, file_content).execute_query()
+print("File has been uploaded to url: {0}".format(target_file.serverRelativeUrl))

@@ -22,6 +22,11 @@ test_team_site_url = "https://sgzkl.sharepoint.com/sites/SiteTest"
 
 
 ctx = ClientContext(test_team_site_url).with_credentials(ClientCredential(username, password))
+web = ctx.web
+ctx.load(web).execute_query()
+
+
+
 
 print ("Contexte de connexion établi")
 
@@ -31,32 +36,34 @@ mdp_URL = "/sites/SiteTest/Documents%20partages/Test/MDP.xlsx"
 
 requete_URL = "/sites/SiteTest/Documents%20partages/Test/REQ.xlsx"
 
-response = File.open_binary(ctx, bdd_URL)
+relative_path = "/sites/SiteTest/Documents%20partages"
+
+responseBDD = File.open_binary(ctx, bdd_URL)
 
 print("Reponse trouvée")
 
 bytes_file_obj_bdd = io.BytesIO()
-bytes_file_obj_bdd.write(response.content)
+bytes_file_obj_bdd.write(responseBDD.content)
 bytes_file_obj_bdd.seek(0)
 
 print("BDD chargée")
 
-response = File.open_binary(ctx, mdp_URL)
+responseMDP = File.open_binary(ctx, mdp_URL)
 
 print("Reponse trouvée")
 
 bytes_file_obj_mdp = io.BytesIO()
-bytes_file_obj_mdp.write(response.content)
+bytes_file_obj_mdp.write(responseMDP.content)
 bytes_file_obj_mdp.seek(0)
 
 print ("MDP chargés")
 
-response = File.open_binary(ctx, requete_URL)
+responseREQ = File.open_binary(ctx, requete_URL)
 
 print("Reponse trouvée")
 
 bytes_file_obj_req = io.BytesIO()
-bytes_file_obj_req.write(response.content)
+bytes_file_obj_req.write(responseREQ.content)
 bytes_file_obj_req.seek(0)
 
 print ("Requêtes chargées")
@@ -534,7 +541,24 @@ class mainWindow(QWidget):
 
             self.d[key].index = self.sheet.index
             self.d[key][lst_clean] = self.sheet[lst_clean]
+
         
+        with pd.ExcelWriter(bdd, mode='a', if_sheet_exists='replace') as writer:
+            for key in self.d.keys():
+                self.d[key].to_excel(writer, sheet_name = key)
+
+        target_folder = ctx.web.get_folder_by_server_relative_path(relative_path)
+        
+        folder_properties = target_folder._properties
+        print(folder_properties)
+
+
+        file_content = bdd.read()
+        name = 'BDD2.xlsx'
+        target_file = target_folder.upload_file(name, file_content).execute_query()
+
+        #print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
+
         """
         for key in self.d.keys():
             print (self.d[key])

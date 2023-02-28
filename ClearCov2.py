@@ -30,8 +30,7 @@ df = pd.read_excel(bytes_file_obj, sheet_name='Liste_depots')
 print(df)
 
 
-workbook = load_workbook(filename=file_object)
-print("workbook loadé")
+#target_file = target_folder.upload_fil(file_content).execute_query()
 #df = pd.read_excel(workbook, sheet_name='BDD')
 
 
