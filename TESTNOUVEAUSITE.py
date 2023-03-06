@@ -39,3 +39,16 @@ with open(download_path, "wb") as local_file:
     file = ctx.web.get_file_by_server_relative_url(file_url).download(local_file).execute_query()
     #file = ctx.web.get_file_by_server_relative_url(file_url).download(local_file).execute_query()
 print("[Ok] file has been downloaded into: {0}".format(download_path))
+print(download_path)
+
+with open(download_path, 'rb') as content_file:
+    file_content = content_file.read()
+
+print(file_content)
+
+file_folder = ctx.web.get_folder_by_server_relative_url("/sites/BricoDepot/Shared%20Documents/Donnees")
+taget_file = file_folder.upload_file('BDD2.xlsx', file_content).execute_query()
+
+#print(file_folder.properties)
+
+
