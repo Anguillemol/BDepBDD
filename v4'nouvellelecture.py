@@ -93,9 +93,30 @@ print("[Ok] file has been downloaded into: {0}".format(download_path))
 
 wb_obj = wb.load_workbook(download_path)
 print("Workbook loadé sur openpyxl")
+
+print("Lecture de chaque onglet et création de la big sheet tu connais")
+xlsx_file = pd.ExcelFile(bdd)
+sheet_lst = xlsx_file.sheet_names
+
+sheet_Globale = pd.DataFrame()
+
+columns_clens = []
+column_set = set()
 #wb_obj.save('BDD3.xlsx')
+for i in range(len(sheet_lst)):
+    if sheet_lst[i] != 'Accueil' and sheet_lst[i] != 'BDD':
+        print (sheet_lst[i])
+        workSheet = pd.read_excel(bdd, sheet_name=sheet_lst[i])
+        colonnes = list(workSheet.columns)
+        if sheet_lst[i] == 'menace':
+            print (colonnes)
 
 
+        for j in range(len(colonnes)):
+            if colonnes[j] not in column_set:
+                column_set.add(colonnes[j])
+                sheet_Globale[colonnes[j]] = workSheet[colonnes[j]]
+        
 
 p = str(Path.cwd())
 p = p.replace('\\', "/")
@@ -347,7 +368,8 @@ class mainWindow(QWidget):
     ##### Function used to load the Excel data file #####
     def loadExcel(self):
         #self.sheet = pd.read_excel(p+'/BDD.xlsx', sheet_name='BDD')
-        self.sheet = pd.read_excel(bdd, sheet_name='BDD')
+        #self.sheet = pd.read_excel(bdd, sheet_name='BDD')
+        self.sheet = sheet_Globale
         self.sheet_columns = self.sheet.columns.to_list()
 
         if self.role != "Admin":
@@ -542,6 +564,8 @@ class mainWindow(QWidget):
 
     def saveData(self):
         print("Saving...")
+        print(self.sheet)
+
         my_set = set(self.sheet_columns)
 
         for key in self.d.keys():
@@ -555,14 +579,17 @@ class mainWindow(QWidget):
                 
             #Suppression des colonnes qui ne sont pas dans le dataframe global
 
-            #print(lst_clean)
+            print(lst_clean)
 
             
 
 
             self.d[key].index = self.sheet.index
             self.d[key][lst_clean] = self.sheet[lst_clean]
-
+            
+        ##ECRIRE DANS LE wb_obj##
+        print("wb_obj")
+        """
         with pd.ExcelWriter(download_path, mode='a', if_sheet_exists='replace', engine='openpyxl') as writer:
             for key in self.d.keys():
                 self.d[key].to_excel(writer, sheet_name = key, index = False)
@@ -570,6 +597,7 @@ class mainWindow(QWidget):
         wb_obj.save('BDD2.xlsx')
         print("SAVE")
         ########## Upload du fichier sur Sharepoint ##########
+
         """
         with open(download_path, 'rb') as content_file:
             file_content = content_file.read()
@@ -579,7 +607,7 @@ class mainWindow(QWidget):
         target_file = file_folder.upload_file('BDD2.xlsx', file_content).execute_query()
 
         print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
-        """
+        
 
 
 
