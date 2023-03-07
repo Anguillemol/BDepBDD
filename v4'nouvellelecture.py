@@ -565,43 +565,37 @@ class mainWindow(QWidget):
     def saveData(self):
         print("Saving...")
         print(self.sheet)
-
+        
         my_set = set(self.sheet_columns)
 
         for key in self.d.keys():
             #d[key] = dataframe
             #key = nom colonne
+            
+            #Securité: vérification que l'on ne va pas copier des colonnes qui n'existent pas, censé etre inutile vu la structure de la pipeline
             lst_columns = self.d[key].columns.to_list()
             lst_clean = []
             for i in range(len(lst_columns)):
                 if lst_columns[i] in my_set:
                     lst_clean.append(lst_columns[i])
-                
-            #Suppression des colonnes qui ne sont pas dans le dataframe global
-
+                        
             print(lst_clean)
 
-            
-
-
-            self.d[key].index = self.sheet.index
+            self.d[key] = self.d[key].drop(columns=self.d[key].columns)
+            self.d[key].reset_index(drop=True)
             self.d[key][lst_clean] = self.sheet[lst_clean]
-            
-        ##ECRIRE DANS LE wb_obj##
-        print("wb_obj")
-        for key in self.d.keys():
+            if key == 'Liste_depots':
+                print (self.d[key])
+                print (self.sheet[lst_clean])
+
+            #Ecriture dans le workbook, ATTENTION IL FAUT QUE CA SOIT LE BON ORDRE DE COLONNES ZEBI ATNEIONT LA CREATION INDEX MAL MERDE 
             self.worksheet = wb_obj[key]
             self.worksheet.delete_rows(2, self.worksheet.max_row)
 
             self.donnees = self.d[key].values.tolist()
             for ligne in self.donnees:
                 self.worksheet.append(ligne)
-
-            print (key)
-            print ("\n\n")
-            print (list(self.worksheet.values))
-            print ("\n")
-
+            
 
         #with pd.ExcelWriter(download_path, mode='a', if_sheet_exists='replace', engine='openpyxl') as writer:
         #    for key in self.d.keys():
@@ -611,7 +605,7 @@ class mainWindow(QWidget):
         wb_obj.save('BDD2.xlsx')
         print("SAVE")
         ########## Upload du fichier sur Sharepoint ##########
-
+        
         """
         with open(download_path, 'rb') as content_file:
             file_content = content_file.read()
@@ -1156,7 +1150,9 @@ class creaWindow(QWidget):
 
         #Concaténation avec la sheet originale
         newDF = pd.concat([self.sheet,newRow], axis=0)
+        newDF = newDF.reset_index(drop=True)
         print (newDF)
+        
 
         main.sheet = newDF
         main.chargerModif()
