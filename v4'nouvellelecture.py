@@ -589,10 +589,24 @@ class mainWindow(QWidget):
             
         ##ECRIRE DANS LE wb_obj##
         print("wb_obj")
-        """
-        with pd.ExcelWriter(download_path, mode='a', if_sheet_exists='replace', engine='openpyxl') as writer:
-            for key in self.d.keys():
-                self.d[key].to_excel(writer, sheet_name = key, index = False)
+        for key in self.d.keys():
+            self.worksheet = wb_obj[key]
+            self.worksheet.delete_rows(2, self.worksheet.max_row)
+
+            self.donnees = self.d[key].values.tolist()
+            for ligne in self.donnees:
+                self.worksheet.append(ligne)
+
+            print (key)
+            print ("\n\n")
+            print (list(self.worksheet.values))
+            print ("\n")
+
+
+        #with pd.ExcelWriter(download_path, mode='a', if_sheet_exists='replace', engine='openpyxl') as writer:
+        #    for key in self.d.keys():
+        #        #Prendre
+        #        self.d[key].to_excel(writer, sheet_name = key, index = False)
 
         wb_obj.save('BDD2.xlsx')
         print("SAVE")
@@ -607,7 +621,7 @@ class mainWindow(QWidget):
         target_file = file_folder.upload_file('BDD2.xlsx', file_content).execute_query()
 
         print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
-        
+        """
 
 
 
