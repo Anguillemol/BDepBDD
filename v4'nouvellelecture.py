@@ -11,9 +11,11 @@ import os
 import openpyxl as wb
 import openpyxl.utils as utils
 
+
 from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.client_credential import ClientCredential
 from office365.sharepoint.files.file import File 
+from datetime import datetime
 
 import pandas as pd
 import numpy as np
@@ -84,7 +86,7 @@ bdd = bytes_file_obj_bdd
 mdp = bytes_file_obj_mdp
 req = bytes_file_obj_req
 
-#Storage du fichier excel temporaire
+#Storage du fichier excel temporaire, changer pour le storer uniquement si c'est un utilisateur admin
 download_path = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
 with open(download_path, "wb") as local_file:
     file = ctx.web.get_file_by_server_relative_url(bdd_URL).download(local_file).execute_query()
@@ -116,7 +118,8 @@ for i in range(len(sheet_lst)):
             if colonnes[j] not in column_set:
                 column_set.add(colonnes[j])
                 sheet_Globale[colonnes[j]] = workSheet[colonnes[j]]
-        
+
+sheet_Globale.to_excel('testchg2.xlsx')
 
 p = str(Path.cwd())
 p = p.replace('\\', "/")
@@ -569,43 +572,22 @@ class mainWindow(QWidget):
         my_set = set(self.sheet_columns)
 
         for key in self.d.keys():
-            #d[key] = dataframe
-            #key = nom colonne
-            
-            #Securité: vérification que l'on ne va pas copier des colonnes qui n'existent pas, censé etre inutile vu la structure de la pipeline
             lst_columns = self.d[key].columns.to_list()
             lst_clean = []
             for i in range(len(lst_columns)):
                 if lst_columns[i] in my_set:
                     lst_clean.append(lst_columns[i])
-                        
-            print(lst_clean)
 
-            self.d[key] = self.d[key].drop(columns=self.d[key].columns)
-            self.d[key].reset_index(drop=True)
-            self.d[key][lst_clean] = self.sheet[lst_clean]
-            if key == 'Liste_depots':
-                print (self.d[key])
-                print (self.sheet[lst_clean])
-
-            #Ecriture dans le workbook, ATTENTION IL FAUT QUE CA SOIT LE BON ORDRE DE COLONNES ZEBI ATNEIONT LA CREATION INDEX MAL MERDE 
             self.worksheet = wb_obj[key]
             self.worksheet.delete_rows(2, self.worksheet.max_row)
 
-            self.donnees = self.d[key].values.tolist()
+            self.donnees = self.sheet[lst_clean].values.tolist()
             for ligne in self.donnees:
                 self.worksheet.append(ligne)
-            
-
-        #with pd.ExcelWriter(download_path, mode='a', if_sheet_exists='replace', engine='openpyxl') as writer:
-        #    for key in self.d.keys():
-        #        #Prendre
-        #        self.d[key].to_excel(writer, sheet_name = key, index = False)
 
         wb_obj.save('BDD2.xlsx')
-        print("SAVE")
-        ########## Upload du fichier sur Sharepoint ##########
         
+        ########## Upload du fichier sur Sharepoint ##########
         """
         with open(download_path, 'rb') as content_file:
             file_content = content_file.read()
@@ -3008,9 +2990,22 @@ class demandeChangement(QWidget):
         self.setLayout(self.layout)
 
     def transmettre(self):
-        ##Envoyer le set de données quelque part avec le user qui demande et la date
+        ##Envoyer le set de données quelque part avec le user qui demande et la date, probleme ca affiche pas 30 colonnes ?
+        #self.sheet.to_excel('TestChangement.xlsx')
+        self.dataframereq = pd.read_excel(req, sheet_name='Requete')
+        #Ajout des données dans ce dataframe
+        self.sheet['Utilisateur'] = main.denom
+        self.sheet['Date demande'] = datetime.now().strftime('%Y-%m-%d')
+        print(self.sheet)
+        self.newDF = pd.DataFrame
+        self.newDF = pd.concat([self.dataframereq,self.sheet], axis=0)
+        self.newDF = self.newDF.reset_index(drop=True)
+        #print (self.newDF)
+        self.newDF.to_excel('Putain.xlsx')
         
-        self.close()
+        
+        #Affichage message box, changement confirmé et transmis
+        #self.close()
 
 class pandasModel(QAbstractTableModel):
     def __init__(self, data):
