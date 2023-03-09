@@ -20,65 +20,42 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 
-#Créer un autre fichier excel pour l'affichage avec requete
-#Faire le refresh de ce fichier en arriere plan
-#download le fichier en temp et upload
-
-#https://stackoverflow.com/questions/40893870/refresh-excel-external-data-with-python
-
-#username = '50bbb53b-67ef-488d-9303-d6afcfd77bc8'
-#password = '7ATT8OvZyqU1jbWSFxsgiDMZXrqJ4KekP/JMkgFRQCc='
 username = "acae250d-01e9-4f32-9d65-e06fa388ff60"
 password = "8FG7d+Es/DYXCJWN8spbNV6qyU5TQqUsoKmg5HLsHw4="
 
-#test_team_site_url = "https://sgzkl.sharepoint.com/sites/SiteTest"
 test_team_site_url = "https://sgzkl.sharepoint.com/sites/BricoDepot"
-
 
 ctx = ClientContext(test_team_site_url).with_credentials(ClientCredential(username, password))
 web = ctx.web
 ctx.load(web).execute_query()
 
-
-
 print ("Contexte de connexion établi")
 
-#bdd_URL = "/sites/SiteTest/Documents%20partages/Test/BDD.xlsx"
 bdd_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/BDD.xlsx"
-#mdp_URL = "/sites/SiteTest/Documents%20partages/Test/MDP.xlsx"
 mdp_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/MDP.xlsx"
-#requete_URL = "/sites/SiteTest/Documents%20partages/Test/REQ.xlsx"
 requete_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/REQ.xlsx"
-#relative_path = "/sites/SiteTest/Documents%20partages"
+
 
 responseBDD = File.open_binary(ctx, bdd_URL)
-
 print("Reponse trouvée")
-
 bytes_file_obj_bdd = io.BytesIO()
 bytes_file_obj_bdd.write(responseBDD.content)
 bytes_file_obj_bdd.seek(0)
-
 print("BDD chargée")
 
 responseMDP = File.open_binary(ctx, mdp_URL)
-
 print("Reponse trouvée")
-
 bytes_file_obj_mdp = io.BytesIO()
 bytes_file_obj_mdp.write(responseMDP.content)
 bytes_file_obj_mdp.seek(0)
-
 print ("MDP chargés")
 
 responseREQ = File.open_binary(ctx, requete_URL)
 
 print("Reponse trouvée")
-
 bytes_file_obj_req = io.BytesIO()
 bytes_file_obj_req.write(responseREQ.content)
 bytes_file_obj_req.seek(0)
-
 print ("Requêtes chargées")
 
 #Read
@@ -370,8 +347,6 @@ class mainWindow(QWidget):
         
     ##### Function used to load the Excel data file #####
     def loadExcel(self):
-        #self.sheet = pd.read_excel(p+'/BDD.xlsx', sheet_name='BDD')
-        #self.sheet = pd.read_excel(bdd, sheet_name='BDD')
         self.sheet = sheet_Globale
         self.sheet_columns = self.sheet.columns.to_list()
 
@@ -2993,23 +2968,47 @@ class demandeChangement(QWidget):
         ##Envoyer le set de données quelque part avec le user qui demande et la date, probleme ca affiche pas 30 colonnes ?
         #self.sheet.to_excel('TestChangement.xlsx')
         self.dataframereq = pd.read_excel(req, sheet_name='Requete')
+        print(self.dataframereq)
         #Ajout des données dans ce dataframe
+        
         self.sheet['Utilisateur'] = main.denom
         self.sheet['Date demande'] = datetime.now().strftime('%Y-%m-%d')
-        print(self.sheet)
+
         self.newDF = pd.DataFrame
         self.newDF = pd.concat([self.dataframereq,self.sheet], axis=0)
         self.newDF = self.newDF.reset_index(drop=True)
-        #print (self.newDF)
-        self.newDF.to_excel('Putain.xlsx')
+        print(self.newDF)
         
+
+        
+        #Upload sur sharepoint
+        download_path_req = os.path.join(os.path.dirname(download_path), os.path.basename(requete_URL))
+        print(download_path_req)
+        with open(download_path_req, "wb") as local_file:
+            file = ctx.web.get_file_by_server_relative_url(requete_URL).download(local_file).execute_query()
+        print("[Ok] file has been downloaded into: {0}".format(download_path_req))
+
+        with pd.ExcelWriter(download_path_req, mode='a', if_sheet_exists='replace') as writer:
+            self.newDF.to_excel(writer, sheet_name='Requete', index=False)
+
+
+        with open(download_path_req, 'rb') as content_file:
+            file_content = content_file.read()
+        
+
+        file_folder = ctx.web.get_folder_by_server_relative_url("/sites/BricoDepot/Shared%20Documents/Donnees")
+        target_file = file_folder.upload_file('REQ.xlsx', file_content).execute_query()
+
+        print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
         
         #Affichage message box, changement confirmé et transmis
-        #self.close()
+        QMessageBox.information(self, 'Succès', 'Requête transmise')
+
+        self.close()
 
 class pandasModel(QAbstractTableModel):
     def __init__(self, data):
-        QAbstractTableModel.__init__(self)
+        QAbstractTableModel.__init__(self) 
         self._data = data
 
     def rowCount(self, parent=None):
