@@ -16,11 +16,7 @@ from office365.runtime.auth.client_credential import ClientCredential
 from office365.sharepoint.files.file import File 
 from datetime import datetime
 from  cryptography.fernet import Fernet
-"""
-##TODO: Stocker dans un fichier 
-username = "acae250d-01e9-4f32-9d65-e06fa388ff60"
-password = "8FG7d+Es/DYXCJWN8spbNV6qyU5TQqUsoKmg5HLsHw4="
-"""
+
 with open('key.key', 'rb') as key_file:
     key = key_file.read()
 
@@ -319,7 +315,7 @@ class mainWindow(QWidget):
         print("Denomination: " + self.denom)
         self.setFixedSize(1280,720)
         self.center()
-        ##### Loading
+        ##### Loading #####
         excel = pd.ExcelFile(bdd)
         lst_sheet = excel.sheet_names
         self.d = {}
@@ -410,6 +406,8 @@ class mainWindow(QWidget):
             self.modifier.clicked.connect(self.modifDepot)
             self.supprimer = QPushButton("Supprimer un dépôt")
             self.supprimer.clicked.connect(self.supprimerDepot)
+            self.traitementRequetes = QPushButton("Requêtes de changement")
+            self.traitementRequetes.clicked.connect(self.traitementRequetesChangement)
 
             self.bandeau = QWidget()
             self.bandeauBoutons = QHBoxLayout()
@@ -428,6 +426,7 @@ class mainWindow(QWidget):
             self.layoutAdminGUI.addWidget(self.middle)
             self.layoutAdminGUI.addWidget(self.bandeau)
             self.layoutAdminGUI.addWidget(self.boutonValidation)
+            self.layoutAdminGUI.addWidget(self.traitementRequetes)
             self.adminGUI.setLayout(self.layoutAdminGUI)
 
             ##### Adding the interface to the StackedWidget #####
@@ -520,6 +519,12 @@ class mainWindow(QWidget):
         print("Formulaire demande changement")
         demandeChangement.sheet = self.sheet_tri
         self.w = demandeChangement()
+        self.w.show()
+
+    def traitementRequetesChangement(self):
+        print("Traitement des requetes de changement")
+        self.w = traitementDemandeChangement()
+        self.w.traitementDemarrage()
         self.w.show()
 
     def chargerModif(self):
@@ -2994,26 +2999,28 @@ class traitementDemandeChangement(QWidget):
 
         self.Titre = QLabel("Requêtes de changement de données")
 
-        self.texte = QLabel("Modifier les données dans le tableau ci-dessous")
-        self.table = QTableView()
-        self.model = pandasEditableModel(self.sheet)
-        self.table.setModel(self.model)
-        self.table.resizeColumnsToContents()
-
-        self.valider = QPushButton("Valider la demande de changement de données")
-        self.valider.clicked.connect(self.transmettre)
+        self.texte = QLabel("Sélectionner la requête de changement")
+        
         
         self.layout.addWidget(self.Titre, 0, 1)
         self.layout.addWidget(self.texte, 1, 1)
-        self.layout.addWidget(self.table, 2, 0, 1, 3)
-        self.layout.addWidget(self.valider, 3, 1)
+
 
         self.setLayout(self.layout)
 
     def traitementDemarrage(self):
         #Ouverture du fichier requete, suppressoin des trucs inutiles
         #liste des requetes
-        print("prout")
+        dfRequete = pd.read_excel(req, sheet_name='Requete')
+
+
+        self.download_path = os.path.join(tempfile.mkdtemp(), os.path.basename(requete_URL))
+        with open(self.download_path, "wb") as local_file:
+            file = ctx.web.get_file_by_server_relative_url(requete_URL).download(local_file).execute_query()
+        print("[Ok] file has been downloaded into: {0}".format(self.download_path))
+
+
+
         
 
 class pandasModel(QAbstractTableModel):
