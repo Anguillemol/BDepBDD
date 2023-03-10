@@ -67,18 +67,7 @@ print ("Requêtes chargées")
 bdd = bytes_file_obj_bdd
 mdp = bytes_file_obj_mdp
 req = bytes_file_obj_req
-"""
-##TODO: DEPLACER CE DL DANS LE SETUP ADMIN
-#Storage du fichier excel temporaire, changer pour le storer uniquement si c'est un utilisateur admin
-download_path = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
-with open(download_path, "wb") as local_file:
-    file = ctx.web.get_file_by_server_relative_url(bdd_URL).download(local_file).execute_query()
-    #file = ctx.web.get_file_by_server_relative_url(file_url).download(local_file).execute_query()
-print("[Ok] file has been downloaded into: {0}".format(download_path))
 
-wb_obj = wb.load_workbook(download_path)
-print("Workbook loadé sur openpyxl")
-"""
 print("Lecture stream BDD")
 xlsx_file = pd.ExcelFile(bdd)
 sheet_lst = xlsx_file.sheet_names
@@ -2993,6 +2982,38 @@ class demandeChangement(QWidget):
         QMessageBox.information(self, 'Succès', 'Requête transmise')
 
         self.close()
+
+class traitementDemandeChangement(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setFixedSize(720,440)
+
+        self.setWindowTitle("Traitement des requêtes de changement de données")
+
+        self.layout = QGridLayout()
+
+        self.Titre = QLabel("Requêtes de changement de données")
+
+        self.texte = QLabel("Modifier les données dans le tableau ci-dessous")
+        self.table = QTableView()
+        self.model = pandasEditableModel(self.sheet)
+        self.table.setModel(self.model)
+        self.table.resizeColumnsToContents()
+
+        self.valider = QPushButton("Valider la demande de changement de données")
+        self.valider.clicked.connect(self.transmettre)
+        
+        self.layout.addWidget(self.Titre, 0, 1)
+        self.layout.addWidget(self.texte, 1, 1)
+        self.layout.addWidget(self.table, 2, 0, 1, 3)
+        self.layout.addWidget(self.valider, 3, 1)
+
+        self.setLayout(self.layout)
+
+    def traitementDemarrage(self):
+        #Ouverture du fichier requete, suppressoin des trucs inutiles
+        #liste des requetes
+        
 
 class pandasModel(QAbstractTableModel):
     def __init__(self, data):
