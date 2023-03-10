@@ -1,40 +1,45 @@
 import sys
+import io
+import tempfile
+import os
+import shutil
+import openpyxl as wb
+import pandas as pd
+import numpy as np
+
 from pathlib import Path
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
-from PyQt6.uic import loadUi
-
-import io
-import tempfile
-import os
-import openpyxl as wb
-import openpyxl.utils as utils
-
-
 from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.client_credential import ClientCredential
 from office365.sharepoint.files.file import File 
 from datetime import datetime
-
-import pandas as pd
-import numpy as np
-
+from  cryptography.fernet import Fernet
+"""
+##TODO: Stocker dans un fichier 
 username = "acae250d-01e9-4f32-9d65-e06fa388ff60"
 password = "8FG7d+Es/DYXCJWN8spbNV6qyU5TQqUsoKmg5HLsHw4="
+"""
+with open('key.key', 'rb') as key_file:
+    key = key_file.read()
+
+with open('config.cfg', 'rb') as config_file:
+    encrypted_user = config_file.readline()
+    encrypted_password = config_file.readline()
+fernet = Fernet(key)
+username = fernet.decrypt(encrypted_user).decode()
+password = fernet.decrypt(encrypted_password).decode()
 
 test_team_site_url = "https://sgzkl.sharepoint.com/sites/BricoDepot"
-
-ctx = ClientContext(test_team_site_url).with_credentials(ClientCredential(username, password))
-web = ctx.web
-ctx.load(web).execute_query()
-
-print ("Contexte de connexion établi")
-
 bdd_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/BDD.xlsx"
 mdp_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/MDP.xlsx"
 requete_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/REQ.xlsx"
 
+ctx = ClientContext(test_team_site_url).with_credentials(ClientCredential(username, password))
+web = ctx.web
+ctx.load(web).execute_query()
+print ("Connexion à Sharepoint réussie")
 
 responseBDD = File.open_binary(ctx, bdd_URL)
 print("Reponse trouvée")
@@ -62,7 +67,8 @@ print ("Requêtes chargées")
 bdd = bytes_file_obj_bdd
 mdp = bytes_file_obj_mdp
 req = bytes_file_obj_req
-
+"""
+##TODO: DEPLACER CE DL DANS LE SETUP ADMIN
 #Storage du fichier excel temporaire, changer pour le storer uniquement si c'est un utilisateur admin
 download_path = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
 with open(download_path, "wb") as local_file:
@@ -72,36 +78,29 @@ print("[Ok] file has been downloaded into: {0}".format(download_path))
 
 wb_obj = wb.load_workbook(download_path)
 print("Workbook loadé sur openpyxl")
-
-print("Lecture de chaque onglet et création de la big sheet tu connais")
+"""
+print("Lecture stream BDD")
 xlsx_file = pd.ExcelFile(bdd)
 sheet_lst = xlsx_file.sheet_names
 
 sheet_Globale = pd.DataFrame()
 
-columns_clens = []
 column_set = set()
-#wb_obj.save('BDD3.xlsx')
 for i in range(len(sheet_lst)):
     if sheet_lst[i] != 'Accueil' and sheet_lst[i] != 'BDD':
         print (sheet_lst[i])
         workSheet = pd.read_excel(bdd, sheet_name=sheet_lst[i])
         colonnes = list(workSheet.columns)
-        if sheet_lst[i] == 'menace':
-            print (colonnes)
-
 
         for j in range(len(colonnes)):
             if colonnes[j] not in column_set:
                 column_set.add(colonnes[j])
                 sheet_Globale[colonnes[j]] = workSheet[colonnes[j]]
 
-sheet_Globale.to_excel('testchg2.xlsx')
-
 p = str(Path.cwd())
 p = p.replace('\\', "/")
 
-##DONE
+##TODO: UI DESIGN + enter connect
 class logWindow(QWidget):
 
     
@@ -270,7 +269,7 @@ class logWindow(QWidget):
         self.inputPassword.setText("")
         self.inputPassword2.setText("")
 
-##TODO: Rajouter un bouton de validation et la fonction qui enregistre le Dataframe sur Sharepoint en répartissant dans tous les onglets (rajouter nom de l'onglet dans chaque classe)
+##TODO: UI DESIGN + data request treatment + filter
 class mainWindow(QWidget):
 
 
@@ -544,6 +543,15 @@ class mainWindow(QWidget):
         print("Saving...")
         print(self.sheet)
         
+        #Storage du fichier excel temporaire, changer pour le storer uniquement si c'est un utilisateur admin
+        self.download_path = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
+        with open(self.download_path, "wb") as local_file:
+            file = ctx.web.get_file_by_server_relative_url(bdd_URL).download(local_file).execute_query()
+        print("[Ok] file has been downloaded into: {0}".format(self.download_path))
+
+        self.wb_obj = wb.load_workbook(self.download_path)
+        print("Workbook loadé sur openpyxl")
+
         my_set = set(self.sheet_columns)
 
         for key in self.d.keys():
@@ -553,18 +561,18 @@ class mainWindow(QWidget):
                 if lst_columns[i] in my_set:
                     lst_clean.append(lst_columns[i])
 
-            self.worksheet = wb_obj[key]
+            self.worksheet = self.wb_obj[key]
             self.worksheet.delete_rows(2, self.worksheet.max_row)
 
             self.donnees = self.sheet[lst_clean].values.tolist()
             for ligne in self.donnees:
                 self.worksheet.append(ligne)
 
-        wb_obj.save('BDD2.xlsx')
+        self.wb_obj.save('BDD2.xlsx')
         
         ########## Upload du fichier sur Sharepoint ##########
         """
-        with open(download_path, 'rb') as content_file:
+        with open(self.download_path, 'rb') as content_file:
             file_content = content_file.read()
         
 
@@ -573,7 +581,7 @@ class mainWindow(QWidget):
 
         print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
         """
-
+        shutil.rmtree(os.path.dirname(self.download_path))
 
 
     def closeEvent(self, event):
@@ -581,7 +589,7 @@ class mainWindow(QWidget):
         if self.w:
             self.w.close()
 
-##TODO: Améliorer performance
+##TODO: Performance enhancement
 class creaWindow(QWidget):
     sheet = pd.DataFrame
     def __init__(self):
@@ -1130,7 +1138,6 @@ class creaWindow(QWidget):
         # Fermer cette fenêtre
         self.close()
 
-##DONE 1
 class listeDepot(QWidget):
     excel_sheet = "Liste_depots"
     def __init__(self):
@@ -1174,7 +1181,6 @@ class listeDepot(QWidget):
         
         self.setLayout(self.layout)
 
-##DONE 2
 class donneesSociales(QWidget):
     excel_sheet = "donnees_sociales"
     def __init__(self):
@@ -1218,7 +1224,6 @@ class donneesSociales(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE 3
 class secteurSecurite(QWidget):
     excel_sheet = "secteur_securite"
     def __init__(self):
@@ -1263,7 +1268,6 @@ class secteurSecurite(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE 4
 class secteurLogistique(QWidget):
     excel_sheet = "secteur_logistique"
     def __init__(self):
@@ -1308,7 +1312,6 @@ class secteurLogistique(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE 5
 class secteurAmenagement(QWidget):
     excel_sheet = "secteur_amenagement"
     def __init__(self):
@@ -1348,7 +1351,6 @@ class secteurAmenagement(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE 6
 class secteurConstruction(QWidget):
     excel_sheet = "secteur_construction"
     def __init__(self):
@@ -1388,7 +1390,6 @@ class secteurConstruction(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE 7
 class secteurTechnique(QWidget):
     excel_sheet = "secteur_technique"
     def __init__(self):
@@ -1428,7 +1429,6 @@ class secteurTechnique(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE 8
 class secteurAdministratif(QWidget):
     excel_sheet = "secteur_administratif"
     def __init__(self):
@@ -1468,7 +1468,6 @@ class secteurAdministratif(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE 9
 class secteurCaisse(QWidget):
     excel_sheet = "secteur_caisse"
     def __init__(self):
@@ -1508,7 +1507,6 @@ class secteurCaisse(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE 10
 class RH(QWidget):
     excel_sheet = "RH"
     def __init__(self):
@@ -1543,7 +1541,6 @@ class RH(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE: ATTENTION PRESENCE DE ' , de () et de +SIRET (remplacé par SIRET) 11
 class donneesDepot(QWidget):
     excel_sheet = "donnees_depots"
     def __init__(self):
@@ -1784,7 +1781,6 @@ class donneesDepot(QWidget):
 
         self.scroll_area.setWidget(self.widget)
 
-##DONE: ATTENTION PRESENCE DE SVI ET DE / 12
 class surface(QWidget):
     excel_sheet = "surface"
     def __init__(self):
@@ -1958,7 +1954,6 @@ class surface(QWidget):
         self.widget.setLayout(self.layout)
         self.scroll_area.setWidget(self.widget)
 
-##DONE 13
 class agencement(QWidget):
     excel_sheet = "agencement"
     def __init__(self):
@@ -1988,7 +1983,6 @@ class agencement(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE 14
 class caisse(QWidget):
     excel_sheet = "caisses"
     def __init__(self):
@@ -2063,7 +2057,6 @@ class caisse(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE 15
 class PDA(QWidget):
     excel_sheet = "PDA"
     def __init__(self):
@@ -2103,7 +2096,6 @@ class PDA(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE 16
 class menace(QWidget):
     excel_sheet = "menace"
     def __init__(self):
@@ -2163,7 +2155,6 @@ class menace(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE 17
 class securite(QWidget):
     excel_sheet = "securite"
     def __init__(self):
@@ -2358,7 +2349,6 @@ class securite(QWidget):
         self.widget.setLayout(self.layout)
         self.scroll_area.setWidget(self.widget)
 
-##DONE 18
 class conceptCommercial(QWidget):
     excel_sheet = "concept_commercial"
     def __init__(self):
@@ -2555,7 +2545,6 @@ class conceptCommercial(QWidget):
         self.widget.setLayout(self.layout)
         self.scroll_area.setWidget(self.widget)
     
-##DONE : Attention labelContexteComptage-TCUENTO 19
 class divers(QWidget):
     excel_sheet = "divers"
     def __init__(self):
@@ -2595,7 +2584,6 @@ class divers(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE : ° remplacé par deg 20
 class numCommercant(QWidget):
     excel_sheet = "N_commercant"
     def __init__(self):
@@ -2650,7 +2638,6 @@ class numCommercant(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE 21
 class colissimo(QWidget):
     excel_sheet = "colissimo"
     def __init__(self):
@@ -2675,7 +2662,6 @@ class colissimo(QWidget):
 
         self.setLayout(self.layout)
 
-##DONE 22
 class accidentTravail(QWidget):
     excel_sheet = "accidents_travail"
     def __init__(self):
@@ -2725,7 +2711,7 @@ class accidentTravail(QWidget):
 
         self.setLayout(self.layout)
 
-##TODO: Améliorer performance
+##TODO: Performance enhancement
 class modifWindow(QWidget):
     sheet = pd.DataFrame
 
@@ -2831,7 +2817,7 @@ class modifWindow(QWidget):
 
         self.close()
     
-##TODO: Améliorer performance
+##TODO: Performance enhancement
 class suppWindow(QWidget):
     sheet = pd.DataFrame
     
@@ -2935,7 +2921,7 @@ class suppWindow(QWidget):
 
         ##TODO: Faire une fenetre de confirmation
 
-##TODO: Transmission du sheet_tri 
+##TODO: UI Design
 class demandeChangement(QWidget):
     sheet = pd.DataFrame
     def __init__(self):
@@ -2982,8 +2968,7 @@ class demandeChangement(QWidget):
 
         
         #Upload sur sharepoint
-        download_path_req = os.path.join(os.path.dirname(download_path), os.path.basename(requete_URL))
-        print(download_path_req)
+        download_path_req = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
         with open(download_path_req, "wb") as local_file:
             file = ctx.web.get_file_by_server_relative_url(requete_URL).download(local_file).execute_query()
         print("[Ok] file has been downloaded into: {0}".format(download_path_req))
@@ -3000,6 +2985,9 @@ class demandeChangement(QWidget):
         target_file = file_folder.upload_file('REQ.xlsx', file_content).execute_query()
 
         print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
+
+        #Suppression du dossier temp
+        shutil.rmtree(os.path.dirname(download_path_req))
         
         #Affichage message box, changement confirmé et transmis
         QMessageBox.information(self, 'Succès', 'Requête transmise')
