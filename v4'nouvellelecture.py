@@ -59,12 +59,12 @@ bytes_file_obj_req.write(responseREQ.content)
 bytes_file_obj_req.seek(0)
 print ("Requêtes chargées")
 
-#Read
+##### Storing the data streams #####
 bdd = bytes_file_obj_bdd
 mdp = bytes_file_obj_mdp
 req = bytes_file_obj_req
 
-print("Lecture stream BDD")
+print("Lecture stream BDD pour création du set de données")
 xlsx_file = pd.ExcelFile(bdd)
 sheet_lst = xlsx_file.sheet_names
 
@@ -322,6 +322,12 @@ class mainWindow(QWidget):
         for i in range(len(lst_sheet)):
             if lst_sheet[i] != "Accueil" and lst_sheet[i] != "BDD":
                 self.d[lst_sheet[i]] = pd.read_excel(bdd, sheet_name=lst_sheet[i])
+
+        ##### Gathering the number of request for the admin interface #####
+        ##TODO: Récupérer le nombre de requete, VERIFIER SI C'EST BON
+        #self.df = pd.read_excel(req, sheet_name='Requete')
+        #self.lstReq = self.df[1].values.tolist()
+        #self.nbrReq = len(self.lstReq)
 
         ##### Generation of the dataFrame #####
         self.loadExcel()
@@ -2834,7 +2840,7 @@ class suppWindow(QWidget):
         self.listeCodeBRICO = self.sheet["Code BRICO"].values.tolist()
 
         for i in range (len(self.listedesdepots)):
-            self.listedesdepots[i] = str(self.listeCodeBRICO[i]) + "-" + self.listedesdepots[i]
+            self.listedesdepots[i] = str(self.listeCodeBRICO[i]) + "-" + str(self.listedesdepots[i])
 
         self.listedepots.addItem('')
         self.listedepots.addItems(self.listedesdepots)
@@ -2945,12 +2951,10 @@ class demandeChangement(QWidget):
         self.setLayout(self.layout)
 
     def transmettre(self):
-        ##Envoyer le set de données quelque part avec le user qui demande et la date, probleme ca affiche pas 30 colonnes ?
-        #self.sheet.to_excel('TestChangement.xlsx')
+
         self.dataframereq = pd.read_excel(req, sheet_name='Requete')
         print(self.dataframereq)
-        #Ajout des données dans ce dataframe
-        
+
         self.sheet['Utilisateur'] = main.denom
         self.sheet['Date demande'] = datetime.now().strftime('%Y-%m-%d')
 
@@ -2959,8 +2963,8 @@ class demandeChangement(QWidget):
         self.newDF = self.newDF.reset_index(drop=True)
         print(self.newDF)
         
+        ##TODO: Faire un comparatif avec la dataframe triée de base. Pour chaque ligne checker si il ya eu un changement. Si 1 changement detecté inserer direct. 
 
-        
         #Upload sur sharepoint
         download_path_req = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
         with open(download_path_req, "wb") as local_file:
@@ -2991,35 +2995,66 @@ class demandeChangement(QWidget):
 class traitementDemandeChangement(QWidget):
     def __init__(self):
         super().__init__()
-        self.setFixedSize(720,440)
 
-        self.setWindowTitle("Traitement des requêtes de changement de données")
+        ##### Gathering the requests #####
+        self.dfRequete = pd.read_excel(req, sheet_name='Requete')
 
-        self.layout = QGridLayout()
+        self.listedesdepotsReq = self.dfRequete["Dépôt"].values.tolist()
+        self.listeCodeBRICOReq = self.dfRequete["Code BRICO"].values.tolist()
 
-        self.Titre = QLabel("Requêtes de changement de données")
+        for i in range (len(self.listedesdepotsReq)):
+            self.listedesdepotsReq[i] = str(self.listeCodeBRICOReq[i]) + "-" + str(self.listedesdepotsReq[i])
 
-        self.texte = QLabel("Sélectionner la requête de changement")
+
+        self.setFixedSize(200,80)
+
+        self.stack = QStackedWidget()
         
-        
-        self.layout.addWidget(self.Titre, 0, 1)
-        self.layout.addWidget(self.texte, 1, 1)
+        ##### WIDGET 1 #####
+        self.widget1 = QWidget()
+        self.layout1 = QVBoxLayout()
+
+        self.titre1 = QLabel("Liste des requêtes à traiter")
+        self.comboBox1 = QComboBox()
+        self.comboBox1.addItem('')
+        self.comboBox1.addItems(self.listedesdepotsReq)
+        self.comboBox1.currentIndexChanged.connect(self.selectionDepot)
+
+        self.layout1.addWidget(self.titre1)
+        self.layout1.addWidget(self.comboBox1)
+
+        self.widget1.setLayout(self.layout1)
+
+        ##### WIDGET 2 #####
+        self.widget2 = QWidget()
+        self.layout2 = QVBoxLayout()
 
 
+
+        self.stack.addWidget(self.widget1)
+        self.stack.addWidget(self.widget2)
+
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.stack)
         self.setLayout(self.layout)
 
     def traitementDemarrage(self):
-        #Ouverture du fichier requete, suppressoin des trucs inutiles
-        #liste des requetes
-        dfRequete = pd.read_excel(req, sheet_name='Requete')
+        
+        #Faire une liste qui contient les codes BRICO et la ville
 
-
+        
+        
+        ##TODO: Pour chaque ligne selectionnable au chargement rajouter la ligne correspondante dans le dataframe originel. Surligner le changement
+        
+        """
         self.download_path = os.path.join(tempfile.mkdtemp(), os.path.basename(requete_URL))
         with open(self.download_path, "wb") as local_file:
             file = ctx.web.get_file_by_server_relative_url(requete_URL).download(local_file).execute_query()
         print("[Ok] file has been downloaded into: {0}".format(self.download_path))
-
-
+        """
+    def selectionDepot(self):
+        ##TODO: Changer le stack
+        print("normal frr")
 
         
 
