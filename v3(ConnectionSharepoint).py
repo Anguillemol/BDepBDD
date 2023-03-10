@@ -6,7 +6,10 @@ from PyQt6.QtGui import *
 from PyQt6.uic import loadUi
 
 import io
-
+import tempfile
+import os
+import openpyxl as wb
+import openpyxl.utils as utils
 
 from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.client_credential import ClientCredential
@@ -15,6 +18,11 @@ from office365.sharepoint.files.file import File
 import pandas as pd
 import numpy as np
 
+#Créer un autre fichier excel pour l'affichage avec requete
+#Faire le refresh de ce fichier en arriere plan
+#download le fichier en temp et upload
+
+#https://stackoverflow.com/questions/40893870/refresh-excel-external-data-with-python
 
 #username = '50bbb53b-67ef-488d-9303-d6afcfd77bc8'
 #password = '7ATT8OvZyqU1jbWSFxsgiDMZXrqJ4KekP/JMkgFRQCc='
@@ -76,6 +84,16 @@ bdd = bytes_file_obj_bdd
 mdp = bytes_file_obj_mdp
 req = bytes_file_obj_req
 
+#Storage du fichier excel temporaire
+download_path = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
+with open(download_path, "wb") as local_file:
+    file = ctx.web.get_file_by_server_relative_url(bdd_URL).download(local_file).execute_query()
+    #file = ctx.web.get_file_by_server_relative_url(file_url).download(local_file).execute_query()
+print("[Ok] file has been downloaded into: {0}".format(download_path))
+
+wb_obj = wb.load_workbook(download_path)
+print("Workbook loadé sur openpyxl")
+#wb_obj.save('BDD3.xlsx')
 
 
 
@@ -525,7 +543,7 @@ class mainWindow(QWidget):
     def saveData(self):
         print("Saving...")
         my_set = set(self.sheet_columns)
-        count = 0
+
         for key in self.d.keys():
             #d[key] = dataframe
             #key = nom colonne
@@ -538,42 +556,30 @@ class mainWindow(QWidget):
             #Suppression des colonnes qui ne sont pas dans le dataframe global
 
             #print(lst_clean)
-            count = count + len(lst_clean)
 
+            
 
 
             self.d[key].index = self.sheet.index
             self.d[key][lst_clean] = self.sheet[lst_clean]
 
-                 
-        for key in self.d.keys():
-            print (self.d[key])
-            break
-
-
-        
-        with pd.ExcelWriter(bdd, mode='a', if_sheet_exists='replace') as writer:
+        with pd.ExcelWriter(download_path, mode='a', if_sheet_exists='replace', engine='openpyxl') as writer:
             for key in self.d.keys():
-                self.d[key].to_excel(writer, sheet_name = key)
+                self.d[key].to_excel(writer, sheet_name = key, index = False)
 
-        buffer = io.BytesIO()
-
-        with pd.ExcelWriter(buffer, mode='a', if_sheet_exists='replace', engine='xlsxwriter') as writer:
-            for key in self.d.keys():
-                self.d[key].to_excel(writer, sheet_name = key)
-        
-        
-        
-        #file_content = bdd
+        wb_obj.save('BDD2.xlsx')
+        print("SAVE")
+        ########## Upload du fichier sur Sharepoint ##########
+        """
+        with open(download_path, 'rb') as content_file:
+            file_content = content_file.read()
         
 
-        #print(file_content)
+        file_folder = ctx.web.get_folder_by_server_relative_url("/sites/BricoDepot/Shared%20Documents/Donnees")
+        target_file = file_folder.upload_file('BDD2.xlsx', file_content).execute_query()
 
-        #file_folder = ctx.web.get_folder_by_server_relative_url("/sites/BricoDepot/Shared%20Documents/Donnees")
-        #target_file = file_folder.upload_file('BDD2.xlsx', file_content).execute_query()
-
-        #print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
-
+        print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
+        """
 
 
 
