@@ -3013,6 +3013,7 @@ class traitementDemandeChangement(QWidget):
     def traitementDemarrage(self):
         #Ouverture du fichier requete, suppressoin des trucs inutiles
         #liste des requetes
+        print("prout")
         
 
 class pandasModel(QAbstractTableModel):
