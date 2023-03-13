@@ -69,7 +69,8 @@ xlsx_file = pd.ExcelFile(bdd)
 sheet_lst = xlsx_file.sheet_names
 
 sheet_Globale = pd.DataFrame()
-
+##TODO: !!!!!
+###PAS BIN ATTENTION POOUAITNTA NTAIONTOIANT FAIRE UNE CONCAT sur axis 1
 column_set = set()
 for i in range(len(sheet_lst)):
     if sheet_lst[i] != 'Accueil' and sheet_lst[i] != 'BDD':
@@ -3074,7 +3075,7 @@ class traitementDemandeChangement(QWidget):
         if self.stack.currentIndex != 1:
             self.stack.setCurrentIndex(1)
             self.comboBox2.setCurrentIndex(self.comboBox1.currentIndex() - 1)
-
+        """
         #Création de la sheet
         depot = self.comboBox1.currentText()
         depot = str(depot.split('-')[1])
@@ -3113,12 +3114,11 @@ class traitementDemandeChangement(QWidget):
         
         print(colonnes_dif)
         print(modifs)
-
+        """
     def selectionDepot2(self):
         ##TODO: ca charge deu fois la fonction faut retirer
         ##TODO: Essayer de freeze la premiere colonne
         ##TODO: Surligner les parties qui changent
-        print("SELCTION 2")
         #Création de la sheet
         depot = self.comboBox2.currentText()
         depot = str(depot.split('-')[1])
@@ -3126,12 +3126,10 @@ class traitementDemandeChangement(QWidget):
         #Ligne actuelle
         self.actualdata = self.sheet.loc[self.sheet['Dépôt'] == depot]
         self.actualdata.insert(0, 'TypeLigne', ['Données actuelles'])
-        print(self.actualdata)
 
         #Ligne de changment
         self.sheetRequete = self.dfRequete.loc[self.dfRequete['Dépôt'] == depot]
         self.sheetRequete.insert(0, 'TypeLigne', ['Requête de changement'])
-        print(self.sheetRequete)
 
 
         self.sheet_tri = pd.concat([self.actualdata, self.sheetRequete], axis=0)
@@ -3139,7 +3137,9 @@ class traitementDemandeChangement(QWidget):
         print (self.sheet_tri)
         #Chargement table
         self.model = pandasModel(self.sheet_tri)
+        
         self.tableModif.setModel(self.model)
+    
         self.tableModif.resizeColumnsToContents()
         self.header = self.tableModif.horizontalHeader()
         self.header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -3158,10 +3158,15 @@ class traitementDemandeChangement(QWidget):
         print(colonnes_dif)
         print(modifs)
 
+        for i in range(len(colonnes_dif)):
+            self.model.change_color(1, colonnes_dif[i], QBrush(Qt.GlobalColor.red))
+
 class pandasModel(QAbstractTableModel):
     def __init__(self, data):
         QAbstractTableModel.__init__(self) 
         self._data = data
+
+        self.colors = dict()
 
     def rowCount(self, parent=None):
         return self._data.shape[0]
@@ -3172,13 +3177,23 @@ class pandasModel(QAbstractTableModel):
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if index.isValid():
             if role == Qt.ItemDataRole.DisplayRole:
-                return str(self._data.iloc[index.row(), index.column()])
+                return str(self._data.iloc[index.row(), index.column()])       
+            if role == Qt.ItemDataRole.BackgroundRole:
+                color = self.colors.get((index.row(), index.column()))
+                if color is not None:
+                    return color
         return None
 
     def headerData(self, col, orientation, role):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return self._data.columns[col]
         return None
+
+    def change_color(self, row, column, color):
+        ix = self.index(row, column)
+        self.colors[(row, column)] = color
+        self.dataChanged.emit(ix, ix, (Qt.ItemDataRole.BackgroundRole,))
+
 
 class pandasEditableModel(QAbstractTableModel):
     def __init__(self, data):
