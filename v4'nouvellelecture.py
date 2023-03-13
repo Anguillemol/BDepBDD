@@ -2993,10 +2993,13 @@ class demandeChangement(QWidget):
         self.close()
 
 class traitementDemandeChangement(QWidget):
+
     def __init__(self):
         super().__init__()
 
         ##### Gathering the requests #####
+        self.sheet = main.sheet
+
         self.dfRequete = pd.read_excel(req, sheet_name='Requete')
 
         self.listedesdepotsReq = self.dfRequete["Dépôt"].values.tolist()
@@ -3029,7 +3032,20 @@ class traitementDemandeChangement(QWidget):
         self.widget2 = QWidget()
         self.layout2 = QVBoxLayout()
 
+        self.titre2 = QLabel("Dépôt selectionné")
+        self.tableModif = QTableView()
+        self.comboBox2 = QComboBox()
+        self.comboBox2.addItems(self.listedesdepotsReq)
+        self.comboBox2.currentIndexChanged.connect(self.selectionDepot2)
 
+        self.layout2.addWidget(self.titre2)
+        self.layout2.addWidget(self.comboBox2)
+        self.layout2.addWidget(self.tableModif)
+        
+
+        self.widget2.setLayout(self.layout2)
+
+        ##### Stack #####
 
         self.stack.addWidget(self.widget1)
         self.stack.addWidget(self.widget2)
@@ -3053,10 +3069,94 @@ class traitementDemandeChangement(QWidget):
         print("[Ok] file has been downloaded into: {0}".format(self.download_path))
         """
     def selectionDepot(self):
-        ##TODO: Changer le stack
-        print("normal frr")
 
+        self.setFixedSize(720,440)
+        if self.stack.currentIndex != 1:
+            self.stack.setCurrentIndex(1)
+            self.comboBox2.setCurrentIndex(self.comboBox1.currentIndex() - 1)
+
+        #Création de la sheet
+        depot = self.comboBox1.currentText()
+        depot = str(depot.split('-')[1])
+
+        #Ligne actuelle
+        self.actualdata = self.sheet.loc[self.sheet['Dépôt'] == depot]
+        self.actualdata.insert(0, 'TypeLigne', ['Données actuelles'])
+        print(self.actualdata)
+
+        #Ligne de changment
+        self.sheetRequete = self.dfRequete.loc[self.dfRequete['Dépôt'] == depot]
+        self.sheetRequete.insert(0, 'TypeLigne', ['Requête de changement'])
+        print(self.sheetRequete)
+
+
+        self.sheet_tri = pd.concat([self.actualdata, self.sheetRequete], axis=0)
+        self.sheet_tri = self.sheet_tri.reset_index(drop=True)
+        print (self.sheet_tri)
+        #Chargement table
+        self.model = pandasModel(self.sheet_tri)
+        self.tableModif.setModel(self.model)
+        self.tableModif.resizeColumnsToContents()
+        self.header = self.tableModif.horizontalHeader()
+        self.header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+
+        #Surligner en rouge 
+        colonnes_dif = []
+        modifs = []
+        for colonne in range(len(self.sheet_tri.columns.tolist())):
+            if self.sheet_tri.iloc[0, colonne] != self.sheet_tri.iloc[1, colonne]:
+                colonnes_dif.append(colonne)
+                modification = str(self.sheet_tri.iloc[0, colonne]) + " devient : " + str(self.sheet_tri.iloc[1, colonne])
+                modifs.append(modification)
         
+        print(colonnes_dif)
+        print(modifs)
+
+    def selectionDepot2(self):
+        ##TODO: ca charge deu fois la fonction faut retirer
+        ##TODO: Essayer de freeze la premiere colonne
+        ##TODO: Surligner les parties qui changent
+        print("SELCTION 2")
+        #Création de la sheet
+        depot = self.comboBox2.currentText()
+        depot = str(depot.split('-')[1])
+
+        #Ligne actuelle
+        self.actualdata = self.sheet.loc[self.sheet['Dépôt'] == depot]
+        self.actualdata.insert(0, 'TypeLigne', ['Données actuelles'])
+        print(self.actualdata)
+
+        #Ligne de changment
+        self.sheetRequete = self.dfRequete.loc[self.dfRequete['Dépôt'] == depot]
+        self.sheetRequete.insert(0, 'TypeLigne', ['Requête de changement'])
+        print(self.sheetRequete)
+
+
+        self.sheet_tri = pd.concat([self.actualdata, self.sheetRequete], axis=0)
+        self.sheet_tri = self.sheet_tri.reset_index(drop=True)
+        print (self.sheet_tri)
+        #Chargement table
+        self.model = pandasModel(self.sheet_tri)
+        self.tableModif.setModel(self.model)
+        self.tableModif.resizeColumnsToContents()
+        self.header = self.tableModif.horizontalHeader()
+        self.header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+
+        #Surligner en rouge 
+        colonnes_dif = []
+        modifs = []
+        for colonne in range(len(self.sheet_tri.columns.tolist())):
+            if str(self.sheet_tri.iloc[0, colonne]) != str(self.sheet_tri.iloc[1, colonne]):
+                colonnes_dif.append(colonne)
+                modification = str(self.sheet_tri.iloc[0, colonne]) + " devient : " + str(self.sheet_tri.iloc[1, colonne])
+                modifs.append(modification)
+        
+        print(colonnes_dif)
+        print(modifs)
 
 class pandasModel(QAbstractTableModel):
     def __init__(self, data):
