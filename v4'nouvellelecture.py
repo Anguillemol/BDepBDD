@@ -3004,6 +3004,9 @@ class traitementDemandeChangement(QWidget):
         self.sheet = main.sheet
 
         self.dfRequete = pd.read_excel(req, sheet_name='Requete')
+        self.dfRequete.insert(0, 'TypeLigne', "")
+        self.dfRequete['TypeLigne'] = ['Requête de changement'] * len(self.dfRequete.index)
+
 
         self.listedesdepotsReq = self.dfRequete["Dépôt"].values.tolist()
         self.listeCodeBRICOReq = self.dfRequete["Code BRICO"].values.tolist()
@@ -3094,15 +3097,17 @@ class traitementDemandeChangement(QWidget):
         ##TODO: Surligner les parties qui changent
         #Création de la sheet
         depot = self.comboBox2.currentText()
+        print("le depot: " + depot)
         depot = str(depot.split('-')[1])
 
         #Ligne actuelle
         self.actualdata = self.sheet.loc[self.sheet['Dépôt'] == depot]
         self.actualdata.insert(0, 'TypeLigne', ['Données actuelles'])
+        print(self.actualdata)
 
         #Ligne de changment
         self.sheetRequete = self.dfRequete.loc[self.dfRequete['Dépôt'] == depot]
-        self.sheetRequete.insert(0, 'TypeLigne', ['Requête de changement'])
+        #self.sheetRequete.insert(0, 'TypeLigne', ['Requête de changement'])
 
 
         self.sheet_tri = pd.concat([self.actualdata, self.sheetRequete], axis=0)
@@ -3139,6 +3144,51 @@ class traitementDemandeChangement(QWidget):
 
     def retirer(self):
         print("retirer la requete")
+        self.codeBrico = self.sheet_tri.iloc[1]["Code BRICO"]
+        self.depot = self.sheet_tri.iloc[1]["Dépôt"]
+        self.utilisateur = self.sheet_tri.iloc[1]["Utilisateur"]
+        self.dateDemande = self.sheet_tri.iloc[1]["Date demande"]
+
+        print("Code brico: " + str(self.codeBrico))
+        print("Depot: " + str(self.depot))
+        print("Utilisateur: " + str(self.utilisateur))
+        print("Date demande: " + self.dateDemande)
+
+        index_ligne = self.dfRequete.loc[(self.dfRequete['Code BRICO'] == self.codeBrico) & (self.dfRequete['Utilisateur'] == self.utilisateur) & (self.dfRequete['Date demande'] == self.dateDemande)].index[0]
+        print(index_ligne)
+        self.dfRequete = self.dfRequete.drop(index_ligne)
+        self.dfRequete.reset_index(drop=True)
+        print(self.dfRequete)
+        curInd = self.comboBox2.currentIndex()
+        self.comboBox2.removeItem(curInd)
+        self.comboBox2.setCurrentIndex(curInd-1)
+        
+        #Maj Sharepoint
+        self.dfReqWrite = self.dfRequete.drop("TypeLigne", axis = 1)
+        download_path_req = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
+        with open(download_path_req, "wb") as local_file:
+            file = ctx.web.get_file_by_server_relative_url(requete_URL).download(local_file).execute_query()
+        print("[Ok] file has been downloaded into: {0}".format(download_path_req))
+
+        with pd.ExcelWriter(download_path_req, mode='a', if_sheet_exists='replace') as writer:
+            self.dfReqWrite.to_excel(writer, sheet_name='Requete', index=False)
+
+
+        with open(download_path_req, 'rb') as content_file:
+            file_content = content_file.read()
+        
+
+        file_folder = ctx.web.get_folder_by_server_relative_url("/sites/BricoDepot/Shared%20Documents/Donnees")
+        target_file = file_folder.upload_file('REQ.xlsx', file_content).execute_query()
+
+        print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
+
+        #Suppression du dossier temp
+        shutil.rmtree(os.path.dirname(download_path_req))
+        
+        #Affichage message box, changement confirmé et transmis
+        QMessageBox.information(self, 'Succès', 'Requête supprimée')
+        
 
 class pandasModel(QAbstractTableModel):
     def __init__(self, data):
