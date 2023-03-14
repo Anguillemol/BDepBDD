@@ -537,8 +537,9 @@ class mainWindow(QWidget):
         self.w.show()
 
     def chargerModif(self):
-        self.model = pandasModel(self.sheet)
-        self.tab.setModel(self.model)
+        self.model = pandasEditableModel(self.sheet)
+        self.proxy_model.setSourceModel(self.model)
+        self.tab.setModel(self.proxy_model)
         self.tab.resizeColumnsToContents()
         print("Model chargé")
 
@@ -3090,6 +3091,7 @@ class traitementDemandeChangement(QWidget):
         if self.stack.currentIndex != 1:
             self.stack.setCurrentIndex(1)
             self.comboBox2.setCurrentIndex(self.comboBox1.currentIndex() - 1)
+        self.selectionDepot2()
 
     def selectionDepot2(self):
         ##TODO: ca charge deu fois la fonction faut retirer
@@ -3141,7 +3143,63 @@ class traitementDemandeChangement(QWidget):
 
     def valider(self):
         print("Valider la requête")
+        #Dans ce cas on va tout simplement remplacer dans la sheet de base du main
+        lst_colonnes = main.sheet.columns.tolist()
+        self.codeBrico = self.sheet_tri.iloc[1]["Code BRICO"]
+        self.depot = self.sheet_tri.iloc[1]["Dépôt"]
+        self.utilisateur = self.sheet_tri.iloc[1]["Utilisateur"]
+        self.dateDemande = self.sheet_tri.iloc[1]["Date demande"]
 
+        #Index de la ligne à changer
+        index_ligne = self.dfRequete.loc[(self.dfRequete['Code BRICO'] == self.codeBrico) & (self.dfRequete['Utilisateur'] == self.utilisateur) & (self.dfRequete['Date demande'] == self.dateDemande)].index[0]
+        indexMain = main.sheet.loc[(main.sheet['Code BRICO'] == self.codeBrico)].index[0]
+
+        for i in range(len(lst_colonnes)):
+            main.sheet[lst_colonnes[i]][indexMain] = self.dfRequete[lst_colonnes[i]][index_ligne]
+
+        main.chargerModif()
+
+        #La requête est passée, supprimer la requete et supprimer tout bref
+        self.dfRequete = self.dfRequete.drop(index_ligne)
+        self.dfRequete.reset_index(drop=True)
+
+        self.dfReqWrite = self.dfRequete
+
+        download_path_req = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
+        with open(download_path_req, "wb") as local_file:
+            file = ctx.web.get_file_by_server_relative_url(requete_URL).download(local_file).execute_query()
+        print("[Ok] file has been downloaded into: {0}".format(download_path_req))
+
+        with pd.ExcelWriter(download_path_req, mode='a', if_sheet_exists='replace') as writer:
+            self.dfReqWrite.to_excel(writer, sheet_name='Requete', index=False)
+
+
+        with open(download_path_req, 'rb') as content_file:
+            file_content = content_file.read()
+        
+
+        file_folder = ctx.web.get_folder_by_server_relative_url("/sites/BricoDepot/Shared%20Documents/Donnees")
+        target_file = file_folder.upload_file('REQ.xlsx', file_content).execute_query()
+
+        print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
+
+        #Suppression du dossier temp
+        shutil.rmtree(os.path.dirname(download_path_req))
+        
+        #Affichage message box, changement confirmé et transmis
+        QMessageBox.information(self, 'Succès', 'Requête acceptée')
+
+        if self.dfRequete.empty:
+            QMessageBox.information(self, 'Succès', 'Plus de requêtes à traiter, fermeture...')
+            self.close()
+            return
+        
+        curInd = self.comboBox2.currentIndex()
+        self.comboBox2.removeItem(curInd)
+        self.comboBox2.setCurrentIndex(curInd-1)
+
+    ##TODO: Refaire le test avec 1 requete et plusieurs requetes
+    
     def retirer(self):
         print("retirer la requete")
         self.codeBrico = self.sheet_tri.iloc[1]["Code BRICO"]
@@ -3155,14 +3213,12 @@ class traitementDemandeChangement(QWidget):
         print("Date demande: " + self.dateDemande)
 
         index_ligne = self.dfRequete.loc[(self.dfRequete['Code BRICO'] == self.codeBrico) & (self.dfRequete['Utilisateur'] == self.utilisateur) & (self.dfRequete['Date demande'] == self.dateDemande)].index[0]
-        print(index_ligne)
+        print("index de la ligne: "+ str(index_ligne))
         self.dfRequete = self.dfRequete.drop(index_ligne)
         self.dfRequete.reset_index(drop=True)
         print(self.dfRequete)
-        curInd = self.comboBox2.currentIndex()
-        self.comboBox2.removeItem(curInd)
-        self.comboBox2.setCurrentIndex(curInd-1)
-        
+
+
         #Maj Sharepoint
         self.dfReqWrite = self.dfRequete.drop("TypeLigne", axis = 1)
         download_path_req = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
@@ -3188,6 +3244,15 @@ class traitementDemandeChangement(QWidget):
         
         #Affichage message box, changement confirmé et transmis
         QMessageBox.information(self, 'Succès', 'Requête supprimée')
+
+        if self.dfRequete.empty:
+            QMessageBox.information(self, 'Succès', 'Plus de requêtes à traiter, fermeture...')
+            self.close()
+            return
+        
+        curInd = self.comboBox2.currentIndex()
+        self.comboBox2.removeItem(curInd)
+        self.comboBox2.setCurrentIndex(curInd-1)
         
 
 class pandasModel(QAbstractTableModel):
