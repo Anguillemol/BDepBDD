@@ -72,16 +72,18 @@ sheet_Globale = pd.DataFrame()
 ##TODO: !!!!!
 ###PAS BIN ATTENTION POOUAITNTA NTAIONTOIANT FAIRE UNE CONCAT sur axis 1
 column_set = set()
+bool_premier = True
+bool_region2022 = True
 for i in range(len(sheet_lst)):
     if sheet_lst[i] != 'Accueil' and sheet_lst[i] != 'BDD':
         print (sheet_lst[i])
         workSheet = pd.read_excel(bdd, sheet_name=sheet_lst[i])
-        colonnes = list(workSheet.columns)
-
-        for j in range(len(colonnes)):
-            if colonnes[j] not in column_set:
-                column_set.add(colonnes[j])
-                sheet_Globale[colonnes[j]] = workSheet[colonnes[j]]
+        common_col = ["Code BRICO", "Code EASIER", "Dépôt", "Région 2022"]
+        if bool_premier == True:
+            sheet_Globale = workSheet
+            bool_premier=False
+        else:
+            sheet_Globale = pd.merge(sheet_Globale, workSheet, on=common_col)
 
 p = str(Path.cwd())
 p = p.replace('\\', "/")
@@ -3038,11 +3040,21 @@ class traitementDemandeChangement(QWidget):
         self.comboBox2 = QComboBox()
         self.comboBox2.addItems(self.listedesdepotsReq)
         self.comboBox2.currentIndexChanged.connect(self.selectionDepot2)
+        self.boutonValidation = QPushButton("Valider la requête")
+        self.boutonValidation.clicked.connect(self.valider)
+        self.boutonAnnuler = QPushButton("Retirer la requête")
+        self.boutonAnnuler.clicked.connect(self.retirer)
+
+        self.bandeauBouton = QWidget()
+        self.bandeauBoutonLayout = QHBoxLayout()
+        self.bandeauBoutonLayout.addWidget(self.boutonAnnuler)
+        self.bandeauBoutonLayout.addWidget(self.boutonValidation)
+        self.bandeauBouton.setLayout(self.bandeauBoutonLayout)
 
         self.layout2.addWidget(self.titre2)
         self.layout2.addWidget(self.comboBox2)
         self.layout2.addWidget(self.tableModif)
-        
+        self.layout2.addWidget(self.bandeauBouton)
 
         self.widget2.setLayout(self.layout2)
 
@@ -3075,46 +3087,7 @@ class traitementDemandeChangement(QWidget):
         if self.stack.currentIndex != 1:
             self.stack.setCurrentIndex(1)
             self.comboBox2.setCurrentIndex(self.comboBox1.currentIndex() - 1)
-        """
-        #Création de la sheet
-        depot = self.comboBox1.currentText()
-        depot = str(depot.split('-')[1])
 
-        #Ligne actuelle
-        self.actualdata = self.sheet.loc[self.sheet['Dépôt'] == depot]
-        self.actualdata.insert(0, 'TypeLigne', ['Données actuelles'])
-        print(self.actualdata)
-
-        #Ligne de changment
-        self.sheetRequete = self.dfRequete.loc[self.dfRequete['Dépôt'] == depot]
-        self.sheetRequete.insert(0, 'TypeLigne', ['Requête de changement'])
-        print(self.sheetRequete)
-
-
-        self.sheet_tri = pd.concat([self.actualdata, self.sheetRequete], axis=0)
-        self.sheet_tri = self.sheet_tri.reset_index(drop=True)
-        print (self.sheet_tri)
-        #Chargement table
-        self.model = pandasModel(self.sheet_tri)
-        self.tableModif.setModel(self.model)
-        self.tableModif.resizeColumnsToContents()
-        self.header = self.tableModif.horizontalHeader()
-        self.header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        self.header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        self.header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-
-        #Surligner en rouge 
-        colonnes_dif = []
-        modifs = []
-        for colonne in range(len(self.sheet_tri.columns.tolist())):
-            if self.sheet_tri.iloc[0, colonne] != self.sheet_tri.iloc[1, colonne]:
-                colonnes_dif.append(colonne)
-                modification = str(self.sheet_tri.iloc[0, colonne]) + " devient : " + str(self.sheet_tri.iloc[1, colonne])
-                modifs.append(modification)
-        
-        print(colonnes_dif)
-        print(modifs)
-        """
     def selectionDepot2(self):
         ##TODO: ca charge deu fois la fonction faut retirer
         ##TODO: Essayer de freeze la premiere colonne
@@ -3161,6 +3134,12 @@ class traitementDemandeChangement(QWidget):
         for i in range(len(colonnes_dif)):
             self.model.change_color(1, colonnes_dif[i], QBrush(Qt.GlobalColor.red))
 
+    def valider(self):
+        print("Valider la requête")
+
+    def retirer(self):
+        print("retirer la requete")
+
 class pandasModel(QAbstractTableModel):
     def __init__(self, data):
         QAbstractTableModel.__init__(self) 
@@ -3193,7 +3172,6 @@ class pandasModel(QAbstractTableModel):
         ix = self.index(row, column)
         self.colors[(row, column)] = color
         self.dataChanged.emit(ix, ix, (Qt.ItemDataRole.BackgroundRole,))
-
 
 class pandasEditableModel(QAbstractTableModel):
     def __init__(self, data):
