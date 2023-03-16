@@ -454,7 +454,25 @@ class mainWindow(QWidget):
             "    padding-top: -5px;\n"
             "}")
 
-            self.styleSheet2 = ()
+            self.styleSheet2 = ("""
+            QPushButton {
+                border-radius: 25px;
+                background-color: #e0e0e0;
+                color: black;
+                border: 2px solid transparent;
+                padding: 10px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                border: 2px solid black;
+                color: black;
+            }
+            QPushButton:pressed {
+                background-color: #c2c2c2;
+                border: 2px solid black;
+            }
+        """)
 
 
             self.creer = QPushButton("Créer un dépôt")
@@ -468,7 +486,7 @@ class mainWindow(QWidget):
             self.modifier = QPushButton("Modifier un dépôt")
             self.modifier.clicked.connect(self.modifDepot)
             self.modifier.setMaximumSize(QSize(300, 100))
-            self.modifier.setStyleSheet(self.styleSheet1)
+            self.modifier.setStyleSheet(self.styleSheet2)
             iconModifier = QIcon()
             iconModifier.addPixmap(QPixmap("Icons/edit.png"), QIcon.Mode.Normal, QIcon.State.Off)
             self.modifier.setIcon(iconModifier)
@@ -494,12 +512,16 @@ class mainWindow(QWidget):
 
             self.traitementRequetes = QPushButton("Requêtes de changement")
             self.traitementRequetes.clicked.connect(self.traitementRequetesChangement)
+
+
+
             ##### Setting up the Widget #####
             self.layoutAdminGUI = QVBoxLayout()
             self.layoutAdminGUI.addWidget(self.topBanner)
             self.layoutAdminGUI.addWidget(self.middle)
             self.layoutAdminGUI.addWidget(self.tab)
             self.layoutAdminGUI.addWidget(self.bandeau)
+
             """
             self.layoutAdminGUI.addWidget(self.boutonValidation)
             self.layoutAdminGUI.addWidget(self.traitementRequetes)

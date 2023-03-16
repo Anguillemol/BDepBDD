@@ -1,24 +1,63 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton
+import io
+import tempfile
+import os
+import shutil
+import openpyxl as wb
+import pandas as pd
+import numpy as np
+
+from pathlib import Path
+from PyQt6.QtCore import *
+from PyQt6.QtWidgets import *
+from PyQt6.QtGui import *
+from office365.sharepoint.client_context import ClientContext
+from office365.runtime.auth.client_credential import ClientCredential
+from office365.sharepoint.files.file import File 
+from datetime import datetime
+from  cryptography.fernet import Fernet
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        
+
         # Configuration de la fenêtre principale
         self.setWindowTitle("Fenêtre principale")
-        self.setGeometry(100, 100, 400, 300)
+        self.setFixedSize(600,400)
 
-        # Configuration du bouton
-        self.button = QPushButton("Cliquez-moi", self)
-        self.button.setGeometry(50, 50, 100, 50)
-        
-        # Connexion du signal "clicked" du bouton à la méthode correspondante
-        self.button.clicked.connect(self.on_button_clicked)
+        button_style = '''
+        QPushButton {
+            outline: 0;
+            border: none;
+            padding: 0 56px;
+            height: 45px;
+            line-height: 45px;
+            border-radius: 7px;
+            font-weight: 400;
+            font-size: 16px;
+            background: #fff;
+            color: #696969;
+        }
+        QPushButton:hover {
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 6px 20px rgb(93 93 93 / 23%);
+            transition: background 0.2s ease,color 0.2s ease,box-shadow 0.2s ease;
+        }
+        '''
+        self.button = QPushButton("Mon Bouton")
+        self.button.setStyleSheet(button_style)
 
-    def on_button_clicked(self):
-        print("Le bouton a été cliqué !")
+        self.button.setMaximumSize(QSize(300, 100))
+        iconCreer = QIcon()
+        iconCreer.addPixmap(QPixmap("Icons/create.png"), QIcon.Mode.Normal, QIcon.State.Off)
+        self.button.setIcon(iconCreer)
+
+
+        self.layoutV1 = QHBoxLayout()
+        self.layoutV1.addWidget(self.button)
+        self.setLayout(self.layoutV1)
+
 
 
 if __name__ == "__main__":
