@@ -73,7 +73,7 @@ sheet_Globale = pd.DataFrame()
 ###PAS BIN ATTENTION POOUAITNTA NTAIONTOIANT FAIRE UNE CONCAT sur axis 1
 column_set = set()
 bool_premier = True
-bool_region2022 = True
+bool_region2022 = True ##TODO: verifier si besoin
 for i in range(len(sheet_lst)):
     if sheet_lst[i] != 'Accueil' and sheet_lst[i] != 'BDD':
         print (sheet_lst[i])
@@ -87,6 +87,34 @@ for i in range(len(sheet_lst)):
 
 p = str(Path.cwd())
 p = p.replace('\\', "/")
+
+styleSheetBouton = ("""
+            QPushButton {
+                border-radius: 25px;
+                background-color: #e0e0e0;
+                color: black;
+                border: 2px solid transparent;
+                padding: 10px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                border: 2px solid black;
+                color: black;
+            }
+            QPushButton:pressed {
+                background-color: #c2c2c2;
+                border: 2px solid black;
+            }
+        """)
+
+choix = False
+if choix == True:
+    prout1 = "PDEMAR"
+    prout2 = "SnJ2yBDI"
+else:
+    prout1 = "lpinbelloc"
+    prout2 = "password"
 
 ##TODO: UI DESIGN + enter connect
 class logWindow(QWidget):
@@ -152,8 +180,9 @@ class logWindow(QWidget):
 
         self.logv1.setLayout(layoutv1)
 
-        self.inputUser.setText("lpinbelloc")
-        self.inputPassword.setText("password")
+        self.inputUser.setText(prout1)
+        self.inputPassword.setText(prout2)
+        
 
         ########## logV2 ##########
         self.logv2 = QWidget()
@@ -261,7 +290,7 @@ class logWindow(QWidget):
         self.inputPassword.setText("")
         self.inputPassword2.setText("")
 
-##TODO: UI DESIGN + data request treatment + filter
+##TODO: Filtre + Taille police dans le QTableView + Logos pour 2 derniers boutons + numérotations nombre de requêtes
 class mainWindow(QWidget):
 
 
@@ -362,16 +391,163 @@ class mainWindow(QWidget):
 
     ##### Function used to create the interface dynamically #####
     def loadGUI(self):
+        
         if self.role == "Admin":
             print("Creation du GUI ADMIN")
             ##### Creation of the admin interface #####
 
             self.adminGUI = QWidget()
 
+            ##TODO: Corriger le titre qui apparait pas en entier
             ##### Top Banner #####
             self.titre = QLabel("Base de données magasin - Brico Dépôt")
             font = QFont()
-            font.setPointSize(32)
+            font.setPointSize(28)
+            font.setBold(True)
+            font.setWeight(75)
+            self.titre.setFont(font)
+
+            self.logo = QLabel("")
+            self.logo.setMaximumSize(QSize(170, 100))
+            self.logo.setPixmap(QPixmap("logo.png"))
+            self.logo.setScaledContents(True)
+
+            self.infos = QLabel(self.denom + "\n" + self.role)
+            font2 = QFont()
+            font2.setPointSize(16)
+            self.infos.setFont(font2)
+
+            self.topBanner = QWidget()
+
+            self.topLayout = QHBoxLayout()
+            self.topLayout.setContentsMargins(10, 10, -1, -1)
+            self.topLayout.setSpacing(60)
+            self.topLayout.addWidget(self.logo)
+            self.topLayout.addWidget(self.titre)
+            self.topLayout.addWidget(self.infos)
+            self.topLayout.addStretch(1)
+            
+            self.topBanner.setLayout(self.topLayout)
+           # self.topBanner.setStyleSheet("background-color: red;")
+
+            ##### Table and research bar #####
+            self.middle = QWidget()
+            self.middleLayout = QHBoxLayout()
+            self.middleLayout.setSpacing(20)
+
+            self.searchBar = QLineEdit()
+            self.searchBar.setMaximumSize(600,30)
+            self.searchBar.setPlaceholderText("Champ de recherche")
+            self.searchFont = QFont()
+            self.searchFont.setPointSize(16)
+            self.searchFont.setBold(False)
+            self.searchFont.setWeight(20)
+
+            self.tab = QTableView()
+
+            self.proxy_model = QSortFilterProxyModel()
+            self.proxy_model.setFilterKeyColumn(-1) #Toutes les colonnes
+            self.proxy_model.setSourceModel(self.model)
+
+            self.tab.setModel(self.proxy_model)
+            self.tab.resizeColumnsToContents()
+
+            self.searchBar.textChanged.connect(self.proxy_model.setFilterFixedString)
+
+            self.middleLayout.addWidget(self.searchBar)
+            self.middle.setLayout(self.middleLayout)
+            #self.middle.setStyleSheet("background-color: green;")
+
+            ##### Push buttons #####
+
+            self.creer = QPushButton("Créer un dépôt")
+            self.creer.clicked.connect(self.creerDepot)
+            self.creer.setMaximumSize(QSize(300, 100))
+            self.creer.setStyleSheet(styleSheetBouton)
+            iconCreer = QIcon()
+            iconCreer.addPixmap(QPixmap("Icons/create.png"), QIcon.Mode.Normal, QIcon.State.Off)
+            self.creer.setIcon(iconCreer)
+
+            self.modifier = QPushButton("Modifier un dépôt")
+            self.modifier.clicked.connect(self.modifDepot)
+            self.modifier.setMaximumSize(QSize(300, 100))
+            self.modifier.setStyleSheet(styleSheetBouton)
+            iconModifier = QIcon()
+            iconModifier.addPixmap(QPixmap("Icons/edit.png"), QIcon.Mode.Normal, QIcon.State.Off)
+            self.modifier.setIcon(iconModifier)
+
+            self.supprimer = QPushButton("Supprimer un dépôt")
+            self.supprimer.clicked.connect(self.supprimerDepot)
+            self.supprimer.setMaximumSize(QSize(300, 100))
+            self.supprimer.setStyleSheet(styleSheetBouton)
+            iconSupprimer = QIcon()
+            iconSupprimer.addPixmap(QPixmap("Icons/delete.png"), QIcon.Mode.Normal, QIcon.State.Off)
+            self.supprimer.setIcon(iconSupprimer)
+
+            self.bandeau = QWidget()
+            self.bandeauBoutons = QHBoxLayout()
+            self.bandeauBoutons.addWidget(self.creer)
+            self.bandeauBoutons.addWidget(self.modifier)
+            self.bandeauBoutons.addWidget(self.supprimer)
+
+            self.bandeau.setLayout(self.bandeauBoutons)
+            #self.bandeau.setStyleSheet("background-color: blue;")
+
+            self.boutonValidation = QPushButton("Confirmer modifications")
+            self.boutonValidation.setMaximumSize(QSize(300,100))
+            self.boutonValidation.setStyleSheet(styleSheetBouton)
+            self.boutonValidation.clicked.connect(self.saveData)
+            iconValider = QIcon()
+            iconValider.addPixmap(QPixmap("Icons/check.png"), QIcon.Mode.Normal, QIcon.State.Off)
+            self.boutonValidation.setIcon(iconValider)
+
+            self.traitementRequetes = QPushButton("Requêtes de changement")
+            self.traitementRequetes.setMaximumSize(QSize(300,100))
+            self.traitementRequetes.setStyleSheet(styleSheetBouton)
+            ##TODO: Rajouter une bulle dans le texte pour ca
+            self.traitementRequetes.clicked.connect(self.traitementRequetesChangement)
+
+            spacer1 = QSpacerItem(100,0)
+            spacer2 = QSpacerItem(100,0)
+
+            self.bandeauInf = QWidget()
+            self.bandeauInfLayout = QHBoxLayout()
+
+            self.bandeauInfLayout.addItem(spacer1)
+            self.bandeauInfLayout.addWidget(self.traitementRequetes)
+            self.bandeauInfLayout.addWidget(self.boutonValidation)
+            self.bandeauInfLayout.addItem(spacer2)
+
+            self.bandeauInf.setLayout(self.bandeauInfLayout)
+            #self.bandeauInf.setStyleSheet("background-color: purple;")
+            
+
+            ##### Setting up the Widget #####
+            self.layoutAdminGUI = QVBoxLayout()
+            self.layoutAdminGUI.addWidget(self.topBanner, 0, Qt.AlignmentFlag.AlignHCenter)
+            self.layoutAdminGUI.addWidget(self.middle)
+            self.layoutAdminGUI.addWidget(self.tab)
+            self.layoutAdminGUI.addWidget(self.bandeau)
+            self.layoutAdminGUI.addWidget(self.bandeauInf)
+
+            self.layoutAdminGUI.setSpacing(0)
+            self.adminGUI.setLayout(self.layoutAdminGUI)
+
+            ##### Adding the interface to the StackedWidget #####
+
+            self.Stack.addWidget(self.adminGUI)
+            self.Stack.setCurrentIndex(1)
+
+        else:
+            print("Creation du GUI en lecture")
+            ##### Creation of the regular interface #####
+            self.adminGUI = QWidget()
+
+            ##TODO: Corriger le titre qui apparait pas en entier
+            ##### Top Banner #####
+            self.titre = QLabel("Base de données magasin - Brico Dépôt")
+            font = QFont()
+            font.setPointSize(28)
             font.setBold(True)
             font.setWeight(75)
             self.titre.setFont(font)
@@ -398,160 +574,6 @@ class mainWindow(QWidget):
 
             self.topBanner.setLayout(self.topLayout)
 
-            ##### Table and research bar #####
-            self.middle = QWidget()
-            self.middleLayout = QHBoxLayout()
-            self.middleLayout.setSpacing(20)
-
-            self.searchBar = QLineEdit()
-            self.searchBar.setMaximumSize(600,45)
-            self.searchBar.setPlaceholderText("Champ de recherche")
-            self.searchFont = QFont()
-            self.searchFont.setPointSize(16)
-            self.searchFont.setBold(False)
-            self.searchFont.setWeight(20)
-
-            self.tab = QTableView()
-
-            self.proxy_model = QSortFilterProxyModel()
-            self.proxy_model.setFilterKeyColumn(-1) #Toutes les colonnes
-            self.proxy_model.setSourceModel(self.model)
-
-            self.tab.setModel(self.proxy_model)
-            self.tab.resizeColumnsToContents()
-
-            self.searchBar.textChanged.connect(self.proxy_model.setFilterFixedString)
-
-            self.middleLayout.addWidget(self.searchBar)
-            self.middle.setLayout(self.middleLayout)
-
-            ##### Push buttons #####
-            self.styleSheet1 = ("QPushButton {\n"
-            "    background-color:rgb(225, 225, 225);\n"
-            "    border: none;\n"
-            "    padding-top: 5px;\n"
-            "    color: rgb(0, 0, 0);\n"
-            "    border-left: 1px solid rgb(205, 205, 205);\n"
-            "    border-right: 1px solid rgb(205, 205, 205);\n"
-            "    border-bottom: 5px solid rgb(205, 205, 205);\n"
-            "    font-size: 20px;\n"
-            "    font-weight: 100;\n"
-            "}\n"
-            "\n"
-            "QPushButton:hover {\n"
-            "    background-color: rgb(220, 220, 220);\n"
-            "    border-left: 1px solid rgb(170, 170, 170);\n"
-            "    border-right: 1px solid rgb(170, 170, 170);\n"
-            "    border-bottom: 5px solid rgb(170, 170, 170);\n"
-            "}\n"
-            "\n"
-            "QPushButton:pressed {\n"
-            "    background-color: rgb(220, 220, 220);\n"
-            "    border-left: 1px solid rgb(170, 170, 170);\n"
-            "    border-right: 1px solid rgb(170, 170, 170);\n"
-            "    border-top: 5px solid rgb(170, 170, 170);\n"
-            "    border-bottom: none;\n"
-            "    padding-top: -5px;\n"
-            "}")
-
-            self.styleSheet2 = ("""
-            QPushButton {
-                border-radius: 25px;
-                background-color: #e0e0e0;
-                color: black;
-                border: 2px solid transparent;
-                padding: 10px;
-                font-size: 16px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                border: 2px solid black;
-                color: black;
-            }
-            QPushButton:pressed {
-                background-color: #c2c2c2;
-                border: 2px solid black;
-            }
-        """)
-
-
-            self.creer = QPushButton("Créer un dépôt")
-            self.creer.clicked.connect(self.creerDepot)
-            self.creer.setMaximumSize(QSize(300, 100))
-            self.creer.setStyleSheet(self.styleSheet1)
-            iconCreer = QIcon()
-            iconCreer.addPixmap(QPixmap("Icons/create.png"), QIcon.Mode.Normal, QIcon.State.Off)
-            self.creer.setIcon(iconCreer)
-
-            self.modifier = QPushButton("Modifier un dépôt")
-            self.modifier.clicked.connect(self.modifDepot)
-            self.modifier.setMaximumSize(QSize(300, 100))
-            self.modifier.setStyleSheet(self.styleSheet2)
-            iconModifier = QIcon()
-            iconModifier.addPixmap(QPixmap("Icons/edit.png"), QIcon.Mode.Normal, QIcon.State.Off)
-            self.modifier.setIcon(iconModifier)
-
-            self.supprimer = QPushButton("Supprimer un dépôt")
-            self.supprimer.clicked.connect(self.supprimerDepot)
-            self.supprimer.setMaximumSize(QSize(300, 100))
-            self.supprimer.setStyleSheet(self.styleSheet2)
-            iconSupprimer = QIcon()
-            iconSupprimer.addPixmap(QPixmap("Icons/delete.png"), QIcon.Mode.Normal, QIcon.State.Off)
-            self.supprimer.setIcon(iconSupprimer)
-
-            self.bandeau = QWidget()
-            self.bandeauBoutons = QHBoxLayout()
-            self.bandeauBoutons.addWidget(self.creer)
-            self.bandeauBoutons.addWidget(self.modifier)
-            self.bandeauBoutons.addWidget(self.supprimer)
-
-            self.bandeau.setLayout(self.bandeauBoutons)
-
-            self.boutonValidation = QPushButton("Confirmer modification")
-            self.boutonValidation.clicked.connect(self.saveData)
-
-            self.traitementRequetes = QPushButton("Requêtes de changement")
-            self.traitementRequetes.clicked.connect(self.traitementRequetesChangement)
-
-
-
-            ##### Setting up the Widget #####
-            self.layoutAdminGUI = QVBoxLayout()
-            self.layoutAdminGUI.addWidget(self.topBanner)
-            self.layoutAdminGUI.addWidget(self.middle)
-            self.layoutAdminGUI.addWidget(self.tab)
-            self.layoutAdminGUI.addWidget(self.bandeau)
-
-            """
-            self.layoutAdminGUI.addWidget(self.boutonValidation)
-            self.layoutAdminGUI.addWidget(self.traitementRequetes)
-            """
-            self.adminGUI.setLayout(self.layoutAdminGUI)
-
-            ##### Adding the interface to the StackedWidget #####
-
-            self.Stack.addWidget(self.adminGUI)
-            self.Stack.setCurrentIndex(1)
-
-        else:
-            print("Creation du GUI en lecture")
-            ##### Creation of the regular interface #####
-            self.adminGUI = QWidget()
-
-            ##### Top Banner #####
-            self.titre = QLabel("Base de donnée magasin - Brico Dépôt")
-            #self.logo = QPixmap("C:/Solutec/logo.png")
-            self.logo = QLabel("IMAGE")
-            self.infos = QLabel("Bandeau d'info \n sur plusieur lignes \n role")
-
-            self.topBanner = QWidget()
-            self.topLayout = QHBoxLayout()
-            self.topLayout.addWidget(self.logo)
-            self.topLayout.addWidget(self.titre)
-            self.topLayout.addWidget(self.infos)
-
-            self.topBanner.setLayout(self.topLayout)
-
             ##### Table creation #####
             self.middle = QWidget()
             self.middleLayout = QVBoxLayout()
@@ -564,6 +586,8 @@ class mainWindow(QWidget):
 
             ##### Push buttons #####
             self.requete = QPushButton("Demander un changement")
+            self.requete.setMaximumSize(300,100)
+            self.requete.setStyleSheet(styleSheetBouton)
             self.requete.clicked.connect(self.demandeChangement)
 
             self.bandeau = QWidget()
@@ -678,13 +702,12 @@ class mainWindow(QWidget):
         """
         shutil.rmtree(os.path.dirname(self.download_path))
 
-
     def closeEvent(self, event):
         self.w = ''
         if self.w:
             self.w.close()
 
-##TODO: Performance enhancement
+##TODO: Performance enhancement + UI 
 class creaWindow(QWidget):
     sheet = pd.DataFrame
     def __init__(self):
@@ -2806,7 +2829,7 @@ class accidentTravail(QWidget):
 
         self.setLayout(self.layout)
 
-##TODO: Performance enhancement
+##TODO: Performance enhancement + UI
 class modifWindow(QWidget):
     sheet = pd.DataFrame
 
@@ -2912,7 +2935,7 @@ class modifWindow(QWidget):
 
         self.close()
     
-##TODO: Performance enhancement
+##TODO: Performance enhancement + UI
 class suppWindow(QWidget):
     sheet = pd.DataFrame
     
@@ -3016,32 +3039,62 @@ class suppWindow(QWidget):
 
         ##TODO: Faire une fenetre de confirmation
 
-##TODO: UI Design
+##TODO: UI Design + Rajouter icones dans les boutons
 class demandeChangement(QWidget):
     sheet = pd.DataFrame
     def __init__(self):
         super().__init__()
-        self.setFixedSize(720,440)
+        self.setFixedSize(1280,720)
 
-        self.setWindowTitle("Requête changement donnée")
+        self.setWindowTitle("Demande de changement de données")
 
-        self.layout = QGridLayout()
+        self.layout = QVBoxLayout()
 
         self.Titre = QLabel("Demande de changement de données")
+        font = QFont()
+        font.setPointSize(28)
+        font.setBold(True)
+        font.setWeight(75)
+        self.Titre.setFont(font)
 
         self.texte = QLabel("Modifier les données dans le tableau ci-dessous")
+        font.setPointSize(14)
+        self.texte.setFont(font)
+
         self.table = QTableView()
         self.model = pandasEditableModel(self.sheet)
         self.table.setModel(self.model)
         self.table.resizeColumnsToContents()
 
+        self.bandeauBouton = QWidget()
+        self.bandeauBoutonsLayout = QHBoxLayout()
+
         self.valider = QPushButton("Valider la demande de changement de données")
+        self.valider.setMaximumSize(400,100)
+        self.valider.setStyleSheet(styleSheetBouton)
         self.valider.clicked.connect(self.transmettre)
+
+        self.annuler = QPushButton("Annuler la demande de changement de données")
+        self.annuler.setMaximumSize(400,100)
+        self.annuler.setStyleSheet(styleSheetBouton)
+        self.annuler.clicked.connect(self.annulerF)
+
+        self.space = QSpacerItem(100,0)
+
+        self.bandeauBoutonsLayout.addItem(self.space)
+        self.bandeauBoutonsLayout.addWidget(self.annuler)
+        self.bandeauBoutonsLayout.addWidget(self.valider)
+        self.bandeauBoutonsLayout.addItem(self.space)
+
+        self.bandeauBouton.setLayout(self.bandeauBoutonsLayout)
         
-        self.layout.addWidget(self.Titre, 0, 1)
-        self.layout.addWidget(self.texte, 1, 1)
-        self.layout.addWidget(self.table, 2, 0, 1, 3)
-        self.layout.addWidget(self.valider, 3, 1)
+        self.layout.addWidget(self.Titre, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.layout.addWidget(self.texte, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.layout.addWidget(self.table)
+        self.layout.addWidget(self.bandeauBouton)
+        
+
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
 
         self.setLayout(self.layout)
 
@@ -3085,6 +3138,9 @@ class demandeChangement(QWidget):
         #Affichage message box, changement confirmé et transmis
         QMessageBox.information(self, 'Succès', 'Requête transmise')
 
+        self.close()
+
+    def annulerF(self):
         self.close()
 
 class traitementDemandeChangement(QWidget):
@@ -3411,10 +3467,10 @@ class pandasEditableModel(QAbstractTableModel):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    
-    form = logWindow()
+
     main = mainWindow()
+    form = logWindow()
     form.show()
-    form.PushCo()
+    #form.PushCo()
 
     sys.exit(app.exec())
