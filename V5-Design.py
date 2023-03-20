@@ -9,6 +9,7 @@ import numpy as np
 
 from pathlib import Path
 from PyQt6.QtCore import *
+from PyQt6.QtCore import QRegularExpression
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from office365.sharepoint.client_context import ClientContext
@@ -93,7 +94,7 @@ p = p.replace('\\', "/")
 styleSheetBouton = ("""
             QPushButton {
                 border-radius: 25px;
-                background-color: #e0e0e0;
+                background-color: #ed161f;
                 color: black;
                 border: 2px solid transparent;
                 padding: 10px;
@@ -105,7 +106,7 @@ styleSheetBouton = ("""
                 color: black;
             }
             QPushButton:pressed {
-                background-color: #c2c2c2;
+                background-color: #c00f18;
                 border: 2px solid black;
             }
         """)
@@ -312,14 +313,14 @@ class mainWindow(QWidget):
         self.loadExcel()
 
         ########## STYLESHEET ##########
-        self.setStyleSheet("""
-            QLineEdit{
-                font-size: 30px
-            }
-            QPushButton{
-                font-size: 30px
-            }
-            """)
+        #self.setStyleSheet("""
+            #QLineEdit{
+            #    font-size: 20px
+            #}
+            #QPushButton{
+            #    font-size: 20px
+            #}
+            #""")
 
         ##### Loading Widget #####
 
@@ -408,21 +409,28 @@ class mainWindow(QWidget):
             font.setBold(True)
             font.setWeight(75)
             self.titre.setFont(font)
+            self.titre.setFrameShape(QFrame.Shape.Box)
+            self.titre.setFrameShadow(QFrame.Shadow.Plain)
+            self.titre.setLineWidth(5)
 
             self.logo = QLabel("")
             self.logo.setMaximumSize(QSize(170, 100))
             self.logo.setPixmap(QPixmap("logo.png"))
             self.logo.setScaledContents(True)
+            self.logo.setStyleSheet("background-color: white")
 
             self.infos = QLabel(self.denom + "\n" + self.role)
             font2 = QFont()
             font2.setPointSize(16)
             self.infos.setFont(font2)
+            self.infos.setFrameShape(QFrame.Shape.Box)
+            self.infos.setFrameShadow(QFrame.Shadow.Plain)
+            self.infos.setLineWidth(5)
 
             self.topBanner = QWidget()
 
             self.topLayout = QHBoxLayout()
-            self.topLayout.setContentsMargins(10, 10, -1, -1)
+            self.topLayout.setContentsMargins(13, 10, -1, -1)
             self.topLayout.setSpacing(60)
             self.topLayout.addWidget(self.logo)
             self.topLayout.addWidget(self.titre)
@@ -430,7 +438,7 @@ class mainWindow(QWidget):
             self.topLayout.addStretch(1)
             
             self.topBanner.setLayout(self.topLayout)
-           # self.topBanner.setStyleSheet("background-color: red;")
+            
 
             ##### Table and research bar #####
             self.middle = QWidget()
@@ -450,6 +458,7 @@ class mainWindow(QWidget):
             self.proxy_model = QSortFilterProxyModel()
             self.proxy_model.setFilterKeyColumn(-1) #Toutes les colonnes
             self.proxy_model.setSourceModel(self.model)
+            self.proxy_model.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
 
             self.tab.setModel(self.proxy_model)
             self.tab.resizeColumnsToContents()
@@ -461,19 +470,25 @@ class mainWindow(QWidget):
             #self.middle.setStyleSheet("background-color: green;")
 
             ##### Push buttons #####
+            fontBouton = QFont()
+            fontBouton.setPointSize(12)
+            fontBouton.setBold(True)
+            fontBouton.setWeight(500)
 
             self.creer = QPushButton("Créer un dépôt")
             self.creer.clicked.connect(self.creerDepot)
             self.creer.setMaximumSize(QSize(300, 100))
-            self.creer.setStyleSheet(styleSheetBouton)
+            self.creer.setMinimumSize(QSize(300,40))
+            #self.creer.setStyleSheet(styleSheetBouton)
             iconCreer = QIcon()
             iconCreer.addPixmap(QPixmap("Icons/create.png"), QIcon.Mode.Normal, QIcon.State.Off)
             self.creer.setIcon(iconCreer)
 
             self.modifier = QPushButton("Modifier un dépôt")
+            self.modifier.setFont(fontBouton)
             self.modifier.clicked.connect(self.modifDepot)
             self.modifier.setMaximumSize(QSize(300, 100))
-            self.modifier.setStyleSheet(styleSheetBouton)
+            #self.modifier.setStyleSheet(styleSheetBouton)
             iconModifier = QIcon()
             iconModifier.addPixmap(QPixmap("Icons/edit.png"), QIcon.Mode.Normal, QIcon.State.Off)
             self.modifier.setIcon(iconModifier)
@@ -481,7 +496,7 @@ class mainWindow(QWidget):
             self.supprimer = QPushButton("Supprimer un dépôt")
             self.supprimer.clicked.connect(self.supprimerDepot)
             self.supprimer.setMaximumSize(QSize(300, 100))
-            self.supprimer.setStyleSheet(styleSheetBouton)
+            #self.supprimer.setStyleSheet(styleSheetBouton)
             iconSupprimer = QIcon()
             iconSupprimer.addPixmap(QPixmap("Icons/delete.png"), QIcon.Mode.Normal, QIcon.State.Off)
             self.supprimer.setIcon(iconSupprimer)
@@ -497,7 +512,8 @@ class mainWindow(QWidget):
 
             self.boutonValidation = QPushButton("Confirmer modifications")
             self.boutonValidation.setMaximumSize(QSize(300,100))
-            self.boutonValidation.setStyleSheet(styleSheetBouton)
+            self.boutonValidation.setMinimumSize(QSize(300,40))
+            #self.boutonValidation.setStyleSheet(styleSheetBouton)
             self.boutonValidation.clicked.connect(self.saveData)
             iconValider = QIcon()
             iconValider.addPixmap(QPixmap("Icons/check.png"), QIcon.Mode.Normal, QIcon.State.Off)
@@ -505,7 +521,7 @@ class mainWindow(QWidget):
 
             self.traitementRequetes = QPushButton("Requêtes de changement")
             self.traitementRequetes.setMaximumSize(QSize(300,100))
-            self.traitementRequetes.setStyleSheet(styleSheetBouton)
+            #self.traitementRequetes.setStyleSheet(styleSheetBouton)
             ##TODO: Rajouter une bulle dans le texte pour ca
             self.traitementRequetes.clicked.connect(self.traitementRequetesChangement)
 
@@ -589,7 +605,7 @@ class mainWindow(QWidget):
             ##### Push buttons #####
             self.requete = QPushButton("Demander un changement")
             self.requete.setMaximumSize(300,100)
-            self.requete.setStyleSheet(styleSheetBouton)
+            #self.requete.setStyleSheet(styleSheetBouton)
             self.requete.clicked.connect(self.demandeChangement)
 
             self.bandeau = QWidget()
@@ -2856,6 +2872,7 @@ class modifWindow(QWidget):
         self.titre = QLabel("Sélection du dépôt à modifier")
         self.titre.setFont(font)
         self.listedepots = QComboBox()
+        self.listedepots.setMinimumHeight(30)
         
         self.listedesdepots = self.sheet["Dépôt"].values.tolist()
         self.listeCodeBRICO = self.sheet["Code BRICO"].values.tolist()
@@ -2881,6 +2898,7 @@ class modifWindow(QWidget):
         self.titre2 = QLabel("Sélection du dépôt à modifier")
         self.titre2.setFont(font)
         self.listedepots2 = QComboBox()
+        self.listedepots2.setMinimumHeight(30)
         self.listedepots2.addItems(self.listedesdepots)
         self.listedepots2.currentIndexChanged.connect(self.chargementTableau)
         self.affichageDep = QTableView()
@@ -2888,12 +2906,12 @@ class modifWindow(QWidget):
         self.boutonConfirmation = QPushButton("Confirmer la modification")
         self.boutonConfirmation.clicked.connect(self.choix)
         self.boutonConfirmation.setMaximumSize(300,100)
-        self.boutonConfirmation.setStyleSheet(styleSheetBouton)
+        #self.boutonConfirmation.setStyleSheet(styleSheetBouton)
 
         self.boutonAnnulation = QPushButton("Annuler la modification")
         self.boutonAnnulation.clicked.connect(self.annuler)
         self.boutonAnnulation.setMaximumSize(300,100)
-        self.boutonAnnulation.setStyleSheet(styleSheetBouton)
+        #self.boutonAnnulation.setStyleSheet(styleSheetBouton)
 
         self.widgetBouton = QWidget()
         self.layoutBouton = QHBoxLayout()
@@ -3000,6 +3018,7 @@ class suppWindow(QWidget):
         self.titre = QLabel("Sélection du dépôt à supprimer")
         self.titre.setFont(font)
         self.listedepots = QComboBox()
+        self.listedepots.setMinimumHeight(30)
         self.listedesdepots = self.sheet["Dépôt"].values.tolist()
         self.listeCodeBRICO = self.sheet["Code BRICO"].values.tolist()
 
@@ -3021,6 +3040,7 @@ class suppWindow(QWidget):
         self.titre2 = QLabel("Sélection du dépôt à supprimer")
         self.titre2.setFont(font)
         self.listedepots2 = QComboBox()
+        self.listedepots2.setMinimumHeight(30)
         self.listedepots2.addItems(self.listedesdepots)
         self.listedepots2.currentIndexChanged.connect(self.chargementTableau)
         self.affichageDep = QTableView()
@@ -3028,12 +3048,12 @@ class suppWindow(QWidget):
         self.boutonConfirmation = QPushButton("Supprimer le dépôt")
         self.boutonConfirmation.clicked.connect(self.suppression)
         self.boutonConfirmation.setMaximumSize(300,100)
-        self.boutonConfirmation.setStyleSheet(styleSheetBouton)
+        #self.boutonConfirmation.setStyleSheet(styleSheetBouton)
 
         self.boutonAnnulation = QPushButton("Annuler")
         self.boutonAnnulation.clicked.connect(self.annuler)
         self.boutonAnnulation.setMaximumSize(300,100)
-        self.boutonAnnulation.setStyleSheet(styleSheetBouton)
+        #self.boutonAnnulation.setStyleSheet(styleSheetBouton)
 
         self.widgetBouton = QWidget()
         self.layoutBouton = QHBoxLayout()
@@ -3150,12 +3170,12 @@ class demandeChangement(QWidget):
 
         self.valider = QPushButton("Valider la demande de changement de données")
         self.valider.setMaximumSize(400,100)
-        self.valider.setStyleSheet(styleSheetBouton)
+        #self.valider.setStyleSheet(styleSheetBouton)
         self.valider.clicked.connect(self.transmettre)
 
         self.annuler = QPushButton("Annuler la demande de changement de données")
         self.annuler.setMaximumSize(400,100)
-        self.annuler.setStyleSheet(styleSheetBouton)
+        #self.annuler.setStyleSheet(styleSheetBouton)
         self.annuler.clicked.connect(self.annulerF)
 
         self.space = QSpacerItem(100,0)
@@ -3259,6 +3279,7 @@ class traitementDemandeChangement(QWidget):
         self.titre1 = QLabel("Liste des requêtes à traiter")
         self.titre1.setFont(font)
         self.comboBox1 = QComboBox()
+        self.comboBox1.setMinimumHeight(30)
         self.comboBox1.addItem('')
         self.comboBox1.addItems(self.listedesdepotsReq)
         self.comboBox1.currentIndexChanged.connect(self.selectionDepot)
@@ -3276,6 +3297,7 @@ class traitementDemandeChangement(QWidget):
         self.titre2.setFont(font)
         self.tableModif = QTableView()
         self.comboBox2 = QComboBox()
+        self.comboBox2.setMinimumHeight(30)
         self.comboBox2.addItems(self.listedesdepotsReq)
         self.comboBox2.currentIndexChanged.connect(self.selectionDepot2)
 
@@ -3283,19 +3305,19 @@ class traitementDemandeChangement(QWidget):
         self.boutonValidation.clicked.connect(self.valider)
         self.boutonValidation.setMaximumSize(300,100)
         self.boutonValidation.setMinimumWidth(200)
-        self.boutonValidation.setStyleSheet(styleSheetBouton)
+        #self.boutonValidation.setStyleSheet(styleSheetBouton)
 
         self.boutonRetirer = QPushButton("Retirer la requête")
         self.boutonRetirer.clicked.connect(self.retirer)
         self.boutonRetirer.setMaximumSize(300,100)
         self.boutonRetirer.setMinimumWidth(200)
-        self.boutonRetirer.setStyleSheet(styleSheetBouton)
+        #self.boutonRetirer.setStyleSheet(styleSheetBouton)
 
         self.boutonAnnuler = QPushButton("Annuler")
         self.boutonAnnuler.clicked.connect(self.annuler)
         self.boutonAnnuler.setMaximumSize(300,100)
         self.boutonAnnuler.setMinimumWidth(200)
-        self.boutonAnnuler.setStyleSheet(styleSheetBouton)
+        #self.boutonAnnuler.setStyleSheet(styleSheetBouton)
 
         self.bandeauBouton = QWidget()
         self.bandeauBoutonLayout = QHBoxLayout()
