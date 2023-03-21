@@ -89,37 +89,15 @@ for i in range(len(sheet_lst)):
 p = str(Path.cwd())
 p = p.replace('\\', "/")
 
-
-
-styleSheetBouton = ("""
-            QPushButton {
-                border-radius: 25px;
-                background-color: #ed161f;
-                color: black;
-                border: 2px solid transparent;
-                padding: 10px;
-                font-size: 16px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                border: 2px solid black;
-                color: black;
-            }
-            QPushButton:pressed {
-                background-color: #c00f18;
-                border: 2px solid black;
-            }
-        """)
-
-choix = False
+choix = True
 if choix == True:
-    prout1 = "PDEMAR"
-    prout2 = "SnJ2yBDI"
+    prout1 = "APIERR"
+    prout2 = "GLAq35n0"
 else:
     prout1 = "lpinbelloc"
     prout2 = "password"
 
-##TODO: UI DESIGN + enter connect
+##TODO: enter connect
 class logWindow(QWidget):
 
     
@@ -127,101 +105,125 @@ class logWindow(QWidget):
         super().__init__()
 
         self.setWindowTitle("Authentification")
+        self.setFixedSize(570,200)
         self.w = None 
         self.role = ""
         self.submitClicked = pyqtSignal(str,str,str)
 
         ########## Gathering the account DataBase ##########
         self.ddbmdp = pd.read_excel(mdp, sheet_name='MDPFINAUX')
-        
-        ##### Static text #####
-        title = QLabel("Authentification BDD")
-        title2 = QLabel("Authentification BDD")
-        user = QLabel("Nom d'utilisateur:")
-        user2 = QLabel("Nom d'utilisateur:")
-        password = QLabel("Mot de passe:")
-        password2 = QLabel("Mot de passe:")
-        error = QLabel("Informations invalides !")
-        error.setStyleSheet("color: red; font-weight: bold")
-        connexionReussie = QLabel("Connexion établie")
-        connexionReussie.setStyleSheet("font-size: 20px")
 
-        ##### Input areas #####
-        self.inputUser = QLineEdit()
-        self.inputPassword = QLineEdit()
-        self.inputUser2 = QLineEdit()
-        self.inputPassword2 = QLineEdit()
-        self.inputPassword.setEchoMode(QLineEdit.EchoMode.Password)
-        self.inputPassword2.setEchoMode(QLineEdit.EchoMode.Password)
-
-        ##### Buttons #####
-        buttonCo = QPushButton("Connexion")
-        buttonCo.setObjectName("button1")
-        buttonCo.clicked.connect(self.PushCo)
-        buttonCl = QPushButton("Nettoyer")
-        buttonCl.clicked.connect(self.PushCl)
-
-        buttonCo2 = QPushButton("Connexion")
-        buttonCo2.setObjectName("button2")
-        buttonCo2.clicked.connect(self.PushCo)
-        buttonCl2 = QPushButton("Nettoyer")
-        buttonCl2.clicked.connect(self.PushCl)
 
         ########## logV1 ##########
         self.logv1 = QWidget()
-
-        layoutv1 = QGridLayout()
-        layoutv1.setSpacing(3)
         
-        #layoutv1.addWidget(title, 0, 0, 1, 3, Qt.AlignmentFlag.AlignCenter)
-        layoutv1.addWidget(user, 1, 0)
-        layoutv1.addWidget(password, 2, 0)
-        layoutv1.addWidget(self.inputUser, 1, 1, 1, 2)
-        layoutv1.addWidget(self.inputPassword, 2, 1, 1, 2)
-        layoutv1.addWidget(buttonCo, 3, 2)
-        layoutv1.addWidget(buttonCl, 3, 1)
+        self.hLayout1 = QHBoxLayout()
 
-        self.logv1.setLayout(layoutv1)
+        self.logoLabel1 = QLabel("")
+        self.logoLabel1.setMaximumSize(QSize(200,140))
+        self.logoLabel1.setPixmap(QPixmap("logo.png"))
+        self.logoLabel1.setScaledContents(True)
+        self.logoLabel1.setStyleSheet("background-color: white")
 
-        self.inputUser.setText(prout1)
-        self.inputPassword.setText(prout2)
+
+
+        self.hLayout1.addWidget(self.logoLabel1)
+
+        ##### Labels #####
+        self.user = QLabel("Nom d'utilisateur:")
+        self.password = QLabel("Mot de passe:")
+
+        ##### LineEdit #####
+        self.inputUser = QLineEdit()
+        self.inputPassword = QLineEdit()
+        self.inputPassword.setObjectName("button1")
+        self.inputPassword.setEchoMode(QLineEdit.EchoMode.Password)
+
+        ##### Buttons #####
+        self.buttonCo = QPushButton("Connexion")
+        self.buttonCo.setObjectName("button1")
+        self.buttonCo.clicked.connect(self.PushCo)
+        self.buttonCl = QPushButton("Nettoyer")
+        self.buttonCl.clicked.connect(self.PushCl)
+        self.inputPassword.returnPressed.connect(self.PushCo)
         
+        self.gLayout1 = QGridLayout()
+
+        self.gLayout1.addWidget(self.user, 0, 0, 1, 1)
+        self.gLayout1.addWidget(self.password, 1, 0, 1, 1)
+        self.gLayout1.addWidget(self.inputUser, 0, 1, 1, 2)
+        self.gLayout1.addWidget(self.inputPassword, 1, 1, 1, 2)
+        self.gLayout1.addWidget(self.buttonCl, 2, 1, 1, 1)
+        self.gLayout1.addWidget(self.buttonCo, 2, 2, 1, 1)
+
+        self.gWidget1 = QWidget()
+        self.gWidget1.setLayout(self.gLayout1)
+
+        self.hLayout1.addWidget(self.gWidget1)
+        
+        self.logv1.setLayout(self.hLayout1)
+
 
         ########## logV2 ##########
         self.logv2 = QWidget()
+        
+        self.hLayout2 = QHBoxLayout()
 
-        layoutv2 = QGridLayout()
-        layoutv2.setSpacing(3)
+        self.logoLabel2 = QLabel()
+        self.logoLabel2.setMaximumSize(QSize(200,140))
+        self.logoLabel2.setPixmap(QPixmap("logo.png"))
+        self.logoLabel2.setScaledContents(True)
+        self.logoLabel2.setStyleSheet("background-color: white")
+        
+        self.hLayout2.addWidget(self.logoLabel2)
 
-        #layoutv2.addWidget(title2, 0, 0, 1, 3, Qt.AlignmentFlag.AlignCenter)
-        layoutv2.addWidget(user2, 1, 0)
-        layoutv2.addWidget(password2, 2, 0)
-        layoutv2.addWidget(self.inputUser2, 1, 1, 1, 2)
-        layoutv2.addWidget(self.inputPassword2, 2, 1, 1, 2)
-        layoutv2.addWidget(error, 3, 1, 1, 2)
-        layoutv2.addWidget(buttonCo2, 4, 2)
-        layoutv2.addWidget(buttonCl2, 4, 1)
+        ##### Labels #####
+        self.user2 = QLabel("Nom d'utilisateur:")
+        self.password2 = QLabel("Mot de passe:")
 
-        self.logv2.setLayout(layoutv2)
+        self.error = QLabel("Échec d'authentification")
+        self.error.setStyleSheet("color: red;")
 
-        ########## logFrozen ##########
-        self.logFrozen = QWidget()
+        ##### LineEdit #####
+        self.inputUser2 = QLineEdit()
+        self.inputPassword2 = QLineEdit()
+        self.inputPassword2.setObjectName("button2")
+        self.inputPassword2.setEchoMode(QLineEdit.EchoMode.Password)
 
-        layoutvFrozen = QGridLayout()
-        layoutvFrozen.addWidget(connexionReussie, 0, 0, 3, 3, Qt.AlignmentFlag.AlignCenter)
+        ##### Buttons #####
+        self.buttonCo2 = QPushButton("Connexion")
+        self.buttonCo2.setObjectName("button2")
+        self.buttonCo2.clicked.connect(self.PushCo)
+        self.buttonCl2 = QPushButton("Nettoyer")
+        self.buttonCl2.clicked.connect(self.PushCl)
+        self.inputPassword2.returnPressed.connect(self.PushCo)
+        
+        self.gLayout2 = QGridLayout()
 
-        self.logFrozen.setLayout(layoutvFrozen)
+        self.gLayout2.addWidget(self.user2, 0, 0, 1, 1)
+        self.gLayout2.addWidget(self.password2, 1, 0, 1, 1)
+        self.gLayout2.addWidget(self.inputUser2, 0, 1, 1, 2)
+        self.gLayout2.addWidget(self.inputPassword2, 1, 1, 1, 2)
+        self.gLayout2.addWidget(self.buttonCl2, 2, 1, 1, 1)
+        self.gLayout2.addWidget(self.buttonCo2, 2, 2, 1, 1)
+        self.gLayout2.addWidget(self.error, 3, 1, 1, 2)   
 
+        self.gWidget2 = QWidget()
+        self.gWidget2.setLayout(self.gLayout2)
+
+        self.hLayout2.addWidget(self.gWidget2)
+
+        self.logv2.setLayout(self.hLayout2)
+      
         ############## StackedWidget ##############
         self.Stack = QStackedWidget (self)
         self.Stack.addWidget(self.logv1)
         self.Stack.addWidget(self.logv2)
-        self.Stack.addWidget(self.logFrozen)
 
         self.Stack.setCurrentIndex(0)
 
-        layoutHome = QGridLayout()
-        layoutHome.addWidget(self.Stack, 0, 0)
+        layoutHome = QHBoxLayout()
+        layoutHome.addWidget(self.Stack)
 
         self.setLayout(layoutHome)
 
@@ -233,6 +235,8 @@ class logWindow(QWidget):
         #name = sender.objectName()
 
         name = "button1"
+        self.inputUser.setText(prout1)
+        self.inputPassword.setText(prout2)
 
         if name=="button1":
             if self.ddbmdp.loc[self.ddbmdp['Username'] == self.inputUser.text()].empty:
@@ -430,7 +434,7 @@ class mainWindow(QWidget):
             self.topBanner = QWidget()
 
             self.topLayout = QHBoxLayout()
-            self.topLayout.setContentsMargins(13, 10, -1, -1)
+            self.topLayout.setContentsMargins(35, 10, -1, -1)
             self.topLayout.setSpacing(60)
             self.topLayout.addWidget(self.logo)
             self.topLayout.addWidget(self.titre)
@@ -438,7 +442,7 @@ class mainWindow(QWidget):
             self.topLayout.addStretch(1)
             
             self.topBanner.setLayout(self.topLayout)
-            
+            #self.topBanner.setStyleSheet("background-color: red")
 
             ##### Table and research bar #####
             self.middle = QWidget()
@@ -519,11 +523,16 @@ class mainWindow(QWidget):
             iconValider.addPixmap(QPixmap("Icons/check.png"), QIcon.Mode.Normal, QIcon.State.Off)
             self.boutonValidation.setIcon(iconValider)
 
-            self.traitementRequetes = QPushButton("Requêtes de changement")
+            ##Comptage nombre de requêtes de changement
+            self.sheetRequetes = pd.read_excel(req, sheet_name="Requete")
+            self.nbrLignes = self.sheetRequetes.shape[0]
+
+            self.traitementRequetes = QPushButton("Requêtes de MAJ: " + str(self.nbrLignes))
             self.traitementRequetes.setMaximumSize(QSize(300,100))
             #self.traitementRequetes.setStyleSheet(styleSheetBouton)
             ##TODO: Rajouter une bulle dans le texte pour ca
             self.traitementRequetes.clicked.connect(self.traitementRequetesChangement)
+
 
             spacer1 = QSpacerItem(100,0)
             spacer2 = QSpacerItem(100,0)
@@ -569,16 +578,23 @@ class mainWindow(QWidget):
             font.setBold(True)
             font.setWeight(75)
             self.titre.setFont(font)
+            self.titre.setFrameShape(QFrame.Shape.Box)
+            self.titre.setFrameShadow(QFrame.Shadow.Plain)
+            self.titre.setLineWidth(5)
 
             self.logo = QLabel("")
             self.logo.setMaximumSize(QSize(210, 130))
             self.logo.setPixmap(QPixmap("logo.png"))
             self.logo.setScaledContents(True)
+            self.logo.setStyleSheet("background-color: white")
 
             self.infos = QLabel(self.denom + "\n" + self.role)
             font2 = QFont()
             font2.setPointSize(16)
             self.infos.setFont(font2)
+            self.infos.setFrameShape(QFrame.Shape.Box)
+            self.infos.setFrameShadow(QFrame.Shadow.Plain)
+            self.infos.setLineWidth(5)
 
             self.topBanner = QWidget()
 
@@ -615,7 +631,7 @@ class mainWindow(QWidget):
 
             ##### Setting up the Widget #####
             self.layoutAdminGUI = QVBoxLayout()
-            self.layoutAdminGUI.addWidget(self.topBanner)
+            self.layoutAdminGUI.addWidget(self.topBanner, 0, Qt.AlignmentFlag.AlignHCenter)
             self.layoutAdminGUI.addWidget(self.middle)
             self.layoutAdminGUI.addWidget(self.bandeau)
             self.adminGUI.setLayout(self.layoutAdminGUI)
@@ -3168,12 +3184,12 @@ class demandeChangement(QWidget):
         self.bandeauBouton = QWidget()
         self.bandeauBoutonsLayout = QHBoxLayout()
 
-        self.valider = QPushButton("Valider la demande de changement de données")
+        self.valider = QPushButton("Valider la demande de\nchangement de données")
         self.valider.setMaximumSize(400,100)
         #self.valider.setStyleSheet(styleSheetBouton)
         self.valider.clicked.connect(self.transmettre)
 
-        self.annuler = QPushButton("Annuler la demande de changement de données")
+        self.annuler = QPushButton("Annuler la demande de\nchangement de données")
         self.annuler.setMaximumSize(400,100)
         #self.annuler.setStyleSheet(styleSheetBouton)
         self.annuler.clicked.connect(self.annulerF)
