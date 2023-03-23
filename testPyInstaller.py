@@ -328,6 +328,7 @@ class mainWindow(QWidget):
             self.titre.setFrameShape(QFrame.Shape.Box)
             self.titre.setFrameShadow(QFrame.Shadow.Plain)
             self.titre.setLineWidth(5)
+            self.titre.setStyleSheet("background-color: rgb(191, 189, 184)")
 
             self.logo = QLabel("")
             self.logo.setMaximumSize(QSize(170, 100))
@@ -342,6 +343,7 @@ class mainWindow(QWidget):
             self.infos.setFrameShape(QFrame.Shape.Box)
             self.infos.setFrameShadow(QFrame.Shadow.Plain)
             self.infos.setLineWidth(5)
+            self.infos.setStyleSheet("background-color: rgb(191, 189, 184)")
 
             self.topBanner = QWidget()
 
@@ -493,13 +495,15 @@ class mainWindow(QWidget):
             self.titre.setFrameShape(QFrame.Shape.Box)
             self.titre.setFrameShadow(QFrame.Shadow.Plain)
             self.titre.setLineWidth(5)
+            self.titre.setStyleSheet("background-color: rgb(191, 189, 184)")
 
             self.logo = QLabel("")
             self.logo.setMaximumSize(QSize(210, 130))
             self.logo.setPixmap(QPixmap("logo.png"))
             self.logo.setScaledContents(True)
             self.logo.setStyleSheet("background-color: white")
-
+            self.logo.setStyleSheet("background-color: rgb(191, 189, 184)")
+            
             self.infos = QLabel(self.denom + "\n" + self.role)
             font2 = QFont()
             font2.setPointSize(16)
