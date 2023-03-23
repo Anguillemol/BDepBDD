@@ -1,11 +1,12 @@
 import sys
+import time
 import io
 import tempfile
 import os
 import shutil
 import openpyxl as wb
 import pandas as pd
-import numpy as np
+from unidecode import unidecode
 
 from pathlib import Path
 from PyQt6.QtCore import *
@@ -16,7 +17,7 @@ from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.client_credential import ClientCredential
 from office365.sharepoint.files.file import File 
 from datetime import datetime
-from  cryptography.fernet import Fernet
+from cryptography.fernet import Fernet
 
 with open('key.key', 'rb') as key_file:
     key = key_file.read()
@@ -27,6 +28,8 @@ with open('config.cfg', 'rb') as config_file:
 fernet = Fernet(key)
 username = fernet.decrypt(encrypted_user).decode()
 password = fernet.decrypt(encrypted_password).decode()
+print("username = " + str(username))
+print("password = " + str(password))
 
 test_team_site_url = "https://sgzkl.sharepoint.com/sites/BricoDepot"
 bdd_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/BDD.xlsx"
@@ -97,7 +100,83 @@ else:
     prout1 = "lpinbelloc"
     prout2 = "password"
 
-##TODO: enter connect
+##TODO: SplashScreen
+class SplashScreen(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Chargement")
+        self.setFixedSize(1100,500)
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+
+        self.counter = 0
+        self.n = 300
+
+        self.initUI()
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.loading)
+        self.timer.start(30)
+
+    def initUI(self):
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        self.frame = QFrame()
+        layout.addWidget(self.frame)
+
+        self.labelTitle = QLabel(self.frame)
+        self.labelTitle.setObjectName('labelTitle')
+
+        #Centrage des labels
+        self.labelTitle.resize(self.width() - 10, 150)
+        self.labelTitle.move(0, 40) # x, y
+        self.labelTitle.setText('Splash Screen')
+        self.labelTitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.labelDescription = QLabel(self.frame)
+        self.labelDescription.resize(self.width() - 10, 50)
+        self.labelDescription.move(0, self.labelTitle.height())
+        self.labelDescription.setObjectName('LabelDesc')
+        self.labelDescription.setText('<strong>Working on Task #1</strong>')
+        self.labelDescription.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.progressBar = QProgressBar(self.frame)
+        self.progressBar.resize(self.width() - 200 - 10, 50)
+        self.progressBar.move(100, self.labelDescription.y() + 130)
+        self.progressBar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.progressBar.setFormat('%p%')
+        self.progressBar.setTextVisible(True)
+        self.progressBar.setRange(0, self.n)
+        self.progressBar.setValue(20)
+
+        self.labelLoading = QLabel(self.frame)
+        self.labelLoading.resize(self.width() - 10, 50)
+        self.labelLoading.move(0, self.progressBar.y() + 70)
+        self.labelLoading.setObjectName('LabelLoading')
+        self.labelLoading.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.labelLoading.setText('loading...')
+
+    ##TODO: connar
+    def loading(self):
+        self.progressBar.setValue(self.counter)
+
+        if self.counter == int(self.n * 0.3):
+            self.labelDescription.setText('<strong>Working on Task #2</strong>')
+        elif self.counter == int(self.n * 0.6):
+            self.labelDescription.setText('<strong>Working on Task #3</strong>')
+        elif self.counter >= self.n:
+            self.timer.stop()
+            self.close()
+
+            time.sleep(1)
+
+            form.show()
+
+        self.counter += 1
+
+
+
 class logWindow(QWidget):
 
     
@@ -129,6 +208,11 @@ class logWindow(QWidget):
 
         self.hLayout1.addWidget(self.logoLabel1)
 
+        font = QFont()
+        font.setPointSize(40)
+        font.setBold(True)
+        font.setWeight(75)
+
         ##### Labels #####
         self.user = QLabel("Nom d'utilisateur:")
         self.password = QLabel("Mot de passe:")
@@ -142,9 +226,13 @@ class logWindow(QWidget):
         ##### Buttons #####
         self.buttonCo = QPushButton("Connexion")
         self.buttonCo.setObjectName("button1")
+        self.buttonCo.setFont(font)
+        self.buttonCo.setStyleSheet("font-size:14px;")
         self.buttonCo.clicked.connect(self.PushCo)
         self.buttonCl = QPushButton("Nettoyer")
         self.buttonCl.clicked.connect(self.PushCl)
+        self.buttonCl.setFont(font)
+        self.buttonCl.setStyleSheet("font-size:14px;")
         self.inputPassword.returnPressed.connect(self.PushCo)
         
         self.gLayout1 = QGridLayout()
@@ -159,7 +247,7 @@ class logWindow(QWidget):
         self.gWidget1 = QWidget()
         self.gWidget1.setLayout(self.gLayout1)
 
-        self.hLayout1.addWidget(self.gWidget1)
+        self.hLayout1.addWidget(self.gWidget1, 0, Qt.AlignmentFlag.AlignVCenter)
         
         self.logv1.setLayout(self.hLayout1)
 
@@ -194,9 +282,11 @@ class logWindow(QWidget):
         self.buttonCo2 = QPushButton("Connexion")
         self.buttonCo2.setObjectName("button2")
         self.buttonCo2.clicked.connect(self.PushCo)
+        self.buttonCo2.setFont(font)
         self.buttonCl2 = QPushButton("Nettoyer")
         self.buttonCl2.clicked.connect(self.PushCl)
         self.inputPassword2.returnPressed.connect(self.PushCo)
+        self.buttonCl2.setFont(font)
         
         self.gLayout2 = QGridLayout()
 
@@ -657,8 +747,10 @@ class mainWindow(QWidget):
 
     def creerDepot(self):
         print("Création")
-        creaWindow.sheet = self.sheet
+        #creaWindowOLD.sheet = self.sheet
+        #self.w = creaWindowOLD()
         self.w = creaWindow()
+        self.w.sheet = self.sheet
         self.w.show()
 
     def modifDepot(self):
@@ -741,8 +833,151 @@ class mainWindow(QWidget):
         if self.w:
             self.w.close()
 
-##TODO: Performance enhancement + UI 
 class creaWindow(QWidget):
+    windowslst = {}
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Création d'un dépôt")
+        sizeWidth = 870
+        sizeHeight = 600
+        self.setFixedSize(sizeWidth,sizeHeight)
+
+        font = QFont()
+        font.setPointSize(36)
+        font.setBold(True)
+        font.setWeight(75)
+
+        self.titre = QLabel("Création d'un dépôt")
+        self.titre.setFont(font)
+
+        self.VLayout = QVBoxLayout()
+        self.VLayout.setSpacing(10)
+        self.VLayout.addWidget(self.titre, 0, Qt.AlignmentFlag.AlignHCenter)
+
+        self.sheets = sheet_lst
+
+        if ('Accueil' in self.sheets):
+            self.sheets.remove('Accueil')
+        if ('BDD' in self.sheets):    
+            self.sheets.remove('BDD')
+
+        nbRow = (len(self.sheets) // 4)
+        reste = len(self.sheets) % 4
+
+        print("nombre row: " + str(nbRow) + " et le reste: " + str(reste))
+        print("nombre max index : " + str(len(self.sheets)))
+
+        index = 0
+
+        for iterRow in range(nbRow):
+            #Creation Widget de la row
+            wid = QWidget()
+            nomWid = "Widget" + str(iterRow)
+            setattr(self, nomWid, wid)
+
+            #Creation Layout H de la row
+            lay = QHBoxLayout()
+            nomLay = "layoutH" + str(iterRow)
+            setattr(self,nomLay,lay)
+
+            
+            for iterCol in range(4):
+                pushButton = QPushButton()
+                nomPushButton = traitementNom(self.sheets[index])
+                contentPushButton = self.sheets[index].replace('_',' ').capitalize()
+                setattr(self, nomPushButton, pushButton)
+                getattr(self, nomPushButton).setText(contentPushButton)
+                getattr(self, nomPushButton).setMaximumSize(200,40)
+                getattr(self, nomPushButton).setMinimumSize(200,40)
+                self.sheet_name = str(self.sheets[index])
+                #print("sheet_name: " + self.sheet_name)
+                #print(f"Index = {index}, sheet_name = {self.sheet_name}")
+                getattr(self, nomPushButton).clicked.connect(lambda state, x=self.sheet_name, y=False: self.automCo(x, y))
+
+                getattr(self,nomLay).addWidget(getattr(self,nomPushButton))
+                self.automCo(self.sheet_name, True)
+                index += 1
+                
+
+            getattr(self,nomWid).setLayout(getattr(self,nomLay))
+            self.VLayout.addWidget(getattr(self,nomWid))
+                
+        self.layoutReste = QHBoxLayout()
+        self.widgetReste = QWidget()
+        for i in range(reste):
+            pushButton = QPushButton()
+            nomPushButton = traitementNom(self.sheets[index])
+            contentPushButton = self.sheets[index].replace('_',' ').capitalize()
+            self.sheet_name = str(self.sheets[index])
+            setattr(self, nomPushButton, pushButton)
+            getattr(self, nomPushButton).setText(contentPushButton)
+            getattr(self, nomPushButton).setMaximumSize(200,40)
+            getattr(self, nomPushButton).setMinimumSize(200,40)
+            getattr(self, nomPushButton).clicked.connect(lambda state, x=self.sheet_name, y=False: self.automCo(x, y))
+            
+
+            self.layoutReste.addWidget(getattr(self, nomPushButton))
+            self.automCo(self.sheet_name, True)
+            index += 1
+
+        self.widgetReste.setLayout(self.layoutReste)
+        self.VLayout.addWidget(self.widgetReste)
+
+        self.boutonConfirmer = QPushButton("Confirmer la création du dépôt")
+        self.boutonConfirmer.clicked.connect(self.confirmerCreation)
+        self.boutonConfirmer.setMaximumSize(300,40)
+        self.VLayout.addWidget(self.boutonConfirmer, 0, Qt.AlignmentFlag.AlignHCenter)
+
+        self.setLayout(self.VLayout)
+
+    def automCo(self, str, crea):
+        ##TODO: corriger le code brico et tout
+        #Si la fenêtre existe déjà
+        if str in self.windowslst:
+            self.w = self.windowslst[str]
+        else:
+            fenetre = testDeLectureCreation()
+            nomFenetre = str
+            setattr(self, nomFenetre, fenetre)
+            getattr(self,nomFenetre).demarrage(str)
+            self.windowslst[str] = getattr(self,nomFenetre)
+            self.w = getattr(self, nomFenetre)
+
+        if crea == False:
+            self.w.show()
+
+
+    def confirmerCreation(self):
+        print("ca marche")
+        lstRemove = ['Code BRICO','Code EASIER','Dépôt','Région 2022']
+
+        for i in range (len(self.sheets)):
+            self.sheetName = self.sheets[i]
+           
+
+            self.lstColonnes = list(pd.read_excel(bdd, sheet_name=self.sheetName).columns.tolist())
+            if self.sheetName != 'Liste_depots':
+                for j in range (len(lstRemove)):
+                    if lstRemove[j] in self.lstColonnes:
+                        self.lstColonnes.remove(lstRemove[j])
+            
+            for j in range (len(self.lstColonnes)):
+                nomLineEdit = str(traitementNom(self.lstColonnes[j]))
+
+                self.windows = self.windowslst[self.sheetName]
+
+                valeur = self.windows.getLineEditValue(nomLineEdit)
+                #print(valeur)
+
+                ##Créer un dataframe fait que pour ca puis faire la fusion etc, juste récupérer le code
+
+
+
+
+
+
+##TODO: Performance enhancement + UI 
+class creaWindowOLD(QWidget):
     sheet = pd.DataFrame
     def __init__(self):
         super().__init__()
@@ -917,7 +1152,17 @@ class creaWindow(QWidget):
         self.layout.addWidget(self.r8)
         self.layout.addWidget(self.boutonConfirmer)
 
+        self.boutondemerde = QPushButton("fdp")
+        self.boutondemerde.clicked.connect(self.testmerdique)
+
+        self.layout.addWidget(self.boutondemerde)
+
         self.setLayout(self.layout)
+
+    def testmerdique(self):
+        print("ouverture prototype")
+        self.w = testDeLectureCreation()
+        self.w.show()
 
     def ldepot(self):
         print("Liste dépôt")
@@ -1276,7 +1521,6 @@ class creaWindow(QWidget):
         self.closeall()
 
        
-
     def closeEvent(self, event):
         print("je fais le close event")
         self.w=''
@@ -1289,6 +1533,60 @@ class creaWindow(QWidget):
             child.close()
         # Fermer cette fenêtre
         self.close()
+
+class testDeLectureCreation(QWidget):
+    excel_sheet = ""
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle(self.excel_sheet)
+        self.layout = QGridLayout()
+        self.titre = QLabel("Onglet: " + self.excel_sheet)
+        self.layout.addWidget(self.titre, 0, 0, 1, 2, Qt.AlignmentFlag.AlignHCenter)
+
+    def demarrage(self, sheet_name):
+        self.excel_sheet = sheet_name
+        self.workSheet = pd.read_excel(bdd, sheet_name=self.excel_sheet)
+        self.colonnes = list(self.workSheet.columns.tolist())
+
+        if self.excel_sheet != "Liste_depots":
+            lstRemove = ['Code BRICO','Code EASIER','Dépôt','Région 2022']
+            for nom in lstRemove:
+                if nom in self.colonnes:
+                    self.colonnes.remove(nom)
+
+        
+
+        for i in range(len(self.colonnes)):
+
+            label = QLabel()
+            nomLabel= "label" + str(traitementNom(self.colonnes[i]))
+            setattr(self, nomLabel, label)
+            getattr(self, nomLabel).setText(self.colonnes[i])
+
+            lineEdit = QLineEdit()
+            nomLineEdit = str(traitementNom(self.colonnes[i]))
+            setattr(self, nomLineEdit, lineEdit)
+            getattr(self, nomLineEdit).setPlaceholderText(self.colonnes[i])
+            getattr(self, nomLineEdit).setMinimumWidth(150)
+
+            self.layout.addWidget(getattr(self,nomLabel), i+1,0)
+            self.layout.addWidget(getattr(self,nomLineEdit), i+1,1)
+
+        if len(self.colonnes) > 15:
+            #faire la scroll area
+            print("Scroll Area creation")
+            self.scroll_area = QScrollArea(self)
+            self.scroll_area.setWidgetResizable(True)
+            self.scroll_area.setFixedSize(500,380)
+
+            self.widget = QWidget()
+            self.widget.setLayout(self.layout)
+            self.scroll_area.setWidget(self.widget)
+        else:
+            self.setLayout(self.layout)
+
+    def getLineEditValue(self, nomLineEdit):
+        return getattr(self, nomLineEdit).text()
 
 class listeDepot(QWidget):
     excel_sheet = "Liste_depots"
@@ -2863,6 +3161,8 @@ class accidentTravail(QWidget):
 
         self.setLayout(self.layout)
 
+
+
 ##TODO: Performance enhancement
 class modifWindow(QWidget):
     sheet = pd.DataFrame
@@ -3606,6 +3906,16 @@ class pandasEditableModel(QAbstractTableModel):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
+    def traitementNom(input):
+        trait = unidecode(input)
+        trait = trait.replace(' ','')
+        trait = trait.replace("'", "")
+        trait = trait.replace("(","")
+        trait = trait.replace(")","")
+        trait = trait.replace("/", "")
+        trait = trait.replace("-", "")
+        return trait
+
     File = open("qss/SyNet.qss","r")
 
     with File:
@@ -3615,6 +3925,8 @@ if __name__ == '__main__':
     main = mainWindow()
     form = logWindow()
     form.show()
-    form.PushCo()
+    #form.PushCo()
+    #splash = SplashScreen()
+    #splash.show()
 
     sys.exit(app.exec())

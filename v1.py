@@ -5,8 +5,6 @@ from PyQt6.QtGui import *
 from PyQt6.uic import loadUi
 
 import pandas as pd
-import numpy as np
-import openpyxl
 
 ##TODO: Gestion des filtres sur les QTableView()
 ##TODO:
