@@ -1,15 +1,89 @@
 import pandas as pd
 import openpyxl as wb
-import sys, io, shutil, tempfile, os, datetime
+import sys, io, shutil, tempfile, os, datetime, time
 from unidecode import unidecode
 
-from PyQt6.QtCore import Qt, QSize, QSortFilterProxyModel, QAbstractTableModel
+from PyQt6.QtCore import Qt, QSize, QSortFilterProxyModel, QAbstractTableModel, QTimer, QThread, pyqtSignal
 from PyQt6.QtGui import QIcon, QPainter, QColor, QPixmap, QBrush, QFont
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QHeaderView, QMessageBox, QHBoxLayout, QWidget, QLineEdit, QGridLayout, QComboBox, QVBoxLayout, QStackedWidget, QScrollArea, QFrame, QTableView, QSpacerItem 
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QProgressBar, QHeaderView, QMessageBox, QHBoxLayout, QWidget, QLineEdit, QGridLayout, QComboBox, QVBoxLayout, QStackedWidget, QScrollArea, QFrame, QTableView, QSpacerItem 
 from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.client_credential import ClientCredential
 from office365.sharepoint.files.file import File 
 
+class SplashScreen(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Chargement")
+        self.setFixedSize(1100,500)
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+
+        self.counter = 0
+        self.n = 300
+
+        self.initUI()
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.loading)
+        self.timer.start(30)
+
+    def initUI(self):
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        self.frame = QFrame()
+        layout.addWidget(self.frame)
+
+        self.labelTitle = QLabel(self.frame)
+        self.labelTitle.setObjectName('labelTitle')
+
+        #Centrage des labels
+        self.labelTitle.resize(self.width() - 10, 150)
+        self.labelTitle.move(0, 40) # x, y
+        self.labelTitle.setText('Splash Screen')
+        self.labelTitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.labelDescription = QLabel(self.frame)
+        self.labelDescription.resize(self.width() - 10, 50)
+        self.labelDescription.move(0, self.labelTitle.height())
+        self.labelDescription.setObjectName('LabelDesc')
+        self.labelDescription.setText('<strong>Working on Task #1</strong>')
+        self.labelDescription.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.progressBar = QProgressBar(self.frame)
+        self.progressBar.resize(self.width() - 200 - 10, 50)
+        self.progressBar.move(100, self.labelDescription.y() + 130)
+        self.progressBar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.progressBar.setFormat('%p%')
+        self.progressBar.setTextVisible(True)
+        self.progressBar.setRange(0, self.n)
+        self.progressBar.setValue(20)
+
+        self.labelLoading = QLabel(self.frame)
+        self.labelLoading.resize(self.width() - 10, 50)
+        self.labelLoading.move(0, self.progressBar.y() + 70)
+        self.labelLoading.setObjectName('LabelLoading')
+        self.labelLoading.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.labelLoading.setText('loading...')
+
+    ##TODO: connar
+    def loading(self):
+        self.progressBar.setValue(self.counter)
+
+        if self.counter == int(self.n * 0.3):
+            self.labelDescription.setText('<strong>Working on Task #2</strong>')
+        elif self.counter == int(self.n * 0.6):
+            self.labelDescription.setText('<strong>Working on Task #3</strong>')
+        elif self.counter >= self.n:
+            self.timer.stop()
+            self.close()
+
+            time.sleep(1)
+            form = logWindow()
+            form.show()
+
+        self.counter += 1
+            
 
 class logWindow(QWidget):  
     def __init__(self):
@@ -1608,6 +1682,10 @@ class pandasEditableModel(QAbstractTableModel):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
+    splash = SplashScreen()
+    splash.show()
+    app.processEvents()
+
     username = "acae250d-01e9-4f32-9d65-e06fa388ff60"
     password = "8FG7d+Es/DYXCJWN8spbNV6qyU5TQqUsoKmg5HLsHw4="
     test_team_site_url = "https://sgzkl.sharepoint.com/sites/BricoDepot"
@@ -1620,12 +1698,15 @@ if __name__ == '__main__':
     ctx.load(web).execute_query()
     print ("Connexion à Sharepoint réussie")
 
+    #splash.setProgress(10)
+
     responseBDD = File.open_binary(ctx, bdd_URL)
     print("Reponse trouvée")
     bytes_file_obj_bdd = io.BytesIO()
     bytes_file_obj_bdd.write(responseBDD.content)
     bytes_file_obj_bdd.seek(0)
     print("BDD chargée")
+    #splash.setProgress(20)
 
     responseMDP = File.open_binary(ctx, mdp_URL)
     print("Reponse trouvée")
@@ -1633,6 +1714,7 @@ if __name__ == '__main__':
     bytes_file_obj_mdp.write(responseMDP.content)
     bytes_file_obj_mdp.seek(0)
     print ("MDP chargés")
+    #splash.setProgress(30)
 
     responseREQ = File.open_binary(ctx, requete_URL)
     print("Reponse trouvée")
@@ -1640,6 +1722,7 @@ if __name__ == '__main__':
     bytes_file_obj_req.write(responseREQ.content)
     bytes_file_obj_req.seek(0)
     print ("Requêtes chargées")
+    #splash.setProgress(40)
 
     ##### Storing the data streams #####
     bdd = bytes_file_obj_bdd
@@ -1649,6 +1732,7 @@ if __name__ == '__main__':
     print("Lecture stream BDD pour création du set de données")
     xlsx_file = pd.ExcelFile(bdd)
     sheet_lst = xlsx_file.sheet_names
+    #splash.setProgress(50)
 
     sheet_Globale = pd.DataFrame()
     ##TODO: vérif
@@ -1689,10 +1773,11 @@ if __name__ == '__main__':
     #    qss = f.read()
     #    app.setStyleSheet(qss)
 
-
+    #splash.setProgress(100)
+    
     main = mainWindow()
-    form = logWindow()
-    form.show()
+    #form = logWindow()
+    #form.show()
 
 
     sys.exit(app.exec())
