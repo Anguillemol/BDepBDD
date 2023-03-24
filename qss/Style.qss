@@ -7,13 +7,6 @@ QWidget
 
 /*-----QPushButton-----*/
 QPushButton {
-                /*background-color: #ed161f;
-                color: black;
-                border: 2px solid transparent;
-				border-radius: 2px;
-                padding: 10px;
-                font-size: 16px;
-                font-weight: bold;*/
 				background-color: #c2c7d5;
 				color: #000;
 				border: none;
@@ -43,51 +36,6 @@ QCheckBox
 
 }
 
-
-/*-----QCheckBox-----
-QCheckBox::indicator
-{
-    color: #b1b1b1;
-    background-color: #323232;
-    border: 1px solid darkgray;
-    width: 12px;
-    height: 12px;
-
-}
-
-
-QCheckBox::indicator:checked
-{
-    image:url("./ressources/check.png");
-	background-color: #ff3333;
-    border: 1px solid #ff3333;
-
-}
-
-
-QCheckBox::indicator:unchecked:hover
-{
-    border: 1px solid #ff3333;
-
-}
-
-
-QCheckBox::disabled
-{
-	color: #656565;
-
-}
-
-
-QCheckBox::indicator:disabled
-{
-	background-color: #656565;
-	color: #656565;
-    border: 1px solid #656565;
-
-}
-
-*/
 /*-----QLineEdit-----*/
 QLineEdit
 {
@@ -152,64 +100,6 @@ QListView::item:!selected:hover
 	padding-left : 10px;
 
 }
-
-
-/*-----QTreeView-----*/
-QTreeView 
-{
-	background-color: #252525;
-	show-decoration-selected: 0;
-	color: #c2c8d7;
-
-}
-
-
-QTreeView::item 
-{
-	border-top-color: transparent;
-	border-bottom-color: transparent;
-
-}
-
-
-QTreeView::item:hover 
-{
-	background-color: #bcbdbb;
-	color: #000;
-
-}
-
-
-QTreeView::item:selected 
-{
-	background-color: #ff3333;
-	color: #000;
-
-}
-
-
-QTreeView::item:selected:active
-{
-	background-color: #ff3333;
-	color: #000;
-
-}
-
-
-QTreeView::branch:has-children:!has-siblings:closed,
-QTreeView::branch:closed:has-children:has-siblings 
-{
-	image: url(://tree-closed.png);
-
-}
-
-QTreeView::branch:open:has-children:!has-siblings,
-QTreeView::branch:open:has-children:has-siblings  
-{
-	image: url(://tree-open.png);
-
-}
-
 
 /*-----QTableView & QTableWidget-----*/
 QTableView

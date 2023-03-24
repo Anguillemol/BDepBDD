@@ -10,150 +10,6 @@ from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.client_credential import ClientCredential
 from office365.sharepoint.files.file import File 
 
-class WorkerThread(QThread):
-    progress_signal = pyqtSignal(int)
-    finished_signal = pyqtSignal()
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-    def run(self):
-        # Connexion à SharePoint
-        username = "acae250d-01e9-4f32-9d65-e06fa388ff60"
-        password = "8FG7d+Es/DYXCJWN8spbNV6qyU5TQqUsoKmg5HLsHw4="
-        test_team_site_url = "https://sgzkl.sharepoint.com/sites/BricoDepot"
-        bdd_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/BDD.xlsx"
-        mdp_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/MDP.xlsx"
-        requete_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/REQ.xlsx"
-        
-        self.ctx = ClientContext(test_team_site_url).with_credentials(ClientCredential(username, password))
-        web = self.ctx.web
-        self.ctx.load(web).execute_query()
-        print ("Connexion à Sharepoint réussie")
-        self.update_progress(10)
-
-        # Récupération des fichiers
-        responseBDD = File.open_binary(self.ctx, bdd_URL)
-        print("Reponse trouvée")
-        bytes_file_obj_bdd = io.BytesIO()
-        bytes_file_obj_bdd.write(responseBDD.content)
-        bytes_file_obj_bdd.seek(0)
-        print("BDD chargée")
-        self.update_progress(23)
-
-        responseMDP = File.open_binary(self.ctx, mdp_URL)
-        print("Reponse trouvée")
-        bytes_file_obj_mdp = io.BytesIO()
-        bytes_file_obj_mdp.write(responseMDP.content)
-        bytes_file_obj_mdp.seek(0)
-        print ("MDP chargés")
-        self.update_progress(36)
-
-        responseREQ = File.open_binary(self.ctx, requete_URL)
-        print("Reponse trouvée")
-        bytes_file_obj_req = io.BytesIO()
-        bytes_file_obj_req.write(responseREQ.content)
-        bytes_file_obj_req.seek(0)
-        print ("Requêtes chargées")
-        self.update_progress(50)
-
-        ##### Storing the data streams #####
-        self.bdd = bytes_file_obj_bdd
-        self.mdp = bytes_file_obj_mdp
-        self.req = bytes_file_obj_req
-        
-        # Création de la sheet_globale
-        print("Lecture stream BDD pour création du set de données")
-        xlsx_file = pd.ExcelFile(self.bdd)
-        self.sheet_lst = xlsx_file.sheet_names
-
-        self.sheet_Globale = pd.DataFrame()
-        ##TODO: vérif
-        bool_premier = True
-        for i in range(len(self.sheet_lst)):
-            progression = int(round(50 + (i/(len(self.sheet_lst))*50)))
-            print(progression)
-            if self.sheet_lst[i] != 'Accueil' and self.sheet_lst[i] != 'BDD':
-                print (self.sheet_lst[i])
-                workSheet = pd.read_excel(self.bdd, sheet_name=self.sheet_lst[i])
-                common_col = ["Code BRICO", "Code EASIER", "Dépôt", "Région 2022"]
-                if bool_premier == True:
-                    self.sheet_Globale = workSheet
-                    bool_premier=False
-                else:
-                    self.sheet_Globale = pd.merge(self.sheet_Globale, workSheet, on=common_col)
-            self.update_progress(progression)
-        self.update_progress(100)
-        
-        # Émission d'un signal pour indiquer que le travail est terminé
-        self.finished_signal.emit()
-
-    def update_progress(self, value):
-        self.progress_signal.emit(value)
-
-class SplashScreen(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Chargement")
-        self.setFixedSize(1100,500)
-        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-
-        self.initUI()
-        self.worker_thread = WorkerThread()
-
-        self.worker_thread.progress_signal.connect(self.update_progress)
-        self.worker_thread.finished_signal.connect(self.show_log_window)
-        self.worker_thread.start()
-
-
-    def initUI(self):
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-
-        self.frame = QFrame()
-        layout.addWidget(self.frame)
-
-        self.labelTitle = QLabel(self.frame)
-        self.labelTitle.setObjectName('labelTitle')
-
-        #Centrage des labels
-        self.labelTitle.resize(self.width() - 10, 150)
-        self.labelTitle.move(0, 40) # x, y
-        self.labelTitle.setText('Splash Screen')
-        self.labelTitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.labelDescription = QLabel(self.frame)
-        self.labelDescription.resize(self.width() - 10, 50)
-        self.labelDescription.move(0, self.labelTitle.height())
-        self.labelDescription.setObjectName('LabelDesc')
-        self.labelDescription.setText('<strong>Working on Task #1</strong>')
-        self.labelDescription.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.progressBar = QProgressBar(self.frame)
-        self.progressBar.resize(self.width() - 200 - 10, 50)
-        self.progressBar.move(100, self.labelDescription.y() + 130)
-        self.progressBar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.progressBar.setFormat('%p%')
-        self.progressBar.setTextVisible(True)
-        self.progressBar.setRange(0, 100)
-        self.progressBar.setValue(20)
-
-        self.labelLoading = QLabel(self.frame)
-        self.labelLoading.resize(self.width() - 10, 50)
-        self.labelLoading.move(0, self.progressBar.y() + 70)
-        self.labelLoading.setObjectName('LabelLoading')
-        self.labelLoading.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.labelLoading.setText('loading...')
-
-    ##TODO: connar
-    def update_progress(self, value):
-        self.progressBar.setValue(value)
-
-    def show_log_window(self):
-        #form.show()
-        self.close()
-            
 class logWindow(QWidget):  
     def __init__(self):
         super().__init__()
@@ -357,7 +213,7 @@ class logWindow(QWidget):
         self.inputPassword2.setText("")
 
 class mainWindow(QWidget):
-    sheet_Globale = pd.DataFrame
+
     def __init__(self):
         super().__init__()
 
@@ -1747,12 +1603,297 @@ class pandasEditableModel(QAbstractTableModel):
     def flags(self, index):
         return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsEditable
 
-
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     
+    clean = True
+    if clean==True:
+        styleSheet = """QWidget
+                    {
+                        background-color: #464646;
+                        color: #ffffff;
+                        
+                    }
 
+                    /*-----QPushButton-----*/
+                    QPushButton {
+                                    background-color: #c2c7d5;
+                                    color: #000;
+                                    border: none;
+                                    border-radius: 8px;
+                                    padding: 3px;
+                                    font-size: 20px;
+                                }
+                    QPushButton:hover {
+                                    border: 2px solid black;
+                                    color: black;
+                                }
+                    QPushButton:pressed {
+                                    background-color: #b4c2c7d5;
+                                    border: 2px solid black;
+                                }
+
+
+                    /*-----QCheckBox-----*/
+                    QCheckBox
+                    {
+                        background-color: transparent;
+                        color: #fff;
+                        font-size: 10px;
+                        font-weight: bold;
+                        border: none;
+                        border-radius: 5px;
+
+                    }
+
+                    /*-----QLineEdit-----*/
+                    QLineEdit
+                    {
+                        background-color: #c2c7d5;
+                        color: #000;
+                        border: none;
+                        border-radius: 8px;
+                        padding: 3px;
+                    }
+
+
+                    /*-----QListView-----*/
+                    QListView
+                    {
+                        background-color: #333333;
+                        color: #fff;
+                        font-size: 12px;
+                        font-weight: bold;
+                        border: 1px solid #191919;
+                        show-decoration-selected: 0;
+                        padding-left: -13px;
+                        padding-right: -13px;
+
+                    }
+
+
+                    QListView::item
+                    {
+                        color: #888b8b;
+                        background-color: #454e5e;
+                        border: none;
+                        padding: 5px;
+                        border-radius: 0px;
+                        padding-left : 10px;
+                        height: 42px;
+
+                    }
+
+                    QListView::item:selected
+                    {
+                        color: #000;
+                        background-color: #8a8a8a;
+
+                    }
+
+
+                    QListView::item:!selected
+                    {
+                        color:white;
+                        background-color: transparent;
+                        border: none;
+                        padding-left : 10px;
+
+                    }
+
+
+                    QListView::item:!selected:hover
+                    {
+                        color: #000;
+                        background-color: #bcbdbb;
+                        border: none;
+                        padding-left : 10px;
+
+                    }
+
+                    /*-----QTableView & QTableWidget-----*/
+                    QTableView
+                    {
+                        background-color: #252525;
+                        border: 1px solid gray;
+                        color: #f0f0f0;
+                        gridline-color: gray;
+                        outline : 0;
+
+                    }
+
+
+                    QTableView::disabled
+                    {
+                        background-color: #242526;
+                        border: 1px solid #32414B;
+                        color: #656565;
+                        gridline-color: #656565;
+                        outline : 0;
+
+                    }
+
+
+                    QTableView::item:hover 
+                    {
+                        background-color: #bcbdbb;
+                        color: #000;
+
+                    }
+
+
+                    QTableView::item:selected 
+                    {
+                        background-color: #c2c7d5;
+                        color: #000;
+
+                    }
+
+
+                    QTableView::item:selected:disabled
+                    {
+                        background-color: #1a1b1c;
+                        border: 2px solid #525251;
+                        color: #656565;
+
+                    }
+
+
+                    QTableCornerButton::section
+                    {
+                        background-color: #343a49;
+                        color: #fff;
+
+                    }
+
+
+                    QHeaderView::section
+                    {
+                        color: #fff;
+                        border-top: 0px;
+                        border-bottom: 1px solid gray;
+                        border-right: 1px solid gray;
+                        background-color: #343a49;
+                        margin-top:1px;
+                        margin-bottom:1px;
+                        padding: 5px;
+
+                    }
+
+
+                    QHeaderView::section:disabled
+                    {
+                        background-color: #525251;
+                        color: #656565;
+
+                    }
+
+
+                    QHeaderView::section:checked
+                    {
+                        color: #000;
+                        background-color: #b6b0b0;
+
+                    }
+
+
+                    QHeaderView::section:checked:disabled
+                    {
+                        color: #656565;
+                        background-color: #525251;
+
+                    }
+
+
+                    QHeaderView::section::vertical::first,
+                    QHeaderView::section::vertical::only-one
+                    {
+                        border-top: 1px solid #353635;
+
+                    }
+
+
+                    QHeaderView::section::vertical
+                    {
+                        border-top: 1px solid #353635;
+
+                    }
+
+
+                    QHeaderView::section::horizontal::first,
+                    QHeaderView::section::horizontal::only-one
+                    {
+                        border-left: 1px solid #353635;
+
+                    }
+
+
+                    QHeaderView::section::horizontal
+                    {
+                        border-left: 1px solid #353635;
+
+                    }
+
+
+                    /*-----QScrollBar-----*/
+                    QScrollBar:horizontal 
+                    {
+                        background-color: transparent;
+                        height: 14px;
+                        margin: 0px;
+                        padding: 0px;
+
+                    }
+
+
+                    QScrollBar::handle:horizontal 
+                    {
+                        border: none;
+                        min-width: 100px;
+                        background-color: #9b9b9b;
+
+                    }
+
+
+                    QScrollBar::add-line:horizontal, 
+                    QScrollBar::sub-line:horizontal,
+                    QScrollBar::add-page:horizontal, 
+                    QScrollBar::sub-page:horizontal 
+                    {
+                        width: 0px;
+                        background-color: transparent;
+
+                    }
+
+
+                    QScrollBar:vertical 
+                    {
+                        background-color: transparent;
+                        width: 14px;
+                        margin: 0;
+
+                    }
+
+
+                    QScrollBar::handle:vertical 
+                    {
+                        border: none;
+                        min-height: 100px;
+                        background-color: #9b9b9b;
+
+                    }
+
+
+                    QScrollBar::add-line:vertical, 
+                    QScrollBar::sub-line:vertical,
+                    QScrollBar::add-page:vertical, 
+                    QScrollBar::sub-page:vertical 
+                    {
+                        height: 0px;
+                        background-color: transparent;
+
+                    }
+                    """
 
     username = "acae250d-01e9-4f32-9d65-e06fa388ff60"
     password = "8FG7d+Es/DYXCJWN8spbNV6qyU5TQqUsoKmg5HLsHw4="
@@ -1761,22 +1902,6 @@ if __name__ == '__main__':
     mdp_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/MDP.xlsx"
     requete_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/REQ.xlsx"
 
-    splash = SplashScreen()
-    splash.show()
-    
-    splash.worker_thread.wait()
-    ctx = splash.worker_thread.ctx
-    bdd = splash.worker_thread.bdd
-    req = splash.worker_thread.req
-    mdp = splash.worker_thread.mdp
-    sheet_lst = splash.worker_thread.sheet_lst
-    sheet_Globale = splash.worker_thread.sheet_Globale
-
-    main = mainWindow()
-    form = logWindow()
-    form.show()
-    
-    """
     ctx = ClientContext(test_team_site_url).with_credentials(ClientCredential(username, password))
     web = ctx.web
     ctx.load(web).execute_query()
@@ -1831,7 +1956,7 @@ if __name__ == '__main__':
                 bool_premier=False
             else:
                 sheet_Globale = pd.merge(sheet_Globale, workSheet, on=common_col)
-    """
+    
     def traitementNom(input):
         trait = unidecode(input)
         trait = trait.replace(' ','')
@@ -1841,7 +1966,7 @@ if __name__ == '__main__':
         trait = trait.replace("/", "")
         trait = trait.replace("-", "")
         return trait
-    """
+    
     def resource_path(relative_path):
         try:
             base_path = sys._MEIPASS
@@ -1849,20 +1974,13 @@ if __name__ == '__main__':
             base_path = os.path.abspath(".")
 
         return os.path.join(base_path, relative_path)
-    
-    qss_file_path = "qss/SyNet.qss"
-    qss_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'qss', 'SyNet.qss')
 
-    #with open(resource_path(qss_file_path), 'r') as f:
-    #    qss = f.read()
-    #    app.setStyleSheet(qss)
-
-    #splash.setProgress(100)
+    app.setStyleSheet(styleSheet)
 
     main = mainWindow()
     form = logWindow()
     form.show()
-    """
+    
 
     sys.exit(app.exec())
 
