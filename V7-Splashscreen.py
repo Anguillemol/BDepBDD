@@ -26,14 +26,14 @@ class WorkerThread(QThread):
         mdp_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/MDP.xlsx"
         requete_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/REQ.xlsx"
         
-        ctx = ClientContext(test_team_site_url).with_credentials(ClientCredential(username, password))
-        web = ctx.web
-        ctx.load(web).execute_query()
+        self.ctx = ClientContext(test_team_site_url).with_credentials(ClientCredential(username, password))
+        web = self.ctx.web
+        self.ctx.load(web).execute_query()
         print ("Connexion à Sharepoint réussie")
         self.update_progress(10)
 
         # Récupération des fichiers
-        responseBDD = File.open_binary(ctx, bdd_URL)
+        responseBDD = File.open_binary(self.ctx, bdd_URL)
         print("Reponse trouvée")
         bytes_file_obj_bdd = io.BytesIO()
         bytes_file_obj_bdd.write(responseBDD.content)
@@ -41,7 +41,7 @@ class WorkerThread(QThread):
         print("BDD chargée")
         self.update_progress(23)
 
-        responseMDP = File.open_binary(ctx, mdp_URL)
+        responseMDP = File.open_binary(self.ctx, mdp_URL)
         print("Reponse trouvée")
         bytes_file_obj_mdp = io.BytesIO()
         bytes_file_obj_mdp.write(responseMDP.content)
@@ -49,7 +49,7 @@ class WorkerThread(QThread):
         print ("MDP chargés")
         self.update_progress(36)
 
-        responseREQ = File.open_binary(ctx, requete_URL)
+        responseREQ = File.open_binary(self.ctx, requete_URL)
         print("Reponse trouvée")
         bytes_file_obj_req = io.BytesIO()
         bytes_file_obj_req.write(responseREQ.content)
@@ -58,33 +58,33 @@ class WorkerThread(QThread):
         self.update_progress(50)
 
         ##### Storing the data streams #####
-        bdd = bytes_file_obj_bdd
-        mdp = bytes_file_obj_mdp
-        req = bytes_file_obj_req
+        self.bdd = bytes_file_obj_bdd
+        self.mdp = bytes_file_obj_mdp
+        self.req = bytes_file_obj_req
         
         # Création de la sheet_globale
         print("Lecture stream BDD pour création du set de données")
-        xlsx_file = pd.ExcelFile(bdd)
-        sheet_lst = xlsx_file.sheet_names
+        xlsx_file = pd.ExcelFile(self.bdd)
+        self.sheet_lst = xlsx_file.sheet_names
 
-        sheet_Globale = pd.DataFrame()
+        self.sheet_Globale = pd.DataFrame()
         ##TODO: vérif
         bool_premier = True
-        for i in range(len(sheet_lst)):
-            progression = int(round(50 + (i/(len(sheet_lst))*50)))
+        for i in range(len(self.sheet_lst)):
+            progression = int(round(50 + (i/(len(self.sheet_lst))*50)))
             print(progression)
-            if sheet_lst[i] != 'Accueil' and sheet_lst[i] != 'BDD':
-                print (sheet_lst[i])
-                workSheet = pd.read_excel(bdd, sheet_name=sheet_lst[i])
+            if self.sheet_lst[i] != 'Accueil' and self.sheet_lst[i] != 'BDD':
+                print (self.sheet_lst[i])
+                workSheet = pd.read_excel(self.bdd, sheet_name=self.sheet_lst[i])
                 common_col = ["Code BRICO", "Code EASIER", "Dépôt", "Région 2022"]
                 if bool_premier == True:
-                    sheet_Globale = workSheet
+                    self.sheet_Globale = workSheet
                     bool_premier=False
                 else:
-                    sheet_Globale = pd.merge(sheet_Globale, workSheet, on=common_col)
+                    self.sheet_Globale = pd.merge(self.sheet_Globale, workSheet, on=common_col)
             self.update_progress(progression)
         self.update_progress(100)
-        main.sheet_Globale = sheet_Globale
+        
         # Émission d'un signal pour indiquer que le travail est terminé
         self.finished_signal.emit()
 
@@ -100,11 +100,12 @@ class SplashScreen(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
         self.initUI()
-
         self.worker_thread = WorkerThread()
+
         self.worker_thread.progress_signal.connect(self.update_progress)
         self.worker_thread.finished_signal.connect(self.show_log_window)
         self.worker_thread.start()
+
 
     def initUI(self):
         layout = QVBoxLayout()
@@ -135,7 +136,7 @@ class SplashScreen(QWidget):
         self.progressBar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.progressBar.setFormat('%p%')
         self.progressBar.setTextVisible(True)
-        self.progressBar.setRange(0, self.n)
+        self.progressBar.setRange(0, 100)
         self.progressBar.setValue(20)
 
         self.labelLoading = QLabel(self.frame)
@@ -150,7 +151,7 @@ class SplashScreen(QWidget):
         self.progressBar.setValue(value)
 
     def show_log_window(self):
-        form.show()
+        #form.show()
         self.close()
             
 class logWindow(QWidget):  
@@ -1751,9 +1752,7 @@ class pandasEditableModel(QAbstractTableModel):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     
-    
-    splash = SplashScreen()
-    splash.show()
+
 
     username = "acae250d-01e9-4f32-9d65-e06fa388ff60"
     password = "8FG7d+Es/DYXCJWN8spbNV6qyU5TQqUsoKmg5HLsHw4="
@@ -1762,6 +1761,21 @@ if __name__ == '__main__':
     mdp_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/MDP.xlsx"
     requete_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/REQ.xlsx"
 
+    splash = SplashScreen()
+    splash.show()
+    
+    splash.worker_thread.wait()
+    ctx = splash.worker_thread.ctx
+    bdd = splash.worker_thread.bdd
+    req = splash.worker_thread.req
+    mdp = splash.worker_thread.mdp
+    sheet_lst = splash.worker_thread.sheet_lst
+    sheet_Globale = splash.worker_thread.sheet_Globale
+
+    main = mainWindow()
+    form = logWindow()
+    form.show()
+    
     """
     ctx = ClientContext(test_team_site_url).with_credentials(ClientCredential(username, password))
     web = ctx.web
@@ -1827,7 +1841,7 @@ if __name__ == '__main__':
         trait = trait.replace("/", "")
         trait = trait.replace("-", "")
         return trait
-
+    """
     def resource_path(relative_path):
         try:
             base_path = sys._MEIPASS
@@ -1844,13 +1858,11 @@ if __name__ == '__main__':
     #    app.setStyleSheet(qss)
 
     #splash.setProgress(100)
-    
-    ctx = WorkerThread.ctx
 
-    form = logWindow()
     main = mainWindow()
+    form = logWindow()
     form.show()
-
+    """
 
     sys.exit(app.exec())
 
