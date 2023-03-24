@@ -1,15 +1,88 @@
 import pandas as pd
 import openpyxl as wb
-import sys, io, shutil, tempfile, os, datetime
+import sys, io, shutil, tempfile, os, datetime, time
 from unidecode import unidecode
 
-from PyQt6.QtCore import Qt, QSize, QSortFilterProxyModel, QAbstractTableModel
+from PyQt6.QtCore import Qt, QSize, QSortFilterProxyModel, QAbstractTableModel, QTimer
 from PyQt6.QtGui import QIcon, QPainter, QColor, QPixmap, QBrush, QFont
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QHeaderView, QMessageBox, QHBoxLayout, QWidget, QLineEdit, QGridLayout, QComboBox, QVBoxLayout, QStackedWidget, QScrollArea, QFrame, QTableView, QSpacerItem 
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QProgressBar, QLabel, QHeaderView, QMessageBox, QHBoxLayout, QWidget, QLineEdit, QGridLayout, QComboBox, QVBoxLayout, QStackedWidget, QScrollArea, QFrame, QTableView, QSpacerItem 
 from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.client_credential import ClientCredential
 from office365.sharepoint.files.file import File 
 
+class SplashScreen(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Chargement")
+        self.setFixedSize(1100,500)
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+
+        self.counter = 0
+        self.n = 300
+
+        self.initUI()
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.loading)
+        self.timer.start(30)
+
+    def initUI(self):
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        self.frame = QFrame()
+        layout.addWidget(self.frame)
+
+        self.labelTitle = QLabel(self.frame)
+        self.labelTitle.setObjectName('labelTitle')
+
+        #Centrage des labels
+        self.labelTitle.resize(self.width() - 10, 150)
+        self.labelTitle.move(0, 40) # x, y
+        self.labelTitle.setText('Splash Screen')
+        self.labelTitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.labelDescription = QLabel(self.frame)
+        self.labelDescription.resize(self.width() - 10, 50)
+        self.labelDescription.move(0, self.labelTitle.height())
+        self.labelDescription.setObjectName('LabelDesc')
+        self.labelDescription.setText('<strong>Working on Task #1</strong>')
+        self.labelDescription.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.progressBar = QProgressBar(self.frame)
+        self.progressBar.resize(self.width() - 200 - 10, 50)
+        self.progressBar.move(100, self.labelDescription.y() + 130)
+        self.progressBar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.progressBar.setFormat('%p%')
+        self.progressBar.setTextVisible(True)
+        self.progressBar.setRange(0, self.n)
+        self.progressBar.setValue(20)
+
+        self.labelLoading = QLabel(self.frame)
+        self.labelLoading.resize(self.width() - 10, 50)
+        self.labelLoading.move(0, self.progressBar.y() + 70)
+        self.labelLoading.setObjectName('LabelLoading')
+        self.labelLoading.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.labelLoading.setText('loading...')
+
+    ##TODO: connar
+    def loading(self):
+        self.progressBar.setValue(self.counter)
+
+        if self.counter == int(self.n * 0.3):
+            self.labelDescription.setText('<strong>Working on Task #2</strong>')
+        elif self.counter == int(self.n * 0.6):
+            self.labelDescription.setText('<strong>Working on Task #3</strong>')
+        elif self.counter >= self.n:
+            self.timer.stop()
+            self.close()
+
+            time.sleep(1)
+            form = logWindow()
+            form.show()
+
+        self.counter += 1
 
 class logWindow(QWidget):  
     def __init__(self):
