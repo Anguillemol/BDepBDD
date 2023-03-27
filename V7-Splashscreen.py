@@ -753,6 +753,7 @@ class creaWindow(QWidget):
             fenetre = testDeLectureCreation()
             nomFenetre = str
             setattr(self, nomFenetre, fenetre)
+            getattr(self,nomFenetre).excel_sheet = str
             getattr(self,nomFenetre).demarrage(str)
             self.windowslst[str] = getattr(self,nomFenetre)
             self.w = getattr(self, nomFenetre)
@@ -813,13 +814,14 @@ class testDeLectureCreation(QWidget):
     excel_sheet = ""
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(self.excel_sheet)
         self.layout = QGridLayout()
-        self.titre = QLabel("Onglet: " + self.excel_sheet)
-        self.layout.addWidget(self.titre, 0, 0, 1, 2, Qt.AlignmentFlag.AlignHCenter)
+        
 
     def demarrage(self, sheet_name):
         self.excel_sheet = sheet_name
+        self.setWindowTitle(self.excel_sheet)
+        self.titre = QLabel("Onglet: " + self.excel_sheet)
+        self.layout.addWidget(self.titre, 0, 0, 1, 2, Qt.AlignmentFlag.AlignHCenter)
         self.workSheet = pd.read_excel(bdd, sheet_name=self.excel_sheet)
         self.colonnes = list(self.workSheet.columns.tolist())
 

@@ -225,7 +225,7 @@ If Len(TextBox1.Value) = 6 And IsNumeric(TextBox1.Value) = True Then
         Dim i As Integer
         For i = 2 To ligne - 1
             If CLng(TextBox1.Value) = Cells(i, col_codes).Value Then
-                ListBox1.AddItem i
+                ListBox1.AddItem i & " - " & Cells(i, col_typo).Values & " - " & Cells(i, col_region).Values 
             End If
         Next i
     End If
