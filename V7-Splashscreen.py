@@ -128,7 +128,7 @@ class logWindow(QWidget):
 
         self.logoLabel1 = QLabel("")
         self.logoLabel1.setMaximumSize(QSize(200,140))
-        self.logoLabel1.setPixmap(QPixmap("logo.png"))
+        self.logoLabel1.setPixmap(QPixmap(os.path.join(repertexec,"logo.png")))
         self.logoLabel1.setScaledContents(True)
         self.logoLabel1.setStyleSheet("background-color: white")
 
@@ -187,7 +187,7 @@ class logWindow(QWidget):
 
         self.logoLabel2 = QLabel()
         self.logoLabel2.setMaximumSize(QSize(200,140))
-        self.logoLabel2.setPixmap(QPixmap("logo.png"))
+        self.logoLabel2.setPixmap(QPixmap(os.path.join(repertexec,"logo.png")))
         self.logoLabel2.setScaledContents(True)
         self.logoLabel2.setStyleSheet("background-color: white")
         
@@ -431,7 +431,7 @@ class mainWindow(QWidget):
 
             self.logo = QLabel("")
             self.logo.setMaximumSize(QSize(170, 100))
-            self.logo.setPixmap(QPixmap("logo.png"))
+            self.logo.setPixmap(QPixmap(os.path.join(repertexec,"logo.png")))
             self.logo.setScaledContents(True)
             self.logo.setStyleSheet("background-color: white")
 
@@ -498,7 +498,7 @@ class mainWindow(QWidget):
             self.creer.setMinimumSize(QSize(300,40))
             #self.creer.setStyleSheet(styleSheetBouton)
             iconCreer = QIcon()
-            iconCreer.addPixmap(QPixmap("Icons/create.png"), QIcon.Mode.Normal, QIcon.State.Off)
+            iconCreer.addPixmap(QPixmap(os.path.join(repertexec,"Icons/create.png")), QIcon.Mode.Normal, QIcon.State.Off)
             self.creer.setIcon(iconCreer)
 
             self.modifier = QPushButton("Modifier un dépôt")
@@ -507,7 +507,7 @@ class mainWindow(QWidget):
             self.modifier.setMaximumSize(QSize(300, 100))
             #self.modifier.setStyleSheet(styleSheetBouton)
             iconModifier = QIcon()
-            iconModifier.addPixmap(QPixmap("Icons/edit.png"), QIcon.Mode.Normal, QIcon.State.Off)
+            iconModifier.addPixmap(QPixmap(os.path.join(repertexec,"Icons/edit.png")), QIcon.Mode.Normal, QIcon.State.Off)
             self.modifier.setIcon(iconModifier)
 
             self.supprimer = QPushButton("Supprimer un dépôt")
@@ -515,7 +515,7 @@ class mainWindow(QWidget):
             self.supprimer.setMaximumSize(QSize(300, 100))
             #self.supprimer.setStyleSheet(styleSheetBouton)
             iconSupprimer = QIcon()
-            iconSupprimer.addPixmap(QPixmap("Icons/delete.png"), QIcon.Mode.Normal, QIcon.State.Off)
+            iconSupprimer.addPixmap(QPixmap(os.path.join(repertexec,"Icons/delete.png")), QIcon.Mode.Normal, QIcon.State.Off)
             self.supprimer.setIcon(iconSupprimer)
 
             self.bandeau = QWidget()
@@ -533,7 +533,7 @@ class mainWindow(QWidget):
             #self.boutonValidation.setStyleSheet(styleSheetBouton)
             self.boutonValidation.clicked.connect(self.saveData)
             iconValider = QIcon()
-            iconValider.addPixmap(QPixmap("Icons/check.png"), QIcon.Mode.Normal, QIcon.State.Off)
+            iconValider.addPixmap(QPixmap(os.path.join(repertexec,"Icons/check.png")), QIcon.Mode.Normal, QIcon.State.Off)
             self.boutonValidation.setIcon(iconValider)
 
             ##Comptage nombre de requêtes de changement
@@ -598,7 +598,7 @@ class mainWindow(QWidget):
 
             self.logo = QLabel("")
             self.logo.setMaximumSize(QSize(210, 130))
-            self.logo.setPixmap(QPixmap("logo.png"))
+            self.logo.setPixmap(QPixmap(os.path.join(repertexec,"logo.png")))
             self.logo.setScaledContents(True)
             self.logo.setStyleSheet("background-color: white")
             self.logo.setStyleSheet("background-color: rgb(191, 189, 184)")
@@ -1706,6 +1706,11 @@ class pandasEditableModel(QAbstractTableModel):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):    
+        repertexec = sys._MEIPASS # programme traité par pyinstaller
+    else:
+        repertexec = os.path.dirname(os.path.abspath(__file__)) # non traité
     
     clean = True
     if clean==True:
