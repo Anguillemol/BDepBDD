@@ -227,9 +227,16 @@ TextBox9.Value = ligne
 TextBox9.Font.Size = 12
 
 
+nbrRef = ligne - 2
+nbrFlag = 0
+for i = 0 to ligne
+    If Sheets(onglet_fichier_base).Cells(i,26) = 1 Then
+        nbrFlag = nbrFlag + 1
+Next
 
+nbrRef = nbrRef - nbrFlage
 
-If ligne - 2 > 60 Then
+If nbrRef > 60 Then
     Me.TextBox16.BackColor = vbRed
     MsgBox "Limite de données renseignées dépassée"
     TextBox16.Value = ligne - 2 & " / 60" & vbCrLf & "Limite dépassée"
@@ -850,19 +857,11 @@ If Len(TextBox1.Value) = 6 And IsNumeric(TextBox1.Value) = True Then
         End If
         Dim n As Long
         For n = 2 To ligne_derefs
-
-            'Si l'année du fichier est inférieur à l'anée de la base data : Code Deref
-            'Sinon : si l'année est égale au truc data checker le mois.
-            'Sinon pas de souss
-
-           ' je vois pas de soucis ici, peut-etre checker les valeurs avec une macro toute simple ?
-
-
             If Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 7).Value = CLng(TextBox1.Value) Then
-                If var_annee < Year(Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 5).Value) Then 'c'est ici qu'y a un ptit probleme je pense
+                If var_annee < Year(Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 5).Value) Then
                     TextBox8.Value = "Article DEREF"
                     TextBox8.BackColor = vbRed
-                ElseIf var_annee = Year(Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 5).Value) Then 
+                ElseIf var_annee = Year(Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 5).Value) Then
                     If var_mois_num <= Month(Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 5).Value) Then
                         TextBox8.Value = "Article DEREF"
                         TextBox8.BackColor = vbRed
@@ -1677,6 +1676,8 @@ End Sub
 Private Sub CommandButton3_Click()
 MsgBox col_flag_siege
 End Sub
+
+
 
 
 

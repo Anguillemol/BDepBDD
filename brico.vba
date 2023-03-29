@@ -61,10 +61,6 @@ Private Sub ListBox1_Click()
 
 End Sub
 
-Private Sub TextBox2_Change()
-
-End Sub
-
 Private Sub UserForm_Initialize()
 
 
@@ -225,7 +221,7 @@ If Len(TextBox1.Value) = 6 And IsNumeric(TextBox1.Value) = True Then
         Dim i As Integer
         For i = 2 To ligne - 1
             If CLng(TextBox1.Value) = Cells(i, col_codes).Value Then
-                ListBox1.AddItem i & " - " & Cells(i, col_typo).Values & " - " & Cells(i, col_region).Values 
+                ListBox1.AddItem i & " - " & Cells(i, col_typo).Values & " - " & Cells(i, col_region).Values
             End If
         Next i
     End If
@@ -607,7 +603,7 @@ End If
 
             'multifournisseur - 1
             Dim num_ligne_multifourn_1 As Long
-            num_ligne_multifourn_1 = num_ligne_multifourn
+            num_ligne_multifourn_1 = num_ligne_multifournextBox3
             While Workbooks(base_data).Sheets(onglet_multifourn).Cells(num_ligne_multifourn_1, 5).Value = "fournisseur"
 
                'Modification codes onglet compil
