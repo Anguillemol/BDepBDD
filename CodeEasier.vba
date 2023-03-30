@@ -71,135 +71,135 @@ Private Sub UserForm_Initialize()
 
 
 
-workbook_compil = ActiveWorkbook.Name
-onglet_compil = "COMPIL"
-prefix = Left(Replace(Replace(workbook_compil, "COMPILATION_", ""), ".xlsm", ""), 2) & "_"
-annee = CStr(Right(Replace(workbook_compil, ".xlsm", ""), 4))
+    workbook_compil = ActiveWorkbook.Name
+    onglet_compil = "COMPIL"
+    prefix = Left(Replace(Replace(workbook_compil, "COMPILATION_", ""), ".xlsm", ""), 2) & "_"
+    annee = CStr(Right(Replace(workbook_compil, ".xlsm", ""), 4))
 
-chemin_depot = "https://kfplc.sharepoint.com/teams/OGRP-Marketingdesventes/Shared Documents/Animation commerciale de gamme/" & annee & "/" & prefix & "animco_F&R/3. MDV/"
-
-
-base_data = "Base data.xlsx"
-
-onglet_art_depot = "couple art dépôt"
-onglet_rattachement = "rattachement"
-onglet_code_region = "code region"
+    chemin_depot = "https://kfplc.sharepoint.com/teams/OGRP-Marketingdesventes/Shared Documents/Animation commerciale de gamme/" & annee & "/" & prefix & "animco_F&R/3. MDV/"
 
 
-Dim date_fichier As Date
-date_fichier = CDate("01" & "/" & Left(Right(Replace(workbook_compil, ".xlsm", ""), 6), 2) & "/" & Right(Replace(workbook_compil, ".xlsm", ""), 4))
-mois_lettre = StrConv(MonthName(Left(Right(Replace(workbook_compil, ".xlsm", ""), 6), 2)), vbProperCase)
+    base_data = "Base data.xlsx"
+
+    onglet_art_depot = "couple art dépôt"
+    onglet_rattachement = "rattachement"
+    onglet_code_region = "code region"
 
 
-
-newrange = Workbooks(workbook_compil).Sheets(onglet_compil).Range("A1").End(xlToRight).Column
-
-Dim i As Integer
-For i = 1 To newrange
-    If LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "codes" Or LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "code" Then
-        col_codes = i
-    ElseIf LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "mois" Then
-        col_mois = i
-    ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e")) = "region" Then
-        col_region = i
-    ElseIf LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "typologie" Then
-        col_typo = i
-    ElseIf LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "easier" Then
-        col_easier = i
-    ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, " ", "")) = "easierconcatener" Then
-        col_easier_conc = i
-    ElseIf LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "ean" Then
-        col_ean = i
-    ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e")) = "libelle" Then
-        col_lib = i
-    ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e")) = "marche" Then
-        col_marche = i
-    ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e")) = "categorie" Then
-        col_cat = i
-    ElseIf LCase(Replace(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e"), "-", "")) = "souscategorie" Or LCase(Replace(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e"), " ", "")) = "souscategorie" Then
-        col_souscat = i
-    ElseIf LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "pcb" Then
-        col_pcb = i
-    ElseIf LCase(Replace(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e"), " ", "")) = "minsouhaite" Then
-        col_minsouh = i
-    ElseIf LCase(Replace(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e"), " ", "")) = "mintotregion" Then
-        col_mintot = i
-    ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, " ", "")) = "nombrefacingmerch" Then
-        col_nbrefac = i
-    ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, " ", "")) = "minfacing" Then
-        col_minfac = i
-    ElseIf LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "ca" Then
-        col_ca = i
-    ElseIf LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "couverture" Then
-        col_couv = i
-    ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "ô", "o")) = "entrepots" Then
-        col_entrepot = i
-    End If
-Next i
-
-lettre_col_codes = Split(Cells(1, col_codes).Address, "$")(1)
-
-ligne = Workbooks(workbook_compil).Sheets(onglet_compil).Cells(Application.Rows.Count, col_codes).End(xlUp).Row + 1
+    Dim date_fichier As Date
+    date_fichier = CDate("01" & "/" & Left(Right(Replace(workbook_compil, ".xlsm", ""), 6), 2) & "/" & Right(Replace(workbook_compil, ".xlsm", ""), 4))
+    mois_lettre = StrConv(MonthName(Left(Right(Replace(workbook_compil, ".xlsm", ""), 6), 2)), vbProperCase)
 
 
 
-'rattachement
-ligne_region = Workbooks(base_data).Sheets(onglet_code_region).Cells(Application.Rows.Count, 1).End(xlUp).Row
-ligne_rattachement = Workbooks(base_data).Sheets(onglet_rattachement).Cells(Application.Rows.Count, 1).End(xlUp).Row
-nbre_col_ratt = Workbooks(base_data).Sheets(onglet_rattachement).Range("A7").End(xlToRight).Column
-Dim k As Long
-For k = 1 To nbre_col_ratt
-    If LCase(Workbooks(base_data).Sheets(onglet_rattachement).Cells(1, k).Value) = "article" Then
-        col_codes_ratt = k
-    End If
-Next k
-lettre_col_codes_ratt = Split(Workbooks(base_data).Sheets(onglet_rattachement).Cells(1, col_codes_ratt).Address, "$")(1)
+    newrange = Workbooks(workbook_compil).Sheets(onglet_compil).Range("A1").End(xlToRight).Column
+
+    Dim i As Integer
+    For i = 1 To newrange
+        If LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "codes" Or LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "code" Then
+            col_codes = i
+        ElseIf LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "mois" Then
+            col_mois = i
+        ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e")) = "region" Then
+            col_region = i
+        ElseIf LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "typologie" Then
+            col_typo = i
+        ElseIf LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "easier" Then
+            col_easier = i
+        ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, " ", "")) = "easierconcatener" Then
+            col_easier_conc = i
+        ElseIf LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "ean" Then
+            col_ean = i
+        ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e")) = "libelle" Then
+            col_lib = i
+        ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e")) = "marche" Then
+            col_marche = i
+        ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e")) = "categorie" Then
+            col_cat = i
+        ElseIf LCase(Replace(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e"), "-", "")) = "souscategorie" Or LCase(Replace(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e"), " ", "")) = "souscategorie" Then
+            col_souscat = i
+        ElseIf LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "pcb" Then
+            col_pcb = i
+        ElseIf LCase(Replace(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e"), " ", "")) = "minsouhaite" Then
+            col_minsouh = i
+        ElseIf LCase(Replace(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "é", "e"), " ", "")) = "mintotregion" Then
+            col_mintot = i
+        ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, " ", "")) = "nombrefacingmerch" Then
+            col_nbrefac = i
+        ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, " ", "")) = "minfacing" Then
+            col_minfac = i
+        ElseIf LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "ca" Then
+            col_ca = i
+        ElseIf LCase(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value) = "couverture" Then
+            col_couv = i
+        ElseIf LCase(Replace(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(1, i).Value, "ô", "o")) = "entrepots" Then
+            col_entrepot = i
+        End If
+    Next i
+
+    lettre_col_codes = Split(Cells(1, col_codes).Address, "$")(1)
+
+    ligne = Workbooks(workbook_compil).Sheets(onglet_compil).Cells(Application.Rows.Count, col_codes).End(xlUp).Row + 1
 
 
-'couple_art_depot
-ligne_art_depot = Workbooks(base_data).Sheets(onglet_art_depot).Cells(Application.Rows.Count, 1).End(xlUp).Row
-nbre_col_art_depot = Workbooks(base_data).Sheets(onglet_art_depot).Range("A1").End(xlToRight).Column
-Dim k_art As Long
-For k_art = 1 To nbre_col_art_depot
-    If LCase(Workbooks(base_data).Sheets(onglet_art_depot).Cells(1, k_art).Value) = "article" Then
-        col_codes_art_depot = k_art
-    End If
-Next k_art
-lettre_col_codes_art_depot = Split(Workbooks(base_data).Sheets(onglet_art_depot).Cells(1, col_codes_art_depot).Address, "$")(1)
+
+    'rattachement
+    ligne_region = Workbooks(base_data).Sheets(onglet_code_region).Cells(Application.Rows.Count, 1).End(xlUp).Row
+    ligne_rattachement = Workbooks(base_data).Sheets(onglet_rattachement).Cells(Application.Rows.Count, 1).End(xlUp).Row
+    nbre_col_ratt = Workbooks(base_data).Sheets(onglet_rattachement).Range("A7").End(xlToRight).Column
+    Dim k As Long
+    For k = 1 To nbre_col_ratt
+        If LCase(Workbooks(base_data).Sheets(onglet_rattachement).Cells(1, k).Value) = "article" Then
+            col_codes_ratt = k
+        End If
+    Next k
+    lettre_col_codes_ratt = Split(Workbooks(base_data).Sheets(onglet_rattachement).Cells(1, col_codes_ratt).Address, "$")(1)
+
+
+    'couple_art_depot
+    ligne_art_depot = Workbooks(base_data).Sheets(onglet_art_depot).Cells(Application.Rows.Count, 1).End(xlUp).Row
+    nbre_col_art_depot = Workbooks(base_data).Sheets(onglet_art_depot).Range("A1").End(xlToRight).Column
+    Dim k_art As Long
+    For k_art = 1 To nbre_col_art_depot
+        If LCase(Workbooks(base_data).Sheets(onglet_art_depot).Cells(1, k_art).Value) = "article" Then
+            col_codes_art_depot = k_art
+        End If
+    Next k_art
+    lettre_col_codes_art_depot = Split(Workbooks(base_data).Sheets(onglet_art_depot).Cells(1, col_codes_art_depot).Address, "$")(1)
 
 
 
 End Sub
 
 'ancienne fonction check ligne et colonne rattachement
-'Public Function return_col_sap(sap As String) As Long
-'Dim i_col_sap
-'For i_col_sap = 1 To nbre_col_ratt
-'    If Workbooks(base_data).Sheets(onglet_rattachement).Cells(1, i_col_sap).Value = sap Then
-'        return_col_sap = i_col_sap
-'    End If
-'Next i_col_sap
-'
-'End Function
-
-
-'Public Function return_ligne_ratt(code As Long) As Long
-'
-'    If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_rattachement).Range(lettre_col_codes_ratt & ":" & lettre_col_codes_ratt), code) > 0 Then
-'        Dim num_ligne_ratt As Long
-'        num_ligne_ratt = Workbooks(base_data).Sheets(onglet_rattachement).Range(lettre_col_codes_ratt & ":" & lettre_col_codes_ratt).Find(What:=code).Row
-'        return_ligne_ratt = num_ligne_ratt
-'    End If
-'
-'End Function
-
 Public Function return_col_sap(sap As String) As Long
 Dim i_col_sap
-For i_col_sap = 1 To nbre_col_art_depot
-    If Workbooks(base_data).Sheets(onglet_art_depot).Cells(1, i_col_sap).Value = sap Then
+For i_col_sap = 1 To nbre_col_ratt
+    If Workbooks(base_data).Sheets(onglet_rattachement).Cells(1, i_col_sap).Value = sap Then
         return_col_sap = i_col_sap
     End If
 Next i_col_sap
+
+End Function
+
+
+Public Function return_ligne_ratt(code As Long) As Long
+
+    If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_rattachement).Range(lettre_col_codes_ratt & ":" & lettre_col_codes_ratt), code) > 0 Then
+        Dim num_ligne_ratt As Long
+        num_ligne_ratt = Workbooks(base_data).Sheets(onglet_rattachement).Range(lettre_col_codes_ratt & ":" & lettre_col_codes_ratt).Find(What:=code).Row
+        return_ligne_ratt = num_ligne_ratt
+    End If
+
+End Function
+
+Public Function return_col_sap(sap As String) As Long
+    Dim i_col_sap
+    For i_col_sap = 1 To nbre_col_art_depot
+        If Workbooks(base_data).Sheets(onglet_art_depot).Cells(1, i_col_sap).Value = sap Then
+            return_col_sap = i_col_sap
+        End If
+    Next i_col_sap
 
 End Function
 
@@ -216,84 +216,84 @@ End Function
 
 Public Function check_typologie(ligne_compil As Long, ligne_sap As Long) As Boolean
 
-Dim var_typo_compil As String
-var_typo_compil = Right(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(ligne_compil, col_typo).Value, 1)
+    Dim var_typo_compil As String
+    var_typo_compil = Right(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(ligne_compil, col_typo).Value, 1)
 
-Dim var_typo_sap As String
-var_typo_sap = Right(Workbooks(base_data).Sheets(onglet_code_region).Cells(ligne_sap, 6).Value, 1)
+    Dim var_typo_sap As String
+    var_typo_sap = Right(Workbooks(base_data).Sheets(onglet_code_region).Cells(ligne_sap, 6).Value, 1)
 
 
-If var_typo_compil = "1" Then
-    check_typologie = True
-ElseIf var_typo_compil = "2" And (var_typo_sap = "2" Or var_typo_sap = "3") Then
-    check_typologie = True
-ElseIf var_typo_compil = "3" And var_typo_sap = "3" Then
-    check_typologie = True
-Else
-    check_typologie = False
-End If
+    If var_typo_compil = "1" Then
+        check_typologie = True
+    ElseIf var_typo_compil = "2" And (var_typo_sap = "2" Or var_typo_sap = "3") Then
+        check_typologie = True
+    ElseIf var_typo_compil = "3" And var_typo_sap = "3" Then
+        check_typologie = True
+    Else
+        check_typologie = False
+    End If
 
 
 End Function
 
 'ancienne procedure check typo + onglet rattachement par rapport à article
-'Sub procedure_compil_final(region As String, fichier_compil_depot As String)
-'
-'    If Application.WorksheetFunction.CountIf(Workbooks(workbook_compil).Sheets(onglet_compil).Range("B:B"), region) > 0 Then
-'        Dim min_ligne_region As Long
-'        min_ligne_region = Workbooks(workbook_compil).Sheets(onglet_compil).Range("B:B").Find(What:=region).Row
-'        Dim last_ligne_region As Long
-'        last_ligne_region = min_ligne_region
-'        While Workbooks(workbook_compil).Sheets(onglet_compil).Cells(last_ligne_region, col_region) = region
-'            last_ligne_region = last_ligne_region + 1
-'        Wend
-'        last_ligne_region = last_ligne_region - 1
-'    Else
-'        MsgBox "Aucune données renseignées pour la région " & region
-'        Exit Sub
-'    End If
-'
-'
-'    Dim i_code_region As Long
-'    For i_code_region = 2 To ligne_region
-'        If CStr(Workbooks(base_data).Sheets(onglet_code_region).Cells(i_code_region, 1).Value) = region Then
-'            Dim var_sap As String
-'            var_sap = Workbooks(base_data).Sheets(onglet_code_region).Cells(i_code_region, 2).Value
-'
-'
-'
-'            Dim i_region_compil As Long
-'            For i_region_compil = min_ligne_region To last_ligne_region
-'                If return_ligne_ratt(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(i_region_compil, col_codes)) <> 0 Then
-'
-'
-'                    If Workbooks(base_data).Sheets(onglet_rattachement).Cells(return_ligne_ratt(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(i_region_compil, col_codes)), return_col_sap(var_sap)).Value = 1 And check_typologie(i_region_compil, i_code_region) = True Then
-'
-'
-'                        Dim ligne_suiv As Long
-'                        ligne_suiv = Workbooks(fichier_compil_depot).Sheets(1).Cells(Application.Rows.Count, 1).End(xlUp).Row + 1
-'                        Workbooks(fichier_compil_depot).Sheets(1).Cells(ligne_suiv, 1) = var_sap
-'                        Workbooks(fichier_compil_depot).Sheets(1).Cells(ligne_suiv, 2) = Workbooks(base_data).Sheets(onglet_code_region).Cells(i_code_region, 4).Value
-'                        Workbooks(fichier_compil_depot).Sheets(1).Cells(ligne_suiv, 3) = Workbooks(workbook_compil).Sheets(onglet_compil).Cells(i_region_compil, col_easier_conc).Value
-'                        Workbooks(fichier_compil_depot).Sheets(1).Cells(ligne_suiv, 4) = 6
-'                        Workbooks(fichier_compil_depot).Sheets(1).Cells(ligne_suiv, 5) = Workbooks(workbook_compil).Sheets(onglet_compil).Cells(i_region_compil, col_minfac).Value
-'                        Workbooks(fichier_compil_depot).Sheets(1).Cells(ligne_suiv, 6) = 1
-'
-'                    End If
-'                End If
-'            Next i_region_compil
-'
-'
-'
-'        End If
-'
-'    Next i_code_region
-'
-'End Sub
+Sub old_procedure_compil_final(region As String, fichier_compil_depot As String)
+
+    If Application.WorksheetFunction.CountIf(Workbooks(workbook_compil).Sheets(onglet_compil).Range("B:B"), region) > 0 Then
+        Dim min_ligne_region As Long
+        min_ligne_region = Workbooks(workbook_compil).Sheets(onglet_compil).Range("B:B").Find(What:=region).Row
+        Dim last_ligne_region As Long
+        last_ligne_region = min_ligne_region
+        While Workbooks(workbook_compil).Sheets(onglet_compil).Cells(last_ligne_region, col_region) = region
+            last_ligne_region = last_ligne_region + 1
+        Wend
+        last_ligne_region = last_ligne_region - 1
+    Else
+        MsgBox "Aucune données renseignées pour la région " & region
+        Exit Sub
+    End If
+
+
+    Dim i_code_region As Long
+    For i_code_region = 2 To ligne_region
+        If CStr(Workbooks(base_data).Sheets(onglet_code_region).Cells(i_code_region, 1).Value) = region Then
+            Dim var_sap As String
+            var_sap = Workbooks(base_data).Sheets(onglet_code_region).Cells(i_code_region, 2).Value
+
+
+
+            Dim i_region_compil As Long
+            For i_region_compil = min_ligne_region To last_ligne_region
+                If return_ligne_ratt(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(i_region_compil, col_codes)) <> 0 Then
+
+
+                    If Workbooks(base_data).Sheets(onglet_rattachement).Cells(return_ligne_ratt(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(i_region_compil, col_codes)), return_col_sap(var_sap)).Value = 1 And check_typologie(i_region_compil, i_code_region) = True Then
+
+
+                        Dim ligne_suiv As Long
+                        ligne_suiv = Workbooks(fichier_compil_depot).Sheets(1).Cells(Application.Rows.Count, 1).End(xlUp).Row + 1
+                        Workbooks(fichier_compil_depot).Sheets(1).Cells(ligne_suiv, 1) = var_sap
+                        Workbooks(fichier_compil_depot).Sheets(1).Cells(ligne_suiv, 2) = Workbooks(base_data).Sheets(onglet_code_region).Cells(i_code_region, 4).Value
+                        Workbooks(fichier_compil_depot).Sheets(1).Cells(ligne_suiv, 3) = Workbooks(workbook_compil).Sheets(onglet_compil).Cells(i_region_compil, col_easier_conc).Value
+                        Workbooks(fichier_compil_depot).Sheets(1).Cells(ligne_suiv, 4) = 6
+                        Workbooks(fichier_compil_depot).Sheets(1).Cells(ligne_suiv, 5) = Workbooks(workbook_compil).Sheets(onglet_compil).Cells(i_region_compil, col_minfac).Value
+                        Workbooks(fichier_compil_depot).Sheets(1).Cells(ligne_suiv, 6) = 1
+
+                    End If
+                End If
+            Next i_region_compil
+
+
+
+        End If
+
+    Next i_code_region
+
+End Sub
 
 
 Sub procedure_compil_final(region As String, fichier_compil_merch As String, fichier_compil_depot As String, fichier_suppr As String)
-
+    'Boucle pour définir la zone d'action (premiere et derniere ligne de la région)
     If Application.WorksheetFunction.CountIf(Workbooks(workbook_compil).Sheets(onglet_compil).Range("B:B"), region) > 0 Then
         Dim min_ligne_region As Long
         min_ligne_region = Workbooks(workbook_compil).Sheets(onglet_compil).Range("B:B").Find(What:=region).Row
@@ -314,15 +314,17 @@ Sub procedure_compil_final(region As String, fichier_compil_merch As String, fic
     
 
     Dim i_code_region As Long
-    For i_code_region = 2 To ligne_region
-        If CStr(Workbooks(base_data).Sheets(onglet_code_region).Cells(i_code_region, 1).Value) = region Then
+    For i_code_region = 2 To ligne_region 'ligne_region est la derniere ligne de l'onglet code region de la base data. Donc on itére jusqu'a la fin
+        If CStr(Workbooks(base_data).Sheets(onglet_code_region).Cells(i_code_region, 1).Value) = region Then 'Si la ligne est liée à la région.
             Dim var_sap As String
-            var_sap = Workbooks(base_data).Sheets(onglet_code_region).Cells(i_code_region, 2).Value
+            var_sap = Workbooks(base_data).Sheets(onglet_code_region).Cells(i_code_region, 2).Value 'Code SAP
             
             Dim var_sap_lib As String
-            var_sap_lib = Workbooks(base_data).Sheets(onglet_code_region).Cells(i_code_region, 4).Value
+            var_sap_lib = Workbooks(base_data).Sheets(onglet_code_region).Cells(i_code_region, 4).Value 'Libelle (ville)
 
-                     
+            Dim var_easier As String
+            var_easier = WorkBooks(base_data).Sheets(onglet_code_region).Cells(i_code_region, 3).Value 'Code EASIER (rajouté)
+
             Dim i_region_compil As Long
             For i_region_compil = min_ligne_region To last_ligne_region
             
@@ -332,7 +334,7 @@ Sub procedure_compil_final(region As String, fichier_compil_merch As String, fic
                         If Workbooks(base_data).Sheets(onglet_art_depot).Cells(return_ligne_art_depot(Workbooks(workbook_compil).Sheets(onglet_compil).Cells(i_region_compil, col_codes)), return_col_sap(var_sap)).Value <> "KO" Then
                             
                             ligne_suiv = Workbooks(fichier_compil_merch).Sheets(1).Cells(Application.Rows.Count, 1).End(xlUp).Row + 1
-                            Workbooks(fichier_compil_merch).Sheets(1).Cells(ligne_suiv, 1) = var_sap
+                            Workbooks(fichier_compil_merch).Sheets(1).Cells(ligne_suiv, 1) = var_easier
                             Workbooks(fichier_compil_merch).Sheets(1).Cells(ligne_suiv, 2) = Workbooks(base_data).Sheets(onglet_code_region).Cells(i_code_region, 4).Value
                             Workbooks(fichier_compil_merch).Sheets(1).Cells(ligne_suiv, 3) = Workbooks(workbook_compil).Sheets(onglet_compil).Cells(i_region_compil, col_easier_conc).Value
                             Workbooks(fichier_compil_merch).Sheets(1).Cells(ligne_suiv, 4) = 6
@@ -376,7 +378,7 @@ Sub procedure_compil_final(region As String, fichier_compil_merch As String, fic
                         End If
                     Else
                         ligne_suiv = Workbooks(fichier_compil_merch).Sheets(1).Cells(Application.Rows.Count, 1).End(xlUp).Row + 1
-                        Workbooks(fichier_compil_merch).Sheets(1).Cells(ligne_suiv, 1) = var_sap
+                        Workbooks(fichier_compil_merch).Sheets(1).Cells(ligne_suiv, 1) = var_easier
                         Workbooks(fichier_compil_merch).Sheets(1).Cells(ligne_suiv, 2) = Workbooks(base_data).Sheets(onglet_code_region).Cells(i_code_region, 4).Value
                         Workbooks(fichier_compil_merch).Sheets(1).Cells(ligne_suiv, 3) = Workbooks(workbook_compil).Sheets(onglet_compil).Cells(i_region_compil, col_easier_conc).Value
                         Workbooks(fichier_compil_merch).Sheets(1).Cells(ligne_suiv, 4) = 6
@@ -537,62 +539,62 @@ Private Sub compil_final_button_Click()
 
 
 
-Dim region_encours As String
+    Dim region_encours As String
 
-region_encours = "CENTRE AQUITAINE"
-Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
+    region_encours = "CENTRE AQUITAINE"
+    Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
 
-region_encours = "CENTRE ATLANTIQUE"
-Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
+    region_encours = "CENTRE ATLANTIQUE"
+    Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
 
-region_encours = "CENTRE EST"
-Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
+    region_encours = "CENTRE EST"
+    Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
 
-region_encours = "REGION EST"
-Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
+    region_encours = "REGION EST"
+    Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
 
-region_encours = "IDF"
-Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
+    region_encours = "IDF"
+    Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
 
-region_encours = "NORD EST"
-Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
+    region_encours = "NORD EST"
+    Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
 
-region_encours = "NORD"
-Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
+    region_encours = "NORD"
+    Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
 
-region_encours = "NORMANDIE"
-Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
+    region_encours = "NORMANDIE"
+    Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
 
-region_encours = "OUEST"
-Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
+    region_encours = "OUEST"
+    Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
 
-region_encours = "RHONE ALPES"
-Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
+    region_encours = "RHONE ALPES"
+    Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
 
-region_encours = "SUD EST"
-Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
+    region_encours = "SUD EST"
+    Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
 
-region_encours = "SUD OUEST"
-Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
+    region_encours = "SUD OUEST"
+    Call procedure_compil_final(region_encours, nom_fichier_merch, nom_fichier_depot, nom_fichier_suppr)
 
 
-Windows(nom_fichier_merch).Activate
-ActiveWorkbook.Save
+    Windows(nom_fichier_merch).Activate
+    ActiveWorkbook.Save
 
-Windows(nom_fichier_depot).Activate
-ActiveWorkbook.Save
+    Windows(nom_fichier_depot).Activate
+    ActiveWorkbook.Save
 
-Windows(nom_fichier_suppr).Activate
-ActiveWorkbook.Save
+    Windows(nom_fichier_suppr).Activate
+    ActiveWorkbook.Save
 
-MsgBox "Compilation final réalisée avec succès ! " & Chr(13) & Chr(10) & "BRAVO !"
+    MsgBox "Compilation final réalisée avec succès ! " & Chr(13) & Chr(10) & "BRAVO !"
 
-Unload UserForm4
+    Unload UserForm4
 
 
 
 End Sub
 
 Private Sub fermer_Click()
-Unload UserForm4
+    Unload UserForm4
 End Sub
