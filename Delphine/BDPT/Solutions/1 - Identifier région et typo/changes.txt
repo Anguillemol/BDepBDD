@@ -1,0 +1,11 @@
+Ligne 224 : ListBox1.AddItem i & " - " & Cells(i, col_typo).Values & " - " & Cells(i, col_region).Values
+Permet d'afficher la typo et la région
+
+Ligne 854 et 1211 :
+Dim ligne_modif As Long
+ligne_modif = ListBox1.List(j, 0)
+pos = InStr(ligne_modif, " ")
+ligne_modif = Left(ligne_modif, pos - 1)
+ligne_modif = CInt(ligne_modif)
+
+Pour sélectionner uniquement le numéro de la ligne.

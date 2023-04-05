@@ -1330,6 +1330,7 @@ class demandeChangement(QWidget):
         #Récupérer uniquement les lignes ou il y a un changement
         self.sheetChangement = pd.DataFrame
 
+        #Création de la sheet de conflit
         self.sheetC = pd.DataFrame(columns=self.sheet.columns)
 
         for i in self.sheet.shape[0]:
