@@ -1,0 +1,7 @@
+Ligne ou apparait le code (FAIT) + Correction pour les remplacer (FAIT)
+UserForm1 : Rajout des zones pour le min et du bouton min (FAIT)
+UserForm1: MIN -> Faire le truc ou quand on selectionne une ligne dans la listBox ca met le min. Quand on lance récupérer avec le numéro de ligne la région (FAIT)
+
+
+UserForm4: Code EASIER (FAIT)
+Modification des userForm en non-modal (FAIT)

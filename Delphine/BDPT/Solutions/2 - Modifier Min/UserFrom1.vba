@@ -209,12 +209,24 @@ Private Sub remplacer_min_Click()
                         ligne_modif = CInt(ligne_modif)
                         'Numéro de ligne récupéré
 
+                        Dim new_min As Long
+                        new_min = CLong(TextBox8.Value)
 
+                        Dim region_min As String
+                        region_min = Workbook(workbook_compil).Sheets(onglet_compil).Cell(ligne_modif, col_region)
+                        'TODO:: Trouver la région
                         'A partir d'ici faire le remplacement des mins.
-                        Workbook().Sheets(onglet_compil).Cell(ligne_modif, 13).Value = TextBox5.Value
+                        Workbook(workbook_compil).Sheets(onglet_compil).Cell(ligne_modif, col_minsouh).Value = new_min
 
                         'Actualiser les autres MINS
+                        Dim nbre_depot_procedure_region As Long
+                        nbre_depot_procedure_region = Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_code_region).Range("A:A"), region_min)
+                        
+                        Dim new_min_tot As Long
+                        new_min_tot = new_min * nbre_depot_procedure_region
 
+                        Workbook(workbook_compil).Sheets(onglet_compil).Cell(ligne_modif, col_mintot).Value = new_min_tot
+                        TextBox7.Value = new_min
                 
                         
                 Else
@@ -237,6 +249,32 @@ Private Sub remplacer_min_Click()
 
       
 
+
+End Sub
+
+Private Sub ListBox1_Click()
+
+    'TODO: Faire le remplissage de la textbox
+    Dim j As Integer
+    Dim cpt As Integer
+    cpt = 0
+
+    For j = 0 To ListBox1.ListCount - 1
+        If ListBox1.Selected(j) = True Then
+            Dim ligne_modif As Long
+            ligne_modif = ListBox1.List(j, 0)
+            pos = InStr(ligne_modif, " ")
+            ligne_modif = Left(ligne_modif, pos - 1)
+            ligne_modif = CInt(ligne_modif)
+            'Numéro de ligne récupéré
+
+            Dim min_select As Long
+            min_select = Workbook(workbook_compil).Sheets(onglet_compil).Cell(ligne_modif, col_minsouh).Value
+
+            TextBox7.Value = min_select
+
+        End If  
+    Next
 
 End Sub
 

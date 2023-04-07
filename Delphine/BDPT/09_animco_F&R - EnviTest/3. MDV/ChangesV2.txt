@@ -1,0 +1,4 @@
+Mise en place du truc de rattachement: 
+return col sap, pas de soucis normalement meme structure juste trouver ou recuperer (FAIT)
+return rattachement (ok
+

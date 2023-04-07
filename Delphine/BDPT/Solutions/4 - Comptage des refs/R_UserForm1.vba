@@ -239,9 +239,9 @@ nbrRef = nbrRef - nbrFlage
 If nbrRef > 60 Then
     Me.TextBox16.BackColor = vbRed
     MsgBox "Limite de données renseignées dépassée"
-    TextBox16.Value = ligne - 2 & " / 60" & vbCrLf & "Limite dépassée"
+    TextBox16.Value = nbRef & " / 60" & vbCrLf & "Limite dépassée"
 Else
-    TextBox16.Value = ligne - 2 & " / 60"
+    TextBox16.Value = nbRef & " / 60"
 End If
     
 

@@ -149,7 +149,8 @@ ligne_rattachement = Workbooks(base_data).Sheets(onglet_rattachement).Cells(Appl
 nbre_col_ratt = Workbooks(base_data).Sheets(onglet_rattachement).Range("A7").End(xlToRight).Column
 Dim k As Long
 For k = 1 To nbre_col_ratt
-    If LCase(Workbooks(base_data).Sheets(onglet_rattachement).Cells(1, k).Value) = "article" Then
+    'If LCase(Workbooks(base_data).Sheets(onglet_rattachement).Cells(1, k).Value) = "article" Then
+    If LCase(Workbooks(base_data).Sheets(onglet_rattachement).Cells(3, k).Value) = "Code brico" Then
         col_codes_ratt = k
     End If
 Next k
@@ -172,7 +173,7 @@ lettre_col_codes_art_depot = Split(Workbooks(base_data).Sheets(onglet_art_depot)
 End Sub
 
 'ancienne fonction check ligne et colonne rattachement
-Public Function old_return_col_sap(sap As String) As Long
+Public Function return_col_sap(sap As String) As Long
 Dim i_col_sap
 For i_col_sap = 1 To nbre_col_ratt
     If Workbooks(base_data).Sheets(onglet_rattachement).Cells(1, i_col_sap).Value = sap Then
@@ -183,7 +184,7 @@ Next i_col_sap
 End Function
 
 
-Public Function old_return_ligne_ratt(code As Long) As Long
+Public Function return_ligne_ratt(code As Long) As Long
 
     If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_rattachement).Range(lettre_col_codes_ratt & ":" & lettre_col_codes_ratt), code) > 0 Then
         Dim num_ligne_ratt As Long
@@ -193,7 +194,7 @@ Public Function old_return_ligne_ratt(code As Long) As Long
 
 End Function
 
-Public Function return_col_sap(sap As String) As Long
+Public Function old_return_col_sap(sap As String) As Long
 Dim i_col_sap
 For i_col_sap = 1 To nbre_col_art_depot
     If Workbooks(base_data).Sheets(onglet_art_depot).Cells(1, i_col_sap).Value = sap Then
