@@ -1389,6 +1389,7 @@ Private Sub SUBMIT_Click()
     End If
 
     'On a la ligne ou y a le code dans l'onglet suivi donc correct
+    'num_ligne = Workbooks(base_data).Sheets(onglet_suivi).Range("C:C").Find(What:=CLng(TextBox1.Value)).Row
 
     'Si ca apparait dans multifournisseur
     Dim flag_fourn As Integer
@@ -1639,8 +1640,19 @@ Private Sub SUBMIT_Click()
                     
             Call ajout_data(ligne)
             
-            'trouver la ligne qui vient d'etre ajoutée et changer le code 
-            
+            'trouver la ligne qui vient d'etre ajoutée
+            ligne_modif_code = WorkBooks(workbook_fichier_base).Sheets(onglet_fichier_base).Range("D:D").Find(What:=CLng(TextBox1.Value)).Row
+            If ligne_modif_code <> 0 Then
+                'Récupérer le code à changer
+                num_ligne = Workbooks(base_data).Sheets(onglet_suivi).Range("C:C").Find(What:=CLng(TextBox1.Value)).Row
+                code_remplacement = Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 8).Value
+
+                'Modifier le code de la ligne
+                anciencode = WorkBooks(workbook_fichier_base).Sheets(onglet_fichier_base).Cells(ligne_modif_code, 4).Value
+                WorkBooks(workbook_fichier_base).Sheets(onglet_fichier_base).Cells(ligne_modif_code, 4).AddComment "Le code "+ anciencode + "a été remplacé"
+                WorkBooks(workbook_fichier_base).Sheets(onglet_fichier_base).Cells(ligne_modif_code, 4).Value = code_remplacement
+
+            End If
             Unload UserForm1
             
             UserForm1.Show
