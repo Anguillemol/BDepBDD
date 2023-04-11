@@ -54,22 +54,6 @@ Public ButtonTwoClick As Boolean
 Public lettre_col_codes As String
 
 
-
-
-
-
-Private Sub CommandButton2_Click()
-
-End Sub
-
-Private Sub Label9_Click()
-
-End Sub
-
-Private Sub ListBox1_Click()
-
-End Sub
-
 Private Sub UserForm_Initialize()
 
 
@@ -173,79 +157,192 @@ ListBox2.Font.Size = 10
 End Sub
 
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
-'    Windows(fichier_suivi).Activate
-'    ActiveWorkbook.Save
-'    ActiveWindow.Close
+    '    Windows(fichier_suivi).Activate
+    '    ActiveWorkbook.Save
+    '    ActiveWindow.Close
 
-Unload Me
+    Unload Me
 
 
 End Sub
 
 Private Sub fermer_Click()
 
-'Dim xWb_FS As Workbook
-'On Error Resume Next
-'Set xWb_FS = Application.Workbooks.Item(fichier_suivi)
-'Dim xRet_FS As Boolean
-'xRet_FS = (Not xWb_FS Is Nothing)
-'
-'If xRet_FS = True Then
-'        Windows(fichier_suivi).Close SaveChanges:=True
-'End If
-'
-'Dim xWb_NW As Workbook
-'On Error Resume Next
-'Set xWb_NW = Application.Workbooks.Item(new_workbook)
-'Dim xRet_NW As Boolean
-'xRet_NW = (Not xWb_NW Is Nothing)
-'If xRet_NW = True Then
-'    If Workbooks(new_workbook).Sheets(1).Cells(2, 1).Value = "" Then
-'        Windows(new_workbook).Close SaveChanges:=False
-'    ElseIf Workbooks(new_workbook).Sheets(1).Cells(2, 1).Value = mois_lettre Then
-'        Workbooks(new_workbook).SaveAs Filename:=emplacement_fichier_suivi & fichier_suivi, _
-'            FileFormat:=xlOpenXMLWorkbook, CreateBackup:=False
-'        Windows(fichier_suivi).Close
-'    End If
-'End If
-'    Windows(fichier_suivi).Activate
-'    ActiveWorkbook.Save
-'    ActiveWindow.Close
+    'Dim xWb_FS As Workbook
+    'On Error Resume Next
+    'Set xWb_FS = Application.Workbooks.Item(fichier_suivi)
+    'Dim xRet_FS As Boolean
+    'xRet_FS = (Not xWb_FS Is Nothing)
+    '
+    'If xRet_FS = True Then
+    '        Windows(fichier_suivi).Close SaveChanges:=True
+    'End If
+    '
+    'Dim xWb_NW As Workbook
+    'On Error Resume Next
+    'Set xWb_NW = Application.Workbooks.Item(new_workbook)
+    'Dim xRet_NW As Boolean
+    'xRet_NW = (Not xWb_NW Is Nothing)
+    'If xRet_NW = True Then
+    '    If Workbooks(new_workbook).Sheets(1).Cells(2, 1).Value = "" Then
+    '        Windows(new_workbook).Close SaveChanges:=False
+    '    ElseIf Workbooks(new_workbook).Sheets(1).Cells(2, 1).Value = mois_lettre Then
+    '        Workbooks(new_workbook).SaveAs Filename:=emplacement_fichier_suivi & fichier_suivi, _
+    '            FileFormat:=xlOpenXMLWorkbook, CreateBackup:=False
+    '        Windows(fichier_suivi).Close
+    '    End If
+    'End If
+    '    Windows(fichier_suivi).Activate
+    '    ActiveWorkbook.Save
+    '    ActiveWindow.Close
 
-Unload Me
+    Unload Me
 End Sub
+
 Private Sub TextBox1_Change()
-If Len(TextBox1.Value) = 6 And IsNumeric(TextBox1.Value) = True Then
-    
-    'ligne ou apprait le code
-    If Application.WorksheetFunction.CountIf(Range(lettre_col_codes & ":" & lettre_col_codes), TextBox1.Value) > 0 Then
-        Dim i As Integer
-        For i = 2 To ligne - 1
-            If CLng(TextBox1.Value) = Cells(i, col_codes).Value Then
-                ListBox1.AddItem i & " - " & Cells(i, col_typo).Values & " - " & Cells(i, col_region).Values
+    If Len(TextBox1.Value) = 6 And IsNumeric(TextBox1.Value) = True Then
+        
+        'ligne ou apprait le code
+        If Application.WorksheetFunction.CountIf(Range(lettre_col_codes & ":" & lettre_col_codes), TextBox1.Value) > 0 Then
+            Dim i As Integer
+            For i = 2 To ligne - 1
+                If CLng(TextBox1.Value) = Cells(i, col_codes).Value Then
+                    ListBox1.AddItem i & " - " & Cells(i, col_typo).Values & " - " & Cells(i, col_region).Values
+                End If
+            Next i
+        End If
+        
+        'n'affiche rien si le code n'est pas présent dans la compil
+        If ListBox1.ListCount > 0 Then
+                
+            'alerte onglet suivi
+            If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_suivi).Range("H:H"), TextBox1.Value) > 0 Then
+                Dim num_ligne As Long
+                num_ligne = Workbooks(base_data).Sheets(onglet_suivi).Range("H:H").Find(What:=CLng(TextBox1.Value)).Row
+                If Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 8).Value = CLng(TextBox1.Value) And LCase(Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 7).Value) = "oui" Then
+                    TextBox6.Font.Size = 10
+                    TextBox6.Value = "Le code " & Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 8).Value & " était le remplacement du code " & Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 3).Value
+                    TextBox6.BackColor = vbRed
+                Else
+                    TextBox6.Value = ""
+                End If
             End If
-        Next i
-    End If
-    
-    'n'affiche rien si le code n'est pas présent dans la compil
-    If ListBox1.ListCount > 0 Then
+        
+        
+            'deref
+            If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_derefs).Range("G:G"), TextBox1.Value) > 0 Then
+                Dim ligne_derefs As Long
+                ligne_derefs = Workbooks(base_data).Sheets(onglet_derefs).Cells(Application.Rows.Count, 1).End(xlUp).Row
+                Dim var_date As Date
+                var_date = CDate("01" & "/" & Left(Right(Replace(workbook_compil, ".xlsm", ""), 6), 2) & "/" & Right(Replace(workbook_compil, ".xlsm", ""), 4))
+                Dim var_annee As Long
+                var_annee = Year(var_date)
+                Dim var_mois_num As Integer
+                var_mois_num = Month(var_date)
+        
+                Dim n As Long
+                For n = 2 To ligne_derefs
+                    If Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 7).Value = CLng(TextBox1.Value) Then
+                        If var_annee < Year(Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 5).Value) Then
+                            TextBox6.Value = "Article DEREF"
+                            TextBox6.Font.Size = 15
+                            TextBox6.BackColor = vbRed
+                        ElseIf var_annee = Year(Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 5).Value) Then
+                            If var_mois_num <= Month(Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 5).Value) Then
+                                TextBox6.Value = "Article DEREF"
+                                TextBox6.Font.Size = 15
+                                TextBox6.BackColor = vbRed
+                            End If
+                        End If
+                    End If
+                Next n
+            End If
             
-        'alerte onglet suivi
-        If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_suivi).Range("H:H"), TextBox1.Value) > 0 Then
-            Dim num_ligne As Long
-            num_ligne = Workbooks(base_data).Sheets(onglet_suivi).Range("H:H").Find(What:=CLng(TextBox1.Value)).Row
-            If Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 8).Value = CLng(TextBox1.Value) And LCase(Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 7).Value) = "oui" Then
+            'lot/composant
+            If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_lots).Range("A:A"), TextBox1.Value) > 0 Then
+                Dim num_ligne_lot_comp
+                num_ligne_lot_comp = Workbooks(base_data).Sheets(onglet_lots).Range("A:A").Find(What:=CLng(TextBox1.Value)).Row
+                If Workbooks(base_data).Sheets(onglet_lots).Cells(num_ligne_lot_comp, 5).Value = "Lot" Then
+                    TextBox6.Value = "LOT"
+                    TextBox6.Font.Size = 15
+                    TextBox6.BackColor = vbRed
+                ElseIf Workbooks(base_data).Sheets(onglet_lots).Cells(num_ligne_lot_comp, 5).Value = "Composant" Then
+                    TextBox6.Value = "COMPOSANT"
+                    TextBox6.Font.Size = 15
+                    TextBox6.BackColor = vbRed
+                End If
+            End If
+            
+            'multifournisseurs
+            If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_multifourn).Range("A:A"), TextBox1.Value) > 0 Then
+                Dim num_ligne_multifourn As Long
+                num_ligne_multifourn = Workbooks(base_data).Sheets(onglet_multifourn).Range("A:A").Find(What:=CLng(TextBox1.Value)).Row
+                TextBox6.Value = "MULTIFOURNISSEURS"
+                '& "    Région : " & Workbooks(base_data).Sheets(onglet_multifourn).Cells(num_ligne_multifourn, 6).Value
                 TextBox6.Font.Size = 10
-                TextBox6.Value = "Le code " & Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 8).Value & " était le remplacement du code " & Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 3).Value
                 TextBox6.BackColor = vbRed
-            Else
-                TextBox6.Value = ""
             End If
         End If
-    
-    
+        
+        
+    Else
+        ListBox1.Clear
+        TextBox6.BackColor = vbWhite
+        TextBox6.Value = ""
+        TextBox6.Font.Size = 10
+    End If
+End Sub
+
+Private Sub TextBox4_Change()
+    If Len(TextBox4.Value) = 6 And IsNumeric(TextBox4.Value) = True Then
+        Dim i As Integer
+        'ligne ou apprait le code
+        If Application.WorksheetFunction.CountIf(Range(lettre_col_codes & ":" & lettre_col_codes), TextBox4.Value) > 0 Then
+            
+                
+                
+            
+            For i = 2 To ligne - 1
+                
+                If CLng(TextBox4.Value) = Cells(i, col_codes).Value Then
+
+                    ListBox2.AddItem Cells(i, col_region) & Chr(9) & i & Chr(9) & Cells(i, col_typo)
+
+                    
+                End If
+            Next i
+        ElseIf Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_lots).Range("A:A"), TextBox4.Value) > 0 Then
+            Dim code_comp_lot As Long
+            code_comp_lot = Workbooks(base_data).Sheets(onglet_lots).Cells(Workbooks(base_data).Sheets(onglet_lots).Range("A:A").Find(What:=CLng(TextBox4.Value)).Row + 1, 1).Value
+            
+            For i = 2 To ligne - 1
+                If code_comp_lot = Cells(i, col_codes).Value Then
+                    ListBox2.AddItem Cells(i, col_region) & Chr(9) & i & Chr(9) & Cells(i, col_typo)
+                End If
+            Next i
+        
+        
+        End If
+
+
+        'alerte onglet suivi
+        If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_suivi).Range("C:C"), TextBox4.Value) > 0 Then
+            Dim num_ligne As Long
+            num_ligne = Workbooks(base_data).Sheets(onglet_suivi).Range("C:C").Find(What:=CLng(TextBox4.Value)).Row
+            If Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 3).Value = CLng(TextBox4.Value) And LCase(Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 7).Value) = "alerte" Then
+                TextBox5.Value = Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 5).Value
+            ElseIf Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 3).Value = CLng(TextBox4.Value) And LCase(Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 7).Value) = "oui" Then
+                TextBox5.Font.Size = 10
+                TextBox5.Value = "Ce code " & Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 3).Value & " va être remplacé par le code " & Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 8).Value
+                TextBox5.BackColor = vbRed
+            Else
+                TextBox5.Value = ""
+            End If
+        End If
+
+
         'deref
-        If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_derefs).Range("G:G"), TextBox1.Value) > 0 Then
+        If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_derefs).Range("G:G"), TextBox4.Value) > 0 Then
             Dim ligne_derefs As Long
             ligne_derefs = Workbooks(base_data).Sheets(onglet_derefs).Cells(Application.Rows.Count, 1).End(xlUp).Row
             Dim var_date As Date
@@ -254,19 +351,19 @@ If Len(TextBox1.Value) = 6 And IsNumeric(TextBox1.Value) = True Then
             var_annee = Year(var_date)
             Dim var_mois_num As Integer
             var_mois_num = Month(var_date)
-    
+
             Dim n As Long
             For n = 2 To ligne_derefs
-                If Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 7).Value = CLng(TextBox1.Value) Then
+                If Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 7).Value = CLng(TextBox4.Value) Then
                     If var_annee < Year(Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 5).Value) Then
-                        TextBox6.Value = "Article DEREF"
-                        TextBox6.Font.Size = 15
-                        TextBox6.BackColor = vbRed
+                        TextBox5.Value = "Article DEREF"
+                        TextBox5.Font.Size = 15
+                        TextBox5.BackColor = vbRed
                     ElseIf var_annee = Year(Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 5).Value) Then
                         If var_mois_num <= Month(Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 5).Value) Then
-                            TextBox6.Value = "Article DEREF"
-                            TextBox6.Font.Size = 15
-                            TextBox6.BackColor = vbRed
+                            TextBox5.Value = "Article DEREF"
+                            TextBox5.Font.Size = 15
+                            TextBox5.BackColor = vbRed
                         End If
                     End If
                 End If
@@ -274,150 +371,37 @@ If Len(TextBox1.Value) = 6 And IsNumeric(TextBox1.Value) = True Then
         End If
         
         'lot/composant
-        If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_lots).Range("A:A"), TextBox1.Value) > 0 Then
+        If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_lots).Range("A:A"), TextBox4.Value) > 0 Then
             Dim num_ligne_lot_comp
-            num_ligne_lot_comp = Workbooks(base_data).Sheets(onglet_lots).Range("A:A").Find(What:=CLng(TextBox1.Value)).Row
+            num_ligne_lot_comp = Workbooks(base_data).Sheets(onglet_lots).Range("A:A").Find(What:=CLng(TextBox4.Value)).Row
             If Workbooks(base_data).Sheets(onglet_lots).Cells(num_ligne_lot_comp, 5).Value = "Lot" Then
-                TextBox6.Value = "LOT"
-                TextBox6.Font.Size = 15
-                TextBox6.BackColor = vbRed
+                TextBox5.Value = "LOT"
+                TextBox5.Font.Size = 15
+                TextBox5.BackColor = vbRed
             ElseIf Workbooks(base_data).Sheets(onglet_lots).Cells(num_ligne_lot_comp, 5).Value = "Composant" Then
-                TextBox6.Value = "COMPOSANT"
-                TextBox6.Font.Size = 15
-                TextBox6.BackColor = vbRed
+                TextBox5.Value = "COMPOSANT"
+                TextBox5.Font.Size = 15
+                TextBox5.BackColor = vbRed
             End If
         End If
         
         'multifournisseurs
-        If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_multifourn).Range("A:A"), TextBox1.Value) > 0 Then
+        If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_multifourn).Range("A:A"), TextBox4.Value) > 0 Then
             Dim num_ligne_multifourn As Long
-            num_ligne_multifourn = Workbooks(base_data).Sheets(onglet_multifourn).Range("A:A").Find(What:=CLng(TextBox1.Value)).Row
-            TextBox6.Value = "MULTIFOURNISSEURS"
-            '& "    Région : " & Workbooks(base_data).Sheets(onglet_multifourn).Cells(num_ligne_multifourn, 6).Value
-            TextBox6.Font.Size = 10
-            TextBox6.BackColor = vbRed
-        End If
-    End If
-    
-    
-Else
-    ListBox1.Clear
-    TextBox6.BackColor = vbWhite
-    TextBox6.Value = ""
-    TextBox6.Font.Size = 10
-End If
-End Sub
-
-
-Private Sub TextBox4_Change()
-If Len(TextBox4.Value) = 6 And IsNumeric(TextBox4.Value) = True Then
-    Dim i As Integer
-    'ligne ou apprait le code
-    If Application.WorksheetFunction.CountIf(Range(lettre_col_codes & ":" & lettre_col_codes), TextBox4.Value) > 0 Then
-        
-            
-            
-        
-        For i = 2 To ligne - 1
-            
-            If CLng(TextBox4.Value) = Cells(i, col_codes).Value Then
-
-                ListBox2.AddItem Cells(i, col_region) & Chr(9) & i & Chr(9) & Cells(i, col_typo)
-
-                
-            End If
-        Next i
-    ElseIf Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_lots).Range("A:A"), TextBox4.Value) > 0 Then
-        Dim code_comp_lot As Long
-        code_comp_lot = Workbooks(base_data).Sheets(onglet_lots).Cells(Workbooks(base_data).Sheets(onglet_lots).Range("A:A").Find(What:=CLng(TextBox4.Value)).Row + 1, 1).Value
-        
-        For i = 2 To ligne - 1
-            If code_comp_lot = Cells(i, col_codes).Value Then
-                ListBox2.AddItem Cells(i, col_region) & Chr(9) & i & Chr(9) & Cells(i, col_typo)
-            End If
-        Next i
-    
-    
-    End If
-
-
-    'alerte onglet suivi
-    If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_suivi).Range("C:C"), TextBox4.Value) > 0 Then
-        Dim num_ligne As Long
-        num_ligne = Workbooks(base_data).Sheets(onglet_suivi).Range("C:C").Find(What:=CLng(TextBox4.Value)).Row
-        If Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 3).Value = CLng(TextBox4.Value) And LCase(Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 7).Value) = "alerte" Then
-            TextBox5.Value = Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 5).Value
-        ElseIf Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 3).Value = CLng(TextBox4.Value) And LCase(Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 7).Value) = "oui" Then
+            num_ligne_multifourn = Workbooks(base_data).Sheets(onglet_multifourn).Range("A:A").Find(What:=CLng(TextBox4.Value)).Row
+            TextBox5.Value = "MULTIFOURNISSEURS"
+            '& "    " Région : " & Workbooks(base_data).Sheets(onglet_multifourn).Cells(num_ligne_multifourn, 6).Value
             TextBox5.Font.Size = 10
-            TextBox5.Value = "Ce code " & Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 3).Value & " va être remplacé par le code " & Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 8).Value
-            TextBox5.BackColor = vbRed
-        Else
-            TextBox5.Value = ""
-        End If
-    End If
-
-
-    'deref
-    If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_derefs).Range("G:G"), TextBox4.Value) > 0 Then
-        Dim ligne_derefs As Long
-        ligne_derefs = Workbooks(base_data).Sheets(onglet_derefs).Cells(Application.Rows.Count, 1).End(xlUp).Row
-        Dim var_date As Date
-        var_date = CDate("01" & "/" & Left(Right(Replace(workbook_compil, ".xlsm", ""), 6), 2) & "/" & Right(Replace(workbook_compil, ".xlsm", ""), 4))
-        Dim var_annee As Long
-        var_annee = Year(var_date)
-        Dim var_mois_num As Integer
-        var_mois_num = Month(var_date)
-
-        Dim n As Long
-        For n = 2 To ligne_derefs
-            If Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 7).Value = CLng(TextBox4.Value) Then
-                If var_annee < Year(Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 5).Value) Then
-                    TextBox5.Value = "Article DEREF"
-                    TextBox5.Font.Size = 15
-                    TextBox5.BackColor = vbRed
-                ElseIf var_annee = Year(Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 5).Value) Then
-                    If var_mois_num <= Month(Workbooks(base_data).Sheets(onglet_derefs).Cells(n, 5).Value) Then
-                        TextBox5.Value = "Article DEREF"
-                        TextBox5.Font.Size = 15
-                        TextBox5.BackColor = vbRed
-                    End If
-                End If
-            End If
-        Next n
-    End If
-    
-    'lot/composant
-    If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_lots).Range("A:A"), TextBox4.Value) > 0 Then
-        Dim num_ligne_lot_comp
-        num_ligne_lot_comp = Workbooks(base_data).Sheets(onglet_lots).Range("A:A").Find(What:=CLng(TextBox4.Value)).Row
-        If Workbooks(base_data).Sheets(onglet_lots).Cells(num_ligne_lot_comp, 5).Value = "Lot" Then
-            TextBox5.Value = "LOT"
-            TextBox5.Font.Size = 15
-            TextBox5.BackColor = vbRed
-        ElseIf Workbooks(base_data).Sheets(onglet_lots).Cells(num_ligne_lot_comp, 5).Value = "Composant" Then
-            TextBox5.Value = "COMPOSANT"
-            TextBox5.Font.Size = 15
             TextBox5.BackColor = vbRed
         End If
-    End If
-    
-    'multifournisseurs
-    If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_multifourn).Range("A:A"), TextBox4.Value) > 0 Then
-        Dim num_ligne_multifourn As Long
-        num_ligne_multifourn = Workbooks(base_data).Sheets(onglet_multifourn).Range("A:A").Find(What:=CLng(TextBox4.Value)).Row
-        TextBox5.Value = "MULTIFOURNISSEURS"
-        '& "    " Région : " & Workbooks(base_data).Sheets(onglet_multifourn).Cells(num_ligne_multifourn, 6).Value
+        
+    Else
+        TextBox5.BackColor = vbWhite
+        TextBox5.Value = ""
         TextBox5.Font.Size = 10
-        TextBox5.BackColor = vbRed
-    End If
-    
-Else
-    TextBox5.BackColor = vbWhite
-    TextBox5.Value = ""
-    TextBox5.Font.Size = 10
-    ListBox2.Clear
+        ListBox2.Clear
 
-End If
+    End If
 End Sub
 
 Sub ajout_data(ligne_select, old_typo_sub, old_region_sub, old_minsouh_sub, old_mintot_sub, old_nbrefac_sub, old_minfac_sub, old_entrepot_sub)
@@ -524,7 +508,7 @@ End Sub
 Sub ajout_data_remplacer_suivi(file_suivi_remplacer, ligne_suivi_remplacer, ligne_modif_remplacer, old_lib_remplacer, old_code_remplacer, nom_remplacer, com_remplacer)
 
     'alimentation fichier suivi
-'    ligne_suivi_remplacer = Workbooks(file_suivi_remplacer).Sheets(1).Cells(Application.Rows.Count, 3).End(xlUp).Row + 1
+    'ligne_suivi_remplacer = Workbooks(file_suivi_remplacer).Sheets(1).Cells(Application.Rows.Count, 3).End(xlUp).Row + 1
     Workbooks(file_suivi_remplacer).Sheets(1).Cells(ligne_suivi_remplacer, 1).Value = Workbooks(workbook_compil).Sheets(onglet_compil).Cells(ligne_modif_remplacer, col_mois).Value
     Workbooks(file_suivi_remplacer).Sheets(1).Cells(ligne_suivi_remplacer, 2).Value = Workbooks(workbook_compil).Sheets(onglet_compil).Cells(ligne_modif_remplacer, col_region).Value
     Workbooks(file_suivi_remplacer).Sheets(1).Cells(ligne_suivi_remplacer, 3).Value = old_code_remplacer
@@ -568,29 +552,29 @@ Sub new_code_suivi(code As Long, ligne_modif_usf As Long, file_suivi As String)
     old_entrepot = Workbooks(workbook_compil).Sheets(onglet_compil).Cells(ligne_modif_usf, col_entrepot)
 
 
-Dim flag_remplacement As Integer
-Dim ligne_remplacement As Long
-If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_suivi).Range("C:C"), code) > 0 Then
-    Dim num_code_suivi As Long
-    num_code_suivi = Workbooks(base_data).Sheets(onglet_suivi).Range("C:C").Find(What:=code).Row
-    If Workbooks(base_data).Sheets(onglet_suivi).Cells(num_code_suivi, 3).Value = CLng(code) And LCase(Workbooks(base_data).Sheets(onglet_suivi).Cells(num_code_suivi, 7).Value) = "oui" Then
-        flag_remplacement = 1
-        ligne_remplacement = num_code_suivi
-    End If
-End If
-
-
-Dim flag_fourn As Integer
-If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_multifourn).Range("A:A"), code) > 0 Then
-    Dim i_multifourn As Long
-    For i_multifourn = 2 To nbre_ligne_multifourn
-        If Workbooks(base_data).Sheets(onglet_multifourn).Cells(i_multifourn, 1).Value = CLng(code) And Replace(UCase(CStr(Workbooks(base_data).Sheets(onglet_multifourn).Cells(i_multifourn, 6).Value)), " ", "") = Replace(old_region, " ", "") Then
-            Dim ligne_multifourn
-            ligne_multifourn = i_multifourn
-            flag_fourn = 1
+    Dim flag_remplacement As Integer
+    Dim ligne_remplacement As Long
+    If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_suivi).Range("C:C"), code) > 0 Then
+        Dim num_code_suivi As Long
+        num_code_suivi = Workbooks(base_data).Sheets(onglet_suivi).Range("C:C").Find(What:=code).Row
+        If Workbooks(base_data).Sheets(onglet_suivi).Cells(num_code_suivi, 3).Value = CLng(code) And LCase(Workbooks(base_data).Sheets(onglet_suivi).Cells(num_code_suivi, 7).Value) = "oui" Then
+            flag_remplacement = 1
+            ligne_remplacement = num_code_suivi
         End If
-    Next i_multifourn
-End If
+    End If
+
+
+    Dim flag_fourn As Integer
+    If Application.WorksheetFunction.CountIf(Workbooks(base_data).Sheets(onglet_multifourn).Range("A:A"), code) > 0 Then
+        Dim i_multifourn As Long
+        For i_multifourn = 2 To nbre_ligne_multifourn
+            If Workbooks(base_data).Sheets(onglet_multifourn).Cells(i_multifourn, 1).Value = CLng(code) And Replace(UCase(CStr(Workbooks(base_data).Sheets(onglet_multifourn).Cells(i_multifourn, 6).Value)), " ", "") = Replace(old_region, " ", "") Then
+                Dim ligne_multifourn
+                ligne_multifourn = i_multifourn
+                flag_fourn = 1
+            End If
+        Next i_multifourn
+    End If
 
 
     'FOURNISSEUR
@@ -784,7 +768,7 @@ End If
                 Workbooks(workbook_compil).Sheets(onglet_compil).Cells(ligne_modif_usf, col_codes).Comment.Text Text:="Article DEREF"
             Else
                 Unload UserForm1
-'                UserForm1.Show
+    '                UserForm1.Show
 
             End If
         'code "normal"
@@ -813,18 +797,18 @@ End Sub
 
 Private Sub remplacer_ligne_Click()
 
-'Dim xWb As Workbook
-'On Error Resume Next
-'Set xWb = Application.Workbooks.Item(fichier_suivi)
-'Dim xret As Boolean
-'xret = (Not xWb Is Nothing)
-Dim suivi As String
-'If xret = True Then
-'    suivi = fichier_suivi
-'Else
-'    suivi = new_workbook
-'End If
-suivi = fichier_suivi
+    'Dim xWb As Workbook
+    'On Error Resume Next
+    'Set xWb = Application.Workbooks.Item(fichier_suivi)
+    'Dim xret As Boolean
+    'xret = (Not xWb Is Nothing)
+    Dim suivi As String
+    'If xret = True Then
+    '    suivi = fichier_suivi
+    'Else
+    '    suivi = new_workbook
+    'End If
+    suivi = fichier_suivi
         
 
         If WorksheetFunction.CountIf(Sheets(onglet_compil).Range(lettre_col_codes & ":" & lettre_col_codes), Me.TextBox1.Value) = 0 Then
@@ -928,7 +912,7 @@ suivi = fichier_suivi
                                     End If
                                 Next x
                                 
-    '                            MsgBox ligne_modif_cas_comp
+                            '                            MsgBox ligne_modif_cas_comp
                                 Call new_code_suivi(TextBox4.Value, ligne_modif_cas_comp, suivi)
                             
                             'MULTIFOURNISSEUR
@@ -1005,7 +989,7 @@ suivi = fichier_suivi
                                 Call new_code_suivi(TextBox4.Value, ligne_modif, suivi)
                             
                             End If
-                        'ancien code NOIR
+                            'ancien code NOIR
                         Else
                             
                             
@@ -1013,10 +997,23 @@ suivi = fichier_suivi
                                 
                         End If
 
-'                    End If
+                        'Remplacement du code
+
+                        'ligne_modif et nouveau code à remplacer
+
+                        num_ligne = Workbooks(base_data).Sheets(onglet_suivi).Range("H:H").Find(What:=CLng(TextBox1.Value)).Row
+                        ancien_code = Workbooks(workbook_compil).Sheets(onglet_compil).Cells(ligne_modif, col_codes).Value
+                        code_remplacement = Workbooks(base_data).Sheets(onglet_suivi).Cells(num_ligne, 8).Value
+
+                        'Modif du code
+                        WorkBooks(workbook_compil).Sheets(onglet_compil).Cells(ligne_modif, col_codes).AddComment "Le code "+ ancien_code + "a été remplacé"
+                        WorkBooks(workbook_compil).Sheets(onglet_compil).Cells(ligne_modif, col_codes).Value = code_remplacement
+
                 Else
                     cpt = cpt + 1
                 End If
+
+
 
             Next j
             
@@ -1037,34 +1034,34 @@ End Sub
 
 
 Public Sub check_flag_siege_tout(code)
-Dim i As Long
-For i = 2 To ligne - 1
-    If Workbooks(workbook_compil).Sheets(onglet_compil).Cells(i, col_codes) = CLng(code) And Workbooks(workbook_compil).Sheets(onglet_compil).Cells(i, newrange) = 1 Then
-        Dim choix
+    Dim i As Long
+    For i = 2 To ligne - 1
+        If Workbooks(workbook_compil).Sheets(onglet_compil).Cells(i, col_codes) = CLng(code) And Workbooks(workbook_compil).Sheets(onglet_compil).Cells(i, newrange) = 1 Then
+            Dim choix
 
-        choix = MsgBox("Le code a été ajouté par le siège. " & i & " Souhaitez vous le supprimer?", 36, "Confirmation")
-        If choix = vbNo Then
-            Exit Sub
+            choix = MsgBox("Le code a été ajouté par le siège. " & i & " Souhaitez vous le supprimer?", 36, "Confirmation")
+            If choix = vbNo Then
+                Exit Sub
+            End If
         End If
-    End If
-    
-Next i
+        
+    Next i
 End Sub
 
 Private Sub remplacer_tout_Click()
 
-'Dim xWb As Workbook
-'On Error Resume Next
-'Set xWb = Application.Workbooks.Item(fichier_suivi)
-'Dim xret As Boolean
-'xret = (Not xWb Is Nothing)
-Dim suivi As String
-'If xret = True Then
-'    suivi = fichier_suivi
-'Else
-'    suivi = new_workbook
-'End If
-suivi = fichier_suivi
+    'Dim xWb As Workbook
+    'On Error Resume Next
+    'Set xWb = Application.Workbooks.Item(fichier_suivi)
+    'Dim xret As Boolean
+    'xret = (Not xWb Is Nothing)
+    Dim suivi As String
+    'If xret = True Then
+    '    suivi = fichier_suivi
+    'Else
+    '    suivi = new_workbook
+    'End If
+    suivi = fichier_suivi
 
 
 
@@ -1170,18 +1167,18 @@ End Sub
 
 Private Sub supprimer_ligne_Click()
 
-'Dim xWb As Workbook
-'On Error Resume Next
-'Set xWb = Application.Workbooks.Item(fichier_suivi)
-'Dim xret As Boolean
-'xret = (Not xWb Is Nothing)
-Dim suivi As String
-'If xret = True Then
-'    suivi = fichier_suivi
-'Else
-'    suivi = new_workbook
-'End If
-suivi = fichier_suivi
+    'Dim xWb As Workbook
+    'On Error Resume Next
+    'Set xWb = Application.Workbooks.Item(fichier_suivi)
+    'Dim xret As Boolean
+    'xret = (Not xWb Is Nothing)
+    Dim suivi As String
+    'If xret = True Then
+    '    suivi = fichier_suivi
+    'Else
+    '    suivi = new_workbook
+    'End If
+    suivi = fichier_suivi
 
         If WorksheetFunction.CountIf(Sheets(onglet_compil).Range(lettre_col_codes & ":" & lettre_col_codes), Me.TextBox1.Value) = 0 Then
             MsgBox "Ce code ne peut pas être modifié car n'est pas encore renseigné"
@@ -1435,18 +1432,18 @@ End Sub
 
 Private Sub supprimer_tout_Click()
 
-'Dim xWb As Workbook
-'On Error Resume Next
-'Set xWb = Application.Workbooks.Item(fichier_suivi)
-'Dim xret As Boolean
-'xret = (Not xWb Is Nothing)
-Dim suivi As String
-'If xret = True Then
-'    suivi = fichier_suivi
-'Else
-'    suivi = new_workbook
-'End If
-suivi = fichier_suivi
+    'Dim xWb As Workbook
+    'On Error Resume Next
+    'Set xWb = Application.Workbooks.Item(fichier_suivi)
+    'Dim xret As Boolean
+    'xret = (Not xWb Is Nothing)
+    Dim suivi As String
+    'If xret = True Then
+    '    suivi = fichier_suivi
+    'Else
+    '    suivi = new_workbook
+    'End If
+    suivi = fichier_suivi
 
 
 
