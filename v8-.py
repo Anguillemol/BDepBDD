@@ -11,6 +11,9 @@ from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.client_credential import ClientCredential
 from office365.sharepoint.files.file import File 
 
+##TODO: Faire le formatage pour les colonnes qui posent probleme
+#Nombre d'heure gardiennage 2017
+
 class SplashScreen(QWidget):
     def __init__(self):
         super().__init__()
@@ -1317,7 +1320,7 @@ class demandeChangement(QWidget):
         self.setLayout(self.layout)
 
     def transmettre(self):
-
+        self.sheet = self.sheet.reset_index(drop=True)
         self.dataframereq = pd.read_excel(req, sheet_name='Requete')
         print("dataframeREQ")
         print(self.dataframereq)
@@ -1332,16 +1335,26 @@ class demandeChangement(QWidget):
 
         #Création de la sheet de conflit
         self.sheetC = pd.DataFrame(columns=self.sheet.columns)
-
-        for i in self.sheet.shape[0]:
-            codeATrouver = self.sheet['Code BRICO'][i]
+        if self.sheet.shape[0] == 1:
+            
+            print ("Une seule ligne à traiter")
+            print(self.sheet)
+            print (self.sheet['Code BRICO'][0])
+            codeATrouver = self.sheet['Code BRICO'][0]
             if codeATrouver in lstCodeBrico:
-                print("Conflit pour le code " + codeATrouver)
+                print("Conflit pour le code " + str(codeATrouver))
+                conflit = True
+        elif self.sheet.shape[0] > 1:
+            for i in self.sheet.shape[0]:
+                codeATrouver = self.sheet['Code BRICO'][i]
+                if codeATrouver in lstCodeBrico:
+                    print("Conflit pour le code " + str(codeATrouver))
+                    conflit = True
+                    ##TODO: Checler si la ligne diffère (probleme de format)
+        
 
         
         #Trouver si une ligne à le meme code si oui la sauvegarder dans self.sheetC
-
-        conflit = True
 
         if conflit == True:
             print("Conflit MAJ, ouverture gestionnaire")
@@ -1688,6 +1701,7 @@ class traitementDemandeChangement(QWidget):
         self.comboBox2.setCurrentIndex(curInd-1)
 
     ##TODO: Refaire le test avec 1 requete et plusieurs requetes
+    ##TODO: Mettre a jour dans la main window, retirer la requete aussi
     
     def retirer(self):
         print("retirer la requete")
