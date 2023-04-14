@@ -1403,6 +1403,7 @@ class demandeChangement(QWidget):
     def annulerF(self):
         self.close()
 
+##Charger la requete qui est en conflit dans une autre table 
 class confirmDemande(QWidget):
     sheetDemande = pd.DataFrame
     sheetConflit = pd.DataFrame
