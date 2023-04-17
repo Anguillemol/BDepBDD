@@ -1259,7 +1259,11 @@ class suppWindow(QWidget):
 prout1 = "APIERR"
 prout2 = "GLAq35n0"
 
+region1 = "JPELUT"
+region2 = "aWnJwBy8"
+
 ##TODO: UI Design + Rajouter icones dans les boutons + quand ils font une demande, et qu'une demande existe déjà, proposer 3 options: Supprimer la demande faite, remplacer l'ancienne demande ou fusionner les demandes si c'est possible. Bouton pour revenir à la fenetre de modif
+##TODO: Double ouverture formulaire demande changement fait crash
 class demandeChangement(QWidget):
     sheet = pd.DataFrame
     sheetOrigines = pd.DataFrame
@@ -1303,11 +1307,12 @@ class demandeChangement(QWidget):
         self.annuler.clicked.connect(self.annulerF)
 
         self.space = QSpacerItem(100,0)
+        self.space1 = QSpacerItem(100,0)
 
         self.bandeauBoutonsLayout.addItem(self.space)
         self.bandeauBoutonsLayout.addWidget(self.annuler)
         self.bandeauBoutonsLayout.addWidget(self.valider)
-        self.bandeauBoutonsLayout.addItem(self.space)
+        self.bandeauBoutonsLayout.addItem(self.space1)
 
         self.bandeauBouton.setLayout(self.bandeauBoutonsLayout)
         
@@ -1331,6 +1336,7 @@ class demandeChangement(QWidget):
         self.sheet['Date demande'] = datetime.datetime.now().strftime('%Y-%m-%d')
 
         lstCodeBrico = self.dataframereq['Code BRICO'].tolist()
+        print(lstCodeBrico)
 
         #Récupérer uniquement les lignes ou il y a un changement
         self.sheetChangement = pd.DataFrame
@@ -1339,6 +1345,8 @@ class demandeChangement(QWidget):
         self.sheetC = pd.DataFrame(columns=self.sheet.columns)
         lstCodesConflits = []
         lstCleanConflits = []
+
+        conflit = False
         if self.sheet.shape[0] == 1:
             
             print ("Une seule ligne à traiter")
@@ -1353,13 +1361,16 @@ class demandeChangement(QWidget):
                 lstCodesConflits.append(str(codeATrouver) + "-" + str(valeur))
                 lstCleanConflits.append(codeATrouver)
                 conflit = True
+                print("Conflit 1")
                 #(str(codeATrouver))
         elif self.sheet.shape[0] > 1:
-            for i in self.sheet.shape[0]:
+            for i in range(self.sheet.shape[0]):
                 codeATrouver = self.sheet['Code BRICO'][i]
                 if codeATrouver in lstCodeBrico:
+                    print(codeATrouver)
                     print("Conflit pour le code " + str(codeATrouver))
                     conflit = True
+                    print("Conflit 2")
                     index = self.sheet.loc[self.sheet['Code BRICO'] == codeATrouver].index[0]
                     valeur = self.sheet.loc[index, 'Dépôt']
                     lstCodesConflits.append(str(codeATrouver) + "-" + str(valeur))
@@ -1379,8 +1390,7 @@ class demandeChangement(QWidget):
 
             self.gestionConflit.lstCodes = lstCodesConflits
             self.gestionConflit.lstClean = lstCleanConflits
-            print("prout")
-            print(lstCodesConflits)
+
             self.gestionConflit.geneSheet()
             self.gestionConflit.show()
         else:
@@ -1423,7 +1433,7 @@ class demandeChangement(QWidget):
     def annulerF(self):
         self.close()
 
-##Charger la requete qui est en conflit dans une autre table 
+
 class confirmDemande(QWidget):
     sheetDemande = pd.DataFrame
     sheetConflit = pd.DataFrame
@@ -1461,6 +1471,7 @@ class confirmDemande(QWidget):
 
         ###Push buttons###
         self.stretch = QSpacerItem(50,0)
+        self.stretch1 = QSpacerItem(50,0)
 
         self.boutonAnnuler = QPushButton("Annuler")
         self.boutonAnnuler.setMaximumSize(300,100)
@@ -1483,7 +1494,7 @@ class confirmDemande(QWidget):
         self.layoutBandeauBouton.addWidget(self.boutonAnnuler)
         self.layoutBandeauBouton.addItem(self.stretch)
         self.layoutBandeauBouton.addWidget(self.boutonRemplacement)
-        self.layoutBandeauBouton.addItem(self.stretch)
+        self.layoutBandeauBouton.addItem(self.stretch1)
         self.layoutBandeauBouton.addWidget(self.boutonFusion)
 
         self.bandeauBouton.setLayout(self.layoutBandeauBouton)
@@ -1503,10 +1514,11 @@ class confirmDemande(QWidget):
         print(self.lstClean)
 
         #self.sheetorigines = self.sheetConflit[self.sheetConflit['Code BRICO'].isin(self.lstClean)]
-        
+        ##TODO: Afficher uniquement le code selectionné dans les tables
         self.sheetConflit = pd.read_excel(req, sheet_name='Requete')
         print(self.sheetConflit)
         self.sheetConflit = self.sheetConflit[self.sheetConflit['Code BRICO'].isin(self.lstClean)]
+        self.sheetDemande = self.sheetDemande[self.sheetDemande['Code BRICO'].isin(self.lstClean)]
         self.model = pandasModel(self.sheetDemande)
         self.model2 = pandasModel(self.sheetConflit)
 
