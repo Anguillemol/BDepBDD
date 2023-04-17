@@ -685,6 +685,7 @@ class mainWindow(QWidget):
     def demandeChangement(self):
         print("Formulaire demande changement")
         demandeChangement.sheet = self.sheet_tri
+        demandeChangement.sheetOrigines = pd.read_excel(req, sheet_name='Requete')
         self.w = demandeChangement()
         self.w.show()
 
@@ -1261,6 +1262,7 @@ prout2 = "GLAq35n0"
 ##TODO: UI Design + Rajouter icones dans les boutons + quand ils font une demande, et qu'une demande existe déjà, proposer 3 options: Supprimer la demande faite, remplacer l'ancienne demande ou fusionner les demandes si c'est possible. Bouton pour revenir à la fenetre de modif
 class demandeChangement(QWidget):
     sheet = pd.DataFrame
+    sheetOrigines = pd.DataFrame
 
     def __init__(self):
         super().__init__()
@@ -1335,6 +1337,8 @@ class demandeChangement(QWidget):
 
         #Création de la sheet de conflit
         self.sheetC = pd.DataFrame(columns=self.sheet.columns)
+        lstCodesConflits = []
+        lstCleanConflits = []
         if self.sheet.shape[0] == 1:
             
             print ("Une seule ligne à traiter")
@@ -1343,13 +1347,23 @@ class demandeChangement(QWidget):
             codeATrouver = self.sheet['Code BRICO'][0]
             if codeATrouver in lstCodeBrico:
                 print("Conflit pour le code " + str(codeATrouver))
+                #Trouver le nom du dépôt
+                index = self.sheet.loc[self.sheet['Code BRICO'] == codeATrouver].index[0]
+                valeur = self.sheet.loc[index, 'Dépôt']
+                lstCodesConflits.append(str(codeATrouver) + "-" + str(valeur))
+                lstCleanConflits.append(codeATrouver)
                 conflit = True
+                #(str(codeATrouver))
         elif self.sheet.shape[0] > 1:
             for i in self.sheet.shape[0]:
                 codeATrouver = self.sheet['Code BRICO'][i]
                 if codeATrouver in lstCodeBrico:
                     print("Conflit pour le code " + str(codeATrouver))
                     conflit = True
+                    index = self.sheet.loc[self.sheet['Code BRICO'] == codeATrouver].index[0]
+                    valeur = self.sheet.loc[index, 'Dépôt']
+                    lstCodesConflits.append(str(codeATrouver) + "-" + str(valeur))
+                    lstCleanConflits.append(codeATrouver)
                     ##TODO: Checler si la ligne diffère (probleme de format)
         
 
@@ -1359,8 +1373,14 @@ class demandeChangement(QWidget):
         if conflit == True:
             print("Conflit MAJ, ouverture gestionnaire")
             self.gestionConflit = confirmDemande()
+
             self.gestionConflit.sheetDemande = self.sheet
-            self.gestionConflit.sheetConflit = self.sheetC
+            self.gestionConflit.sheetConflit = self.sheetOrigines[self.sheetOrigines['Code BRICO'].isin(lstCleanConflits)]
+
+            self.gestionConflit.lstCodes = lstCodesConflits
+            self.gestionConflit.lstClean = lstCleanConflits
+            print("prout")
+            print(lstCodesConflits)
             self.gestionConflit.geneSheet()
             self.gestionConflit.show()
         else:
@@ -1407,6 +1427,10 @@ class demandeChangement(QWidget):
 class confirmDemande(QWidget):
     sheetDemande = pd.DataFrame
     sheetConflit = pd.DataFrame
+
+    lstCodes = []
+    lstClean = []
+    ##TODO: Raujouter une liste déroulante avec les codes dedans, une autre table avec la requete en conflit.
     def __init__(self):
         super().__init__()
         self.setFixedSize(1180,670)
@@ -1422,12 +1446,19 @@ class confirmDemande(QWidget):
         self.Titre = QLabel("Conflit lors de la demande de MAJ")
         self.Titre.setFont(font)
 
-        self.details = QLabel("Votre demande est en conflit avec une autre demande de mise à jour")
+        self.details = QLabel("Votre demande est en conflit avec une ou plusieurs autres demandes de mise à jour")
         font.setPointSize(14)
         self.details.setFont(font)
 
-        self.table = QTableView()
-        
+
+        self.listeCodes = QComboBox()
+        self.listeCodes.setMinimumHeight(30)
+        self.listeCodes.currentIndexChanged.connect(self.selectConflit)
+
+
+        self.tableNew = QTableView()
+        self.tableOrigin = QTableView()
+
         ###Push buttons###
         self.stretch = QSpacerItem(50,0)
 
@@ -1460,17 +1491,32 @@ class confirmDemande(QWidget):
 
         self.layout.addWidget(self.Titre, 0, Qt.AlignmentFlag.AlignHCenter)
         self.layout.addWidget(self.details, 0, Qt.AlignmentFlag.AlignHCenter)
-        self.layout.addWidget(self.table)
+        self.layout.addWidget(self.listeCodes, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.layout.addWidget(self.tableNew)
+        self.layout.addWidget(self.tableOrigin)
         self.layout.addWidget(self.bandeauBouton, 0, Qt.AlignmentFlag.AlignHCenter)
 
         self.setLayout(self.layout)
 
     def geneSheet(self):
         print("Creation de la sheet de comparaison et chargemetn dans la table")
-        #self.model = pandasEditableModel(self.sheetCompare)
+        print(self.lstClean)
+
+        #self.sheetorigines = self.sheetConflit[self.sheetConflit['Code BRICO'].isin(self.lstClean)]
+        
+        self.sheetConflit = pd.read_excel(req, sheet_name='Requete')
+        print(self.sheetConflit)
+        self.sheetConflit = self.sheetConflit[self.sheetConflit['Code BRICO'].isin(self.lstClean)]
         self.model = pandasModel(self.sheetDemande)
-        self.table.setModel(self.model)
-        self.table.resizeColumnsToContents()
+        self.model2 = pandasModel(self.sheetConflit)
+
+        self.tableNew.setModel(self.model)
+        self.tableNew.resizeColumnsToContents()
+
+        self.tableOrigin.setModel(self.model2)
+        self.tableOrigin.resizeColumnsToContents()
+
+        self.listeCodes.addItems(self.lstCodes)
 
     #Fermer la fenêtre de confirmation
     def annuler(self):
@@ -1485,6 +1531,11 @@ class confirmDemande(QWidget):
     """
     def fusion(self):
         print("Fusion des demandes")
+
+    def selectConflit(self):
+        depot = self.listeCodes.currentText()
+        depot = str(depot.split('-')[0])
+
 
 class traitementDemandeChangement(QWidget):
 
