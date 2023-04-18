@@ -6,13 +6,13 @@ from unidecode import unidecode
 
 from PyQt6.QtCore import Qt, QSize, QSortFilterProxyModel, QAbstractTableModel, QTimer, QThread, pyqtSignal
 from PyQt6.QtGui import QIcon, QPainter, QColor, QPixmap, QBrush, QFont
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QProgressBar, QHeaderView, QMessageBox, QHBoxLayout, QWidget, QLineEdit, QGridLayout, QComboBox, QVBoxLayout, QStackedWidget, QScrollArea, QFrame, QTableView, QSpacerItem 
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QDialogButtonBox, QProgressBar, QHeaderView, QMessageBox, QHBoxLayout, QWidget, QLineEdit, QGridLayout, QComboBox, QVBoxLayout, QStackedWidget, QScrollArea, QFrame, QTableView, QSpacerItem 
 from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.client_credential import ClientCredential
 from office365.sharepoint.files.file import File 
 
 ##TODO: Faire le formatage pour les colonnes qui posent probleme
-#Nombre d'heure gardiennage 2017
+#Nombre d'heure gardiennage 2017, Chef Aménagement Téléphone (long), Taux de Démarque 2021 (long), Taux de braquage pour 100 000 habitants
 
 class SplashScreen(QWidget):
     def __init__(self):
@@ -1399,37 +1399,36 @@ class demandeChangement(QWidget):
             self.newDF = pd.concat([self.dataframereq,self.sheet], axis=0)
             self.newDF = self.newDF.reset_index(drop=True)
             print("newDF")
-            print(self.newDF)
+            print(self.newDF)        
         
-        """
-        #Upload sur sharepoint
-        download_path_req = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
-        with open(download_path_req, "wb") as local_file:
-            file = ctx.web.get_file_by_server_relative_url(requete_URL).download(local_file).execute_query()
-        print("[Ok] file has been downloaded into: {0}".format(download_path_req))
+            #Upload sur sharepoint
+            download_path_req = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
+            with open(download_path_req, "wb") as local_file:
+                file = ctx.web.get_file_by_server_relative_url(requete_URL).download(local_file).execute_query()
+            print("[Ok] file has been downloaded into: {0}".format(download_path_req))
 
-        with pd.ExcelWriter(download_path_req, mode='a', if_sheet_exists='replace') as writer:
-            self.newDF.to_excel(writer, sheet_name='Requete', index=False)
+            with pd.ExcelWriter(download_path_req, mode='a', if_sheet_exists='replace') as writer:
+                self.newDF.to_excel(writer, sheet_name='Requete', index=False)
 
 
-        with open(download_path_req, 'rb') as content_file:
-            file_content = content_file.read()
-        
+            with open(download_path_req, 'rb') as content_file:
+                file_content = content_file.read()
+            
 
-        file_folder = ctx.web.get_folder_by_server_relative_url("/sites/BricoDepot/Shared%20Documents/Donnees")
-        target_file = file_folder.upload_file('REQ.xlsx', file_content).execute_query()
+            file_folder = ctx.web.get_folder_by_server_relative_url("/sites/BricoDepot/Shared%20Documents/Donnees")
+            target_file = file_folder.upload_file('REQ.xlsx', file_content).execute_query()
 
-        print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
+            print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
 
-        #Suppression du dossier temp
-        shutil.rmtree(os.path.dirname(download_path_req))
-        
-        #Affichage message box, changement confirmé et transmis
-        QMessageBox.information(self, 'Succès', 'Requête transmise')
-        
+            #Suppression du dossier temp
+            shutil.rmtree(os.path.dirname(download_path_req))
+            
+            #Affichage message box, changement confirmé et transmis
+            QMessageBox.information(self, 'Succès', 'Requête transmise')
+            
 
-        self.close()
-        """
+            self.close()
+
     def annulerF(self):
         self.close()
 
@@ -1478,10 +1477,10 @@ class confirmDemande(QWidget):
         self.boutonAnnuler.setMinimumSize(300,40)
         self.boutonAnnuler.clicked.connect(self.annuler)
 
-        self.boutonRemplacement = QPushButton("Remplacer la requête")
+        self.boutonRemplacement = QPushButton("Remplacer avec la requête actuelle")
         self.boutonRemplacement.setMaximumSize(300,100)
         self.boutonRemplacement.setMinimumSize(300,40)
-        self.boutonRemplacement.clicked.connect(self.remplacement)
+        self.boutonRemplacement.clicked.connect(self.confremplacement)
 
         self.boutonFusion = QPushButton("Fusionner les requêtes")
         self.boutonFusion.setMaximumSize(300,100)
@@ -1510,7 +1509,7 @@ class confirmDemande(QWidget):
         self.setLayout(self.layout)
 
     def geneSheet(self):
-        print("Creation de la sheet de comparaison et chargemetn dans la table")
+        print("Creation de la sheet de comparaison et chargement dans la table")
         print(self.lstClean)
 
         #self.sheetorigines = self.sheetConflit[self.sheetConflit['Code BRICO'].isin(self.lstClean)]
@@ -1534,6 +1533,28 @@ class confirmDemande(QWidget):
     def annuler(self):
         self.close()
 
+    def confremplacement(self):
+        confirm_box = QMessageBox()
+        confirm_box.setText("Remplacer la requête existante par votre requête ?")
+        
+        fontMessage = QFont()
+        fontMessage.setPointSize(14)
+        confirm_box.setFont(fontMessage)
+        confirm_box.setWindowTitle("Confirmation")
+
+        confirm_button = QPushButton("Confirmer")
+        cancel_button = QPushButton("Annuler")
+        
+        confirm_box.addButton(confirm_button, QMessageBox.ButtonRole.AcceptRole)
+        confirm_box.addButton(cancel_button, QMessageBox.ButtonRole.RejectRole)
+        
+        confirm_box.exec()
+
+        if confirm_box.clickedButton() == confirm_button:
+            print("L'utilisateur a confirmé.")
+            self.remplacement()
+        else:
+            print("L'utilisateur a annulé.")
     def remplacement(self):
         print("Remplacement ancienne requête")
     """
