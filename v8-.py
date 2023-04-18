@@ -378,12 +378,6 @@ class mainWindow(QWidget):
             if lst_sheet[i] != "Accueil" and lst_sheet[i] != "BDD":
                 self.d[lst_sheet[i]] = pd.read_excel(bdd, sheet_name=lst_sheet[i])
 
-        ##### Gathering the number of request for the admin interface #####
-        ##TODO: Récupérer le nombre de requete, VERIFIER SI C'EST BON
-        #self.df = pd.read_excel(req, sheet_name='Requete')
-        #self.lstReq = self.df[1].values.tolist()
-        #self.nbrReq = len(self.lstReq)
-
         ##### Generation of the dataFrame #####
         self.loadExcel()
 
@@ -848,8 +842,6 @@ class creaWindow(QWidget):
         self.setLayout(self.VLayout)
 
     def automCo(self, str, crea):
-        ##TODO: corriger le code brico et tout
-        #Si la fenêtre existe déjà
         if str in self.windowslst:
             self.w = self.windowslst[str]
         else:
@@ -976,10 +968,8 @@ class modifWindow(QWidget):
         self.title = QLabel("Modification d'un dépôt")
         self.setFixedSize(300,80)
 
-        ##TODO: Faire un stacked widget
         self.stack = QStackedWidget()
                 
-        ##TODO: Widget 1 -> Sélection du dépot
         self.widget1 = QWidget()
         self.layout1 = QVBoxLayout()
 
@@ -1010,7 +1000,6 @@ class modifWindow(QWidget):
 
         self.widget1.setLayout(self.layout1)
         
-        ##TODO: Widget 2 -> Affichage du dépot + possibilité de toujours le modifier
         self.widget2 = QWidget()
         self.layout2 = QVBoxLayout()
 
@@ -1111,7 +1100,6 @@ class modifWindow(QWidget):
     def annuler(self):
         self.close()
     
-##TODO: Performance enhancement
 class suppWindow(QWidget):
     sheet = pd.DataFrame
     
@@ -1130,7 +1118,7 @@ class suppWindow(QWidget):
 
         self.stack = QStackedWidget()
         self.i= 5
-        ##TODO: Widget 1 -> Sélection du dépot
+
         self.widget1 = QWidget()
         self.layout1 = QVBoxLayout()
 
@@ -1153,7 +1141,7 @@ class suppWindow(QWidget):
 
         self.widget1.setLayout(self.layout1)
         
-        ##TODO: Widget 2 -> Affichage du dépot + possibilité de toujours le modifier
+
         self.widget2 = QWidget()
         self.layout2 = QVBoxLayout()
         self.titre2 = QLabel("Sélection du dépôt à supprimer")
@@ -1263,7 +1251,7 @@ region1 = "JPELUT"
 region2 = "aWnJwBy8"
 
 ##TODO: UI Design + Rajouter icones dans les boutons + quand ils font une demande, et qu'une demande existe déjà, proposer 3 options: Supprimer la demande faite, remplacer l'ancienne demande ou fusionner les demandes si c'est possible. Bouton pour revenir à la fenetre de modif
-##TODO: Double ouverture formulaire demande changement fait crash
+
 class demandeChangement(QWidget):
     sheet = pd.DataFrame
     sheetOrigines = pd.DataFrame
@@ -1375,7 +1363,7 @@ class demandeChangement(QWidget):
                     valeur = self.sheet.loc[index, 'Dépôt']
                     lstCodesConflits.append(str(codeATrouver) + "-" + str(valeur))
                     lstCleanConflits.append(codeATrouver)
-                    ##TODO: Checler si la ligne diffère (probleme de format)
+                    ##TODO: Checker si la ligne diffère (probleme de format)
         
 
         
@@ -1439,7 +1427,7 @@ class confirmDemande(QWidget):
 
     lstCodes = []
     lstClean = []
-    ##TODO: Raujouter une liste déroulante avec les codes dedans, une autre table avec la requete en conflit.
+
     def __init__(self):
         super().__init__()
         self.setFixedSize(1180,670)
@@ -1512,8 +1500,6 @@ class confirmDemande(QWidget):
         print("Creation de la sheet de comparaison et chargement dans la table")
         print(self.lstClean)
 
-        #self.sheetorigines = self.sheetConflit[self.sheetConflit['Code BRICO'].isin(self.lstClean)]
-        ##TODO: Afficher uniquement le code selectionné dans les tables
         self.sheetConflit = pd.read_excel(req, sheet_name='Requete')
         print(self.sheetConflit)
         self.sheetConflit = self.sheetConflit[self.sheetConflit['Code BRICO'].isin(self.lstClean)]
@@ -1555,13 +1541,12 @@ class confirmDemande(QWidget):
             self.remplacement()
         else:
             print("L'utilisateur a annulé.")
+    ##TODO: Faire le remplacement de la requete
     def remplacement(self):
         print("Remplacement ancienne requête")
-    """
-    #Nécessaire ?
-    def annulationRequete(self):
-        print("Annulation de la procédure de demande")
-    """
+        indexReq = main.sheetRequetes
+
+    ##TODO: Faire la fusion des requêtes
     def fusion(self):
         print("Fusion des demandes")
 
@@ -1681,9 +1666,7 @@ class traitementDemandeChangement(QWidget):
         self.selectionDepot2()
 
     def selectionDepot2(self):
-        ##TODO: ca charge deu fois la fonction faut retirer
         ##TODO: Essayer de freeze la premiere colonne
-        ##TODO: Surligner les parties qui changent
         #Création de la sheet
         depot = self.comboBox2.currentText()
         print("le depot: " + depot)
