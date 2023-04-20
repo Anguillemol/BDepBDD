@@ -6,7 +6,7 @@ from unidecode import unidecode
 
 from PyQt6.QtCore import Qt, QSize, QSortFilterProxyModel, QAbstractTableModel, QTimer, QThread, pyqtSignal
 from PyQt6.QtGui import QIcon, QPainter, QColor, QPixmap, QBrush, QFont
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QDialogButtonBox, QProgressBar, QHeaderView, QMessageBox, QHBoxLayout, QWidget, QLineEdit, QGridLayout, QComboBox, QVBoxLayout, QStackedWidget, QScrollArea, QFrame, QTableView, QSpacerItem 
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QCheckBox, QLabel, QDialogButtonBox, QProgressBar, QHeaderView, QMessageBox, QHBoxLayout, QWidget, QLineEdit, QGridLayout, QComboBox, QVBoxLayout, QStackedWidget, QScrollArea, QFrame, QTableView, QSpacerItem 
 from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.client_credential import ClientCredential
 from office365.sharepoint.files.file import File 
@@ -315,7 +315,7 @@ class logWindow(QWidget):
         self.inputPassword2.setText("")
 
 class mainWindow(QWidget):
-
+    sheetRequetes = pd.DataFrame
     def __init__(self):
         super().__init__()
 
@@ -389,7 +389,7 @@ class mainWindow(QWidget):
         self.sheet = sheet_Globale
         self.sheet_columns = self.sheet.columns.to_list()
 
-        if self.role != "Admin":
+        if self.role not in ["Admin","SuperAdmin"]:
             if self.role == "Région":
                 ##### Gathering only the lines for a specific regional manager
                 self.sheet_tri = self.sheet.loc[self.sheet['Directeur Régional'] == self.denom]
@@ -407,7 +407,7 @@ class mainWindow(QWidget):
     ##### Function used to create the interface dynamically #####
     def loadGUI(self):
         
-        if self.role == "Admin":
+        if self.role == "Admin" or self.role == "SuperAdmin":
             print("Creation du GUI ADMIN")
             ##### Creation of the admin interface #####
 
@@ -495,7 +495,7 @@ class mainWindow(QWidget):
             self.creer.setMinimumSize(QSize(300,40))
             #self.creer.setStyleSheet(styleSheetBouton)
             iconCreer = QIcon()
-            iconCreer.addPixmap(QPixmap(os.path.join(repertexec,"Icons/create.png")), QIcon.Mode.Normal, QIcon.State.Off)
+            iconCreer.addPixmap(QPixmap(os.path.join(repertexec,"create.png")), QIcon.Mode.Normal, QIcon.State.Off)
             self.creer.setIcon(iconCreer)
 
             self.modifier = QPushButton("Modifier un dépôt")
@@ -504,7 +504,7 @@ class mainWindow(QWidget):
             self.modifier.setMaximumSize(QSize(300, 100))
             #self.modifier.setStyleSheet(styleSheetBouton)
             iconModifier = QIcon()
-            iconModifier.addPixmap(QPixmap(os.path.join(repertexec,"Icons/edit.png")), QIcon.Mode.Normal, QIcon.State.Off)
+            iconModifier.addPixmap(QPixmap(os.path.join(repertexec,"edit.png")), QIcon.Mode.Normal, QIcon.State.Off)
             self.modifier.setIcon(iconModifier)
 
             self.supprimer = QPushButton("Supprimer un dépôt")
@@ -512,7 +512,7 @@ class mainWindow(QWidget):
             self.supprimer.setMaximumSize(QSize(300, 100))
             #self.supprimer.setStyleSheet(styleSheetBouton)
             iconSupprimer = QIcon()
-            iconSupprimer.addPixmap(QPixmap(os.path.join(repertexec,"Icons/delete.png")), QIcon.Mode.Normal, QIcon.State.Off)
+            iconSupprimer.addPixmap(QPixmap(os.path.join(repertexec,"delete.png")), QIcon.Mode.Normal, QIcon.State.Off)
             self.supprimer.setIcon(iconSupprimer)
 
             self.bandeau = QWidget()
@@ -530,7 +530,7 @@ class mainWindow(QWidget):
             #self.boutonValidation.setStyleSheet(styleSheetBouton)
             self.boutonValidation.clicked.connect(self.saveData)
             iconValider = QIcon()
-            iconValider.addPixmap(QPixmap(os.path.join(repertexec,"Icons/check.png")), QIcon.Mode.Normal, QIcon.State.Off)
+            iconValider.addPixmap(QPixmap(os.path.join(repertexec,"check.png")), QIcon.Mode.Normal, QIcon.State.Off)
             self.boutonValidation.setIcon(iconValider)
 
             ##Comptage nombre de requêtes de changement
@@ -567,6 +567,19 @@ class mainWindow(QWidget):
             self.layoutAdminGUI.addWidget(self.bandeau)
             self.layoutAdminGUI.addWidget(self.bandeauInf)
 
+            if self.role == "SuperAdmin":
+                print("Ajouter le bouton réglage")
+                self.boutonReglage = QPushButton()
+                self.boutonReglage.setMinimumSize(60,60)
+                self.boutonReglage.setMaximumSize(60,60)
+                self.boutonReglage.setIcon(QIcon('reglage.png'))
+                self.boutonReglage.setIconSize(self.boutonReglage.size())
+                self.boutonReglage.setFixedSize(self.boutonReglage.sizeHint())
+                self.boutonReglage.setToolTip('Réglages')
+                self.boutonReglage.clicked.connect(self.reglage)
+
+                self.layoutAdminGUI.addWidget(self.boutonReglage, 0, Qt.AlignmentFlag.AlignLeft)
+
             self.layoutAdminGUI.setSpacing(0)
             self.adminGUI.setLayout(self.layoutAdminGUI)
 
@@ -579,7 +592,7 @@ class mainWindow(QWidget):
             print("Creation du GUI en lecture")
             ##### Creation of the regular interface #####
             self.adminGUI = QWidget()
-
+            self.sheetRequetes = pd.read_excel(req, sheet_name="Requete")
             ##TODO: Corriger le titre qui apparait pas en entier
             ##### Top Banner #####
             self.titre = QLabel("Base de données magasin - Brico Dépôt")
@@ -694,6 +707,15 @@ class mainWindow(QWidget):
         self.tab.setModel(self.proxy_model)
         self.tab.resizeColumnsToContents()
         print("Model chargé")
+
+    def reglage(self):
+        #TODO: FAIRE LA FENETRE ET TOUT
+        print("ouverture réglage")
+        self.wReglage = reglages()
+        self.wReglage.lstColonnesComplete = sheet_Globale.columns.to_list()
+        self.wReglage.lstColonnesCheckees = sheet_Globale.columns.to_list()
+        self.wReglage.Gui()
+        self.wReglage.show()
 
     def saveData(self):
         print("Saving...")
@@ -1247,6 +1269,9 @@ class suppWindow(QWidget):
 prout1 = "APIERR"
 prout2 = "GLAq35n0"
 
+prout3 = ""
+prout4 = ""
+
 region1 = "JPELUT"
 region2 = "aWnJwBy8"
 
@@ -1420,7 +1445,7 @@ class demandeChangement(QWidget):
     def annulerF(self):
         self.close()
 
-
+## Liaison table et liste déroulante
 class confirmDemande(QWidget):
     sheetDemande = pd.DataFrame
     sheetConflit = pd.DataFrame
@@ -1461,28 +1486,31 @@ class confirmDemande(QWidget):
         self.stretch1 = QSpacerItem(50,0)
 
         self.boutonAnnuler = QPushButton("Annuler")
-        self.boutonAnnuler.setMaximumSize(300,100)
+        self.boutonAnnuler.setMaximumSize(320,100)
         self.boutonAnnuler.setMinimumSize(300,40)
         self.boutonAnnuler.clicked.connect(self.annuler)
 
         self.boutonRemplacement = QPushButton("Remplacer avec la requête actuelle")
-        self.boutonRemplacement.setMaximumSize(300,100)
+        self.boutonRemplacement.setMaximumSize(320,100)
         self.boutonRemplacement.setMinimumSize(300,40)
         self.boutonRemplacement.clicked.connect(self.confremplacement)
 
+        """
         self.boutonFusion = QPushButton("Fusionner les requêtes")
         self.boutonFusion.setMaximumSize(300,100)
         self.boutonFusion.setMinimumSize(300,40)
         self.boutonFusion.clicked.connect(self.fusion)
-
+        """
         self.bandeauBouton = QWidget()
         self.layoutBandeauBouton = QHBoxLayout()
 
         self.layoutBandeauBouton.addWidget(self.boutonAnnuler)
         self.layoutBandeauBouton.addItem(self.stretch)
         self.layoutBandeauBouton.addWidget(self.boutonRemplacement)
+        """
         self.layoutBandeauBouton.addItem(self.stretch1)
         self.layoutBandeauBouton.addWidget(self.boutonFusion)
+        """
 
         self.bandeauBouton.setLayout(self.layoutBandeauBouton)
 
@@ -1544,15 +1572,35 @@ class confirmDemande(QWidget):
     ##TODO: Faire le remplacement de la requete
     def remplacement(self):
         print("Remplacement ancienne requête")
-        indexReq = main.sheetRequetes
+        print(main.sheetRequetes)
 
-    ##TODO: Faire la fusion des requêtes
-    def fusion(self):
-        print("Fusion des demandes")
+        depot = str(self.listeCodes.currentText().split('-')[0])
+        print(depot)
+        indexReq = main.sheetRequetes.loc[main.sheetRequetes['Code BRICO'] == int(depot)].index[0]
+
+        #Remplacement des données requêtes
+
+        main.sheetRequetes.loc[indexReq] = self.rowDemande.loc[0]
+        print("Test")
+        print(main.sheetRequetes)
 
     def selectConflit(self):
         depot = self.listeCodes.currentText()
         depot = str(depot.split('-')[0])
+
+        self.rowDemande = self.sheetDemande.loc[self.sheetDemande['Code BRICO'] == int(depot)]
+        self.rowDemande = self.rowDemande.reset_index(drop=True)
+        self.rowConflit = self.sheetConflit.loc[self.sheetConflit['Code BRICO'] == int(depot)]
+        self.rowConflit = self.rowConflit.reset_index(drop=True)
+
+        self.model = pandasModel(self.rowDemande)
+        self.model2 = pandasModel(self.rowConflit)
+
+        self.tableNew.setModel(self.model)
+        self.tableNew.resizeColumnsToContents()
+
+        self.tableOrigin.setModel(self.model2)
+        self.tableOrigin.resizeColumnsToContents()
 
 
 class traitementDemandeChangement(QWidget):
@@ -1834,6 +1882,67 @@ class traitementDemandeChangement(QWidget):
 
     def annuler(self):
         self.close()   
+
+class reglages(QWidget):
+    lstColonnesComplete = []
+    lstColonnesCheckees = []
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Réglage")
+        #self.setFixedSize(400,550)
+
+    def Gui(self):
+        print("Génération de la fenetre")
+        #Création de tt les widgets
+        self.layout = QVBoxLayout()
+
+        print(self.lstColonnesCheckees)
+
+        self.titre = QLabel("Sélection des colonnes à afficher")
+
+        self.fontbutton = QFont()
+        self.fontbutton.setPointSize(12)
+
+        self.saveButton = QPushButton("Enregistrer les modifications")
+        self.saveButton.setMinimumSize(100,40)
+        self.saveButton.setMaximumSize(310,100)
+        self.saveButton.clicked.connect(self.save)
+        self.saveButton.setFont(self.fontbutton)
+
+
+        self.widgetCheckBox = QWidget()
+        self.layoutCheckBox = QVBoxLayout()
+
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFixedSize(400,450)
+        #Rajouter les nom d'onglet
+        for i in range(len(self.lstColonnesComplete)):
+            checkBox = QCheckBox()
+            nomCheckBox = traitementNom(self.lstColonnesComplete[i])
+            contentCheckBox = str(self.lstColonnesComplete[i])
+            setattr(self, nomCheckBox, checkBox)
+            getattr(self, nomCheckBox).setText(contentCheckBox)
+
+            if self.lstColonnesComplete[i] in self.lstColonnesCheckees:
+                print("HOP LA")
+                getattr(self, nomCheckBox).setChecked(True)
+
+            self.layoutCheckBox.addWidget(getattr(self,nomCheckBox), 0, Qt.AlignmentFlag.AlignLeft)
+
+            
+        self.widgetCheckBox.setLayout(self.layoutCheckBox)
+        self.scroll_area.setWidget(self.widgetCheckBox)
+
+        self.layout.addWidget(self.titre, 0, Qt.AlignmentFlag.AlignCenter)
+        self.layout.addWidget(self.scroll_area, 0, Qt.AlignmentFlag.AlignCenter)
+        self.layout.addWidget(self.saveButton, 0, Qt.AlignmentFlag.AlignCenter)
+
+        self.setLayout(self.layout)
+        
+    def save(self):
+        print("Sauvegarde des paramètres")
 
 class pandasModel(QAbstractTableModel):
     def __init__(self, data):
