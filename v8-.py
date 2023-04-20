@@ -712,8 +712,8 @@ class mainWindow(QWidget):
         #TODO: FAIRE LA FENETRE ET TOUT
         print("ouverture réglage")
         self.wReglage = reglages()
-        self.wReglage.lstColonnesComplete = sheet_Globale.columns.to_list()
-        self.wReglage.lstColonnesCheckees = sheet_Globale.columns.to_list()
+        #self.wReglage.lstColonnesComplete = sheet_Globale.columns.to_list()
+
         self.wReglage.Gui()
         self.wReglage.show()
 
@@ -1887,19 +1887,31 @@ class reglages(QWidget):
     lstColonnesComplete = []
     lstColonnesCheckees = []
 
+    
+    
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Réglage")
         #self.setFixedSize(400,550)
 
     def Gui(self):
+        self.sheetLst = sheet_lst
         print("Génération de la fenetre")
-        #Création de tt les widgets
+
         self.layout = QVBoxLayout()
+
+        self.font = QFont()
+        self.font.setPointSize(14)
+        self.font.setBold(True)
+
+        self.font2 = QFont()
+        self.font2.setPointSize(12)
+        self.font2.setBold(True)
 
         print(self.lstColonnesCheckees)
 
         self.titre = QLabel("Sélection des colonnes à afficher")
+        self.titre.setFont(self.font)
 
         self.fontbutton = QFont()
         self.fontbutton.setPointSize(12)
@@ -1917,20 +1929,36 @@ class reglages(QWidget):
         self.scroll_area = QScrollArea(self)
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setFixedSize(400,450)
-        #Rajouter les nom d'onglet
-        for i in range(len(self.lstColonnesComplete)):
-            checkBox = QCheckBox()
-            nomCheckBox = traitementNom(self.lstColonnesComplete[i])
-            contentCheckBox = str(self.lstColonnesComplete[i])
-            setattr(self, nomCheckBox, checkBox)
-            getattr(self, nomCheckBox).setText(contentCheckBox)
 
-            if self.lstColonnesComplete[i] in self.lstColonnesCheckees:
-                print("HOP LA")
-                getattr(self, nomCheckBox).setChecked(True)
+        ##TODO: Eviter les doublons avec les colonnes qui apparaissent tout le temps
+        for i in range(len(self.sheetLst)):
+            label = QLabel()
+            nomLabel = traitementNom(self.sheetLst[i])
+            contentLabel = str(self.sheetLst[i])
+            setattr(self, nomLabel, label)
+            getattr(self, nomLabel).setText(contentLabel)
+            getattr(self, nomLabel).setFont(self.font2)
 
-            self.layoutCheckBox.addWidget(getattr(self,nomCheckBox), 0, Qt.AlignmentFlag.AlignLeft)
+            self.layoutCheckBox.addWidget(getattr(self, nomLabel), 0, Qt.AlignmentFlag.AlignCenter)
 
+            self.workSheet = pd.read_excel(bdd, sheet_name=self.sheetLst[i])
+            self.colonnes = list(self.workSheet.columns.tolist())
+            
+            for j in range(len(self.colonnes)):
+                checkBox = QCheckBox()
+                nomCheckBox = traitementNom(self.colonnes[j])
+                self.lstColonnesComplete.append(nomCheckBox)
+                contentCheckBox = str(self.colonnes[j])
+                setattr(self, nomCheckBox, checkBox)
+                getattr(self, nomCheckBox).setText(contentCheckBox)
+
+                if self.colonnes[j] in self.lstColonnesCheckees:
+                    print("HOP LA")
+                    getattr(self, nomCheckBox).setChecked(True)
+
+                self.layoutCheckBox.addWidget(getattr(self,nomCheckBox), 0, Qt.AlignmentFlag.AlignLeft)
+                
+            
             
         self.widgetCheckBox.setLayout(self.layoutCheckBox)
         self.scroll_area.setWidget(self.widgetCheckBox)
@@ -1942,7 +1970,16 @@ class reglages(QWidget):
         self.setLayout(self.layout)
         
     def save(self):
+        self.lstSortie = []
         print("Sauvegarde des paramètres")
+        print(self.lstColonnesComplete)
+
+        for i in range(len(self.lstColonnesComplete)):
+            if getattr(self, self.lstColonnesComplete[i]).isChecked():
+                self.lstSortie.append(getattr(self, self.lstColonnesComplete[i]).text())
+
+        print(self.lstSortie)
+
 
 class pandasModel(QAbstractTableModel):
     def __init__(self, data):
