@@ -328,7 +328,7 @@ class mainWindow(QWidget):
         self.denom = ""
 
         ##### Loading and filtering the data #####
-        self.loadExcel()
+        #self.loadExcel()
 
         ########## STYLESHEET ##########
         #self.setStyleSheet("""
@@ -1887,6 +1887,7 @@ class reglages(QWidget):
     lstColonnesComplete = []
     lstColonnesCheckees = []
 
+    lstcheckcrees = []
     
     
     def __init__(self):
@@ -1947,17 +1948,19 @@ class reglages(QWidget):
             for j in range(len(self.colonnes)):
                 checkBox = QCheckBox()
                 nomCheckBox = traitementNom(self.colonnes[j])
-                self.lstColonnesComplete.append(nomCheckBox)
-                contentCheckBox = str(self.colonnes[j])
-                setattr(self, nomCheckBox, checkBox)
-                getattr(self, nomCheckBox).setText(contentCheckBox)
+                if nomCheckBox not in self.lstcheckcrees:
+                    self.lstColonnesComplete.append(nomCheckBox)
+                    contentCheckBox = str(self.colonnes[j])
+                    setattr(self, nomCheckBox, checkBox)
+                    getattr(self, nomCheckBox).setText(contentCheckBox)
 
-                if self.colonnes[j] in self.lstColonnesCheckees:
-                    print("HOP LA")
-                    getattr(self, nomCheckBox).setChecked(True)
+                    if self.colonnes[j] in self.lstColonnesCheckees:
+                        getattr(self, nomCheckBox).setChecked(True)
 
-                self.layoutCheckBox.addWidget(getattr(self,nomCheckBox), 0, Qt.AlignmentFlag.AlignLeft)
-                
+                    self.layoutCheckBox.addWidget(getattr(self,nomCheckBox), 0, Qt.AlignmentFlag.AlignLeft)
+                    self.lstcheckcrees.append(nomCheckBox)
+                else:
+                    print(nomCheckBox)
             
             
         self.widgetCheckBox.setLayout(self.layoutCheckBox)
@@ -1968,6 +1971,8 @@ class reglages(QWidget):
         self.layout.addWidget(self.saveButton, 0, Qt.AlignmentFlag.AlignCenter)
 
         self.setLayout(self.layout)
+
+        self.lstcheckcrees.clear()
         
     def save(self):
         self.lstSortie = []
@@ -1978,7 +1983,21 @@ class reglages(QWidget):
             if getattr(self, self.lstColonnesComplete[i]).isChecked():
                 self.lstSortie.append(getattr(self, self.lstColonnesComplete[i]).text())
 
-        print(self.lstSortie)
+        self.upload_path_parm = os.path.join(tempfile.mkdtemp(), os.path.basename(param_URL))
+        with open(self.upload_path_parm, 'w') as f:
+            for item in self.lstSortie:
+                f.write(item + "\n")
+        print("Param créé")
+
+        with open(self.upload_path_parm, 'rb') as content_file:
+            file_content = content_file.read()
+
+        file_folder = ctx.web.get_folder_by_server_relative_url("/sites/BricoDepot/Shared%20Documents/Donnees")
+        target_file = file_folder.upload_file('param.txt', file_content).execute_query()
+
+        print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
+		
+        shutil.rmtree(os.path.dirname(self.upload_path_parm))
 
 
 class pandasModel(QAbstractTableModel):
@@ -2354,6 +2373,7 @@ if __name__ == '__main__':
     bdd_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/BDD.xlsx"
     mdp_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/MDP.xlsx"
     requete_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/REQ.xlsx"
+    param_URL = "/sites/BricoDepot/Shared%20Documents/Donnees/param.txt"
 
     ctx = ClientContext(test_team_site_url).with_credentials(ClientCredential(username, password))
     web = ctx.web
@@ -2448,6 +2468,20 @@ if __name__ == '__main__':
         return os.path.join(base_path, relative_path)
 
     app.setStyleSheet(styleSheet)
+
+    #####ETAPE 6#####
+    downParam = os.path.join(tempfile.mkdtemp(), os.path.basename(param_URL))
+    with open(downParam, "wb") as local_file:
+        file = ctx.web.get_file_by_server_relative_url(param_URL).download(local_file).execute_query()
+    print("[Ok] file has been downloaded into: {0}".format(downParam))
+    
+    ##Lecture des paramètres
+    with open(downParam, 'r') as f:
+        contenu = f.read()
+        listeParam = contenu.split('\n')[:-1]
+    
+    shutil.rmtree(os.path.dirname(downParam))
+
     splash.close()
     main = mainWindow()
     form = logWindow()
