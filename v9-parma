@@ -393,16 +393,22 @@ class mainWindow(QWidget):
         if self.role not in ["Admin","SuperAdmin"]:
             if self.role == "Région":
                 ##### Gathering only the lines for a specific regional manager
-                self.sheet_tri = self.sheet.loc[self.sheet['Directeur Régional'] == self.denom]
+                self.sheet_tri = self.sheet.loc[self.sheet['Directeur Régional'] == self.denom, self.lstParam]
                 print (self.sheet_tri)
                 self.model = pandasModel(self.sheet_tri)
             elif self.role == "Dépôt":
                 ##### Gathering only the lines for a site #####
-                self.sheet_tri = self.sheet.loc[self.sheet['Directeur dépôt'] == self.denom]
+                self.sheet_tri = self.sheet.loc[self.sheet['Directeur dépôt'] == self.denom, self.lstParam]
                 self.model = pandasModel(self.sheet_tri)
         else:
             #self.model = pandasModel(self.sheet)
-            self.model = pandasEditableModel(self.sheet)
+            if self.role == "SuperAdmin":
+                self.model = pandasEditableModel(self.sheet)
+            elif self.role == "Admin":
+                self.sheetParam = self.sheet.loc[:, self.lstParam]
+                print(self.sheetParam)
+                self.model = pandasEditableModel(self.sheetParam)
+                print("travail sur sheet")
             print("Model créé Admin en lecture écriture")
 
     ##### Function used to create the interface dynamically #####
@@ -680,13 +686,20 @@ class mainWindow(QWidget):
 
     def modifDepot(self):
         print("Modification")
-        modifWindow.sheet=self.sheet
+        if self.role == "SuperAdmin":
+            modifWindow.sheet=self.sheet
+        else:
+            modifWindow.sheet = self.sheet.loc[:, self.lstParam]
         self.w = modifWindow()
         self.w.show()
 
     def supprimerDepot(self):
         print("Suppression")
-        suppWindow.sheet=self.sheet
+        if self.role == "SuperAdmin":
+            suppWindow.sheet=self.sheet
+        else:
+
+            suppWindow.sheet=self.sheet.loc[:, self.lstParam]
         self.w = suppWindow()
         self.w.show()
 
@@ -703,7 +716,10 @@ class mainWindow(QWidget):
         self.w.show()
 
     def chargerModif(self):
-        self.model = pandasEditableModel(self.sheet)
+        if self.role == "SuperAdmin":
+            self.model = pandasEditableModel(self.sheet)
+        elif self.role == "Admin":
+            self.model = pandasEditableModel(self.sheet.loc[:, self.lstParam])
         self.proxy_model.setSourceModel(self.model)
         self.tab.setModel(self.proxy_model)
         self.tab.resizeColumnsToContents()
@@ -719,7 +735,7 @@ class mainWindow(QWidget):
 
         self.wReglage.Gui()
         self.wReglage.show()
-
+##Assurer le save
     def saveData(self):
         print("Saving...")
         print(self.sheet)
@@ -768,7 +784,7 @@ class mainWindow(QWidget):
         self.w = ''
         if self.w:
             self.w.close()
-
+##TODO faire le truc (compliqué)
 class creaWindow(QWidget):
     windowslst = {}
     def __init__(self):
@@ -1124,7 +1140,7 @@ class modifWindow(QWidget):
 
     def annuler(self):
         self.close()
-    
+
 class suppWindow(QWidget):
     sheet = pd.DataFrame
     
@@ -1251,6 +1267,7 @@ class suppWindow(QWidget):
 
     def suppression(self):
         rowIndex = self.sheet_tri_index
+        
         main.sheet = main.sheet.drop(rowIndex)
 
         main.chargerModif()
@@ -1278,7 +1295,7 @@ prout4 = ""
 region1 = "JPELUT"
 region2 = "aWnJwBy8"
 
-##TODO: UI Design + Rajouter icones dans les boutons + quand ils font une demande, et qu'une demande existe déjà, proposer 3 options: Supprimer la demande faite, remplacer l'ancienne demande ou fusionner les demandes si c'est possible. Bouton pour revenir à la fenetre de modif
+##TODO: UI Design + Rajouter icones dans les boutons + faire conditionnement donnée
 
 class demandeChangement(QWidget):
     sheet = pd.DataFrame
@@ -1604,7 +1621,6 @@ class confirmDemande(QWidget):
 
         self.tableOrigin.setModel(self.model2)
         self.tableOrigin.resizeColumnsToContents()
-
 
 class traitementDemandeChangement(QWidget):
 
