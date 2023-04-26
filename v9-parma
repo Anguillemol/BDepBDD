@@ -707,8 +707,9 @@ class mainWindow(QWidget):
         print("Formulaire demande changement")
         demandeChangement.sheet = self.sheet_tri
         demandeChangement.sheetOrigines = pd.read_excel(req, sheet_name='Requete')
-        self.w = demandeChangement()
-        self.w.show()
+        self.wDem = demandeChangement()
+        self.wDem.gene()
+        self.wDem.show()
 
     def traitementRequetesChangement(self):
         print("Traitement des requetes de changement")
@@ -739,6 +740,7 @@ class mainWindow(QWidget):
     def saveData(self):
         print("Saving...")
         print(self.sheet)
+        self.sheet.to_excel('bddTest.xlsx', index=False)
         
         #Storage du fichier excel temporaire, changer pour le storer uniquement si c'est un utilisateur admin
         self.download_path = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
@@ -750,10 +752,10 @@ class mainWindow(QWidget):
         print("Workbook loadé sur openpyxl")
 
         my_set = set(self.sheet_columns)
-
+        lst_clean = []
         for key in self.d.keys():
             lst_columns = self.d[key].columns.to_list()
-            lst_clean = []
+            
             for i in range(len(lst_columns)):
                 if lst_columns[i] in my_set:
                     lst_clean.append(lst_columns[i])
@@ -784,7 +786,7 @@ class mainWindow(QWidget):
         self.w = ''
         if self.w:
             self.w.close()
-##TODO faire le truc (compliqué)
+
 class creaWindow(QWidget):
     windowslst = {}
     def __init__(self):
@@ -1123,10 +1125,9 @@ class modifWindow(QWidget):
         listHeaders = self.sheet.columns.values.tolist()
 
         for i in range(len(listHeaders)):
-            self.sheet[listHeaders[i]][rowIndex] = self.sheet_tri[listHeaders[i]][rowIndex]
+            main.sheet[listHeaders[i]][rowIndex] = self.sheet_tri[listHeaders[i]][rowIndex]
                 
     ##Transmission de la nouvelle sheet à la fenêtre principale
-        main.sheet = self.sheet
         main.chargerModif()
 
         self.close()
@@ -1295,8 +1296,7 @@ prout4 = ""
 region1 = "JPELUT"
 region2 = "aWnJwBy8"
 
-##TODO: UI Design + Rajouter icones dans les boutons + faire conditionnement donnée
-
+##TODO: UI Design + Rajouter icones dans les boutons + liste déroulante pour selectionner le depot à modif
 class demandeChangement(QWidget):
     sheet = pd.DataFrame
     sheetOrigines = pd.DataFrame
@@ -1316,6 +1316,10 @@ class demandeChangement(QWidget):
         font.setBold(True)
         font.setWeight(75)
         self.Titre.setFont(font)
+
+        self.listeCodes = QComboBox()
+        self.listeCodes.setMinimumHeight(30)
+        self.listeCodes.currentIndexChanged.connect(self.select)
 
         self.texte = QLabel("Modifier les données dans le tableau ci-dessous")
         font.setPointSize(14)
@@ -1350,6 +1354,7 @@ class demandeChangement(QWidget):
         self.bandeauBouton.setLayout(self.bandeauBoutonsLayout)
         
         self.layout.addWidget(self.Titre, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.layout.addWidget(self.listeCodes, 0, Qt.AlignmentFlag.AlignHCenter)
         self.layout.addWidget(self.texte, 0, Qt.AlignmentFlag.AlignHCenter)
         self.layout.addWidget(self.table)
         self.layout.addWidget(self.bandeauBouton)
@@ -1367,6 +1372,8 @@ class demandeChangement(QWidget):
 
         self.sheet['Utilisateur'] = main.denom
         self.sheet['Date demande'] = datetime.datetime.now().strftime('%Y-%m-%d')
+
+        self.lstDonneesSup = ['Utilisateur', 'Date demande']
 
         lstCodeBrico = self.dataframereq['Code BRICO'].tolist()
         print(lstCodeBrico)
@@ -1388,30 +1395,25 @@ class demandeChangement(QWidget):
             codeATrouver = self.sheet['Code BRICO'][0]
             if codeATrouver in lstCodeBrico:
                 print("Conflit pour le code " + str(codeATrouver))
-                #Trouver le nom du dépôt
                 index = self.sheet.loc[self.sheet['Code BRICO'] == codeATrouver].index[0]
                 valeur = self.sheet.loc[index, 'Dépôt']
                 lstCodesConflits.append(str(codeATrouver) + "-" + str(valeur))
                 lstCleanConflits.append(codeATrouver)
                 conflit = True
-                print("Conflit 1")
-                #(str(codeATrouver))
         elif self.sheet.shape[0] > 1:
             for i in range(self.sheet.shape[0]):
                 codeATrouver = self.sheet['Code BRICO'][i]
                 if codeATrouver in lstCodeBrico:
-                    print(codeATrouver)
                     print("Conflit pour le code " + str(codeATrouver))
                     conflit = True
-                    print("Conflit 2")
                     index = self.sheet.loc[self.sheet['Code BRICO'] == codeATrouver].index[0]
                     valeur = self.sheet.loc[index, 'Dépôt']
                     lstCodesConflits.append(str(codeATrouver) + "-" + str(valeur))
                     lstCleanConflits.append(codeATrouver)
-                    ##TODO: Checker si la ligne diffère (probleme de format)
         
 
-        
+        print("Liste des conflits")
+        print(lstCodesConflits)
         #Trouver si une ligne à le meme code si oui la sauvegarder dans self.sheetC
 
         if conflit == True:
@@ -1427,9 +1429,32 @@ class demandeChangement(QWidget):
             self.gestionConflit.geneSheet()
             self.gestionConflit.show()
         else:
+            #Completer la truc req GLAq35n0
+            self.listeParamCheck = listeParam
+            self.listeParamCheck.append('Utilisateur')
+            self.listeParamCheck.append('Date demande')
             print("pas de conflit on upload banal")
+            self.dfCompletee = pd.DataFrame(columns=self.dataframereq.columns)
+            for i in range(self.sheet.shape[0]):
+                self.dfCompletee.loc[len(self.dfCompletee)] = [None] * len(self.dfCompletee.columns)
+                codeBrico = self.sheet['Code BRICO'][i]
+                indexdfReq = main.sheet.loc[main.sheet['Code BRICO'] == codeBrico].index[0]
+                print(indexdfReq)
+                for j in range(self.dfCompletee.shape[1]):
+                    nomColonne = self.dfCompletee.columns[j]
+                    if nomColonne in self.listeParamCheck:
+                        self.dfCompletee[nomColonne][i] = self.sheet[nomColonne][i]
+                        print(self.sheet[nomColonne][i])
+                    else:
+                        self.dfCompletee[nomColonne][i] = main.sheet[nomColonne][indexdfReq]
+                        print(main.sheet[nomColonne][indexdfReq])
+
+                    print(str(j) +" / "+str(self.dfCompletee.shape[1]))
+
+            print(self.dfCompletee)
+            
             self.newDF = pd.DataFrame
-            self.newDF = pd.concat([self.dataframereq,self.sheet], axis=0)
+            self.newDF = pd.concat([self.dataframereq,self.dfCompletee], axis=0)
             self.newDF = self.newDF.reset_index(drop=True)
             print("newDF")
             print(self.newDF)        
@@ -1459,13 +1484,24 @@ class demandeChangement(QWidget):
             #Affichage message box, changement confirmé et transmis
             QMessageBox.information(self, 'Succès', 'Requête transmise')
             
-
+            
             self.close()
 
+    def gene(self):
+        self.lstCodesBrico = self.sheet['Code BRICO'].tolist()
+        self.lstDepots = self.sheet['Dépôt'].tolist()
+        for i in range(len(self.lstCodesBrico)):
+            self.lstCodesBrico[i] = str(self.lstCodesBrico[i]) + " - " + self.lstDepots[i]
+        print(self.lstCodesBrico)
+        self.listeCodes.addItems(self.lstCodesBrico)
+
+    def select(self):
+        print("prout")
+        #TODO:IMPORTANT, faire le chargement de la sheet
     def annulerF(self):
         self.close()
 
-## Liaison table et liste déroulante
+## Liaison table et liste déroulante aWnJwBy8
 class confirmDemande(QWidget):
     sheetDemande = pd.DataFrame
     sheetConflit = pd.DataFrame
@@ -1589,7 +1625,7 @@ class confirmDemande(QWidget):
             self.remplacement()
         else:
             print("L'utilisateur a annulé.")
-    ##TODO: Faire le remplacement de la requete
+    ##TODO: Faire le remplacement de la requete GLAq35n0
     def remplacement(self):
         print("Remplacement ancienne requête")
         print(main.sheetRequetes)
@@ -1599,11 +1635,64 @@ class confirmDemande(QWidget):
         indexReq = main.sheetRequetes.loc[main.sheetRequetes['Code BRICO'] == int(depot)].index[0]
 
         #Remplacement des données requêtes
+        self.listeParamCheck = listeParam
+        self.listeParamCheck.append('Utilisateur')
+        self.listeParamCheck.append('Date demande')
+        print("pas de conflit on upload banal")
+        self.dfCompletee = pd.DataFrame(columns=main.sheetRequetes.columns)
+        for i in range(self.sheetDemande.shape[0]):
+            self.dfCompletee.loc[len(self.dfCompletee)] = [None] * len(self.dfCompletee.columns)
+            codeBrico = self.sheetDemande['Code BRICO'][i]
+            indexdfReq = main.sheet.loc[main.sheet['Code BRICO'] == codeBrico].index[0]
+            print(indexdfReq)
+            for j in range(self.dfCompletee.shape[1]):
+                nomColonne = self.dfCompletee.columns[j]
+                if nomColonne in self.listeParamCheck:
+                    self.dfCompletee[nomColonne][i] = self.sheetDemande[nomColonne][i]
+                    print(self.sheetDemande[nomColonne][i])
+                else:
+                    self.dfCompletee[nomColonne][i] = main.sheet[nomColonne][indexdfReq]
+                    print(main.sheet[nomColonne][indexdfReq])
 
-        main.sheetRequetes.loc[indexReq] = self.rowDemande.loc[0]
+                print(str(j) +" / "+str(self.dfCompletee.shape[1]))
+
+        print(self.dfCompletee)
+
+
+
+
+        #main.sheetRequetes.loc[indexReq] = self.rowDemande.loc[0]
+        main.sheetRequetes.loc[indexReq] = self.dfCompletee.loc[0]
         print("Test")
         print(main.sheetRequetes)
+        
+        #Upload sur sharepoint GLAq35n0
+        print("au boulot feignase")
+        download_path_req = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
+        with open(download_path_req, "wb") as local_file:
+            file = ctx.web.get_file_by_server_relative_url(requete_URL).download(local_file).execute_query()
+        print("[Ok] file has been downloaded into: {0}".format(download_path_req))
 
+        with pd.ExcelWriter(download_path_req, mode='a', if_sheet_exists='replace') as writer:
+            main.sheetRequetes.to_excel(writer, sheet_name='Requete', index=False)
+
+
+        with open(download_path_req, 'rb') as content_file:
+            file_content = content_file.read()
+            
+
+        file_folder = ctx.web.get_folder_by_server_relative_url("/sites/BricoDepot/Shared%20Documents/Donnees")
+        target_file = file_folder.upload_file('REQ.xlsx', file_content).execute_query()
+
+        print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
+
+        #Suppression du dossier temp
+        shutil.rmtree(os.path.dirname(download_path_req))
+            
+        #Affichage message box, changement confirmé et transmis
+        QMessageBox.information(self, 'Succès', 'Requête remplacée')
+        
+        
     def selectConflit(self):
         depot = self.listeCodes.currentText()
         depot = str(depot.split('-')[0])
@@ -2020,7 +2109,6 @@ class reglages(QWidget):
         print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
 		
         shutil.rmtree(os.path.dirname(self.upload_path_parm))
-
 
 class pandasModel(QAbstractTableModel):
     def __init__(self, data):
