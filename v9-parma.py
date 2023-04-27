@@ -14,6 +14,11 @@ from office365.sharepoint.files.file import File
 ##TODO: Faire le formatage pour les colonnes qui posent probleme
 #Nombre d'heure gardiennage 2017, Chef Aménagement Téléphone (long), Taux de Démarque 2021 (long), Taux de braquage pour 100 000 habitants
 
+""" SplashScreen : Classe gérant l'écran de chargement
+    
+    {__init__}: Fonction d'initialisation de la classe
+    {initUI}: Annexe de l'initialisation de la classe (mise en place des Widgets)
+"""
 class SplashScreen(QWidget):
     def __init__(self):
         super().__init__()
@@ -76,7 +81,7 @@ class SplashScreen(QWidget):
         self.labelTitle = QLabel(self.frame)
         self.labelTitle.setObjectName('LabelTitle')
 
-        # center labels
+        
         self.labelTitle.resize(self.width() - 10, 160)
         self.labelTitle.move(0, 40) # x, y
         self.labelTitle.setText('Chargement')
@@ -103,7 +108,7 @@ class SplashScreen(QWidget):
         self.labelLoading.move(0, self.progressBar.y() + 70)
         self.labelLoading.setObjectName('LabelLoading')
         self.labelLoading.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.labelLoading.setText('loading...')
+        self.labelLoading.setText('Chargement...')
 
         self.labelSubDescription = QLabel(self.frame)
         self.labelSubDescription.resize(self.width() - 10, 50)
@@ -112,6 +117,14 @@ class SplashScreen(QWidget):
         self.labelSubDescription.setText('')
         self.labelSubDescription.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+""" LogWindow : Classe gérant l'écran d'authentification
+
+    {__init__}: Fonction d'initialisation de la classe (mise en place des widgets et layouts)
+
+    {PushCo}: Fonction d'authentification, ouvre la fenêtre principale si l'authentification est correcte
+
+    {PushCl}: Fonction de nettoyage des champs de saisie
+"""
 class logWindow(QWidget):  
     def __init__(self):
         super().__init__()
@@ -121,7 +134,7 @@ class logWindow(QWidget):
         self.w = None 
         self.role = ""
 
-        ########## Gathering the account DataBase ##########
+        ########## Lecture du fichier mot de passe ##########
         self.ddbmdp = pd.read_excel(mdp, sheet_name='MDPFINAUX')
 
         ########## logV1 ##########
@@ -183,7 +196,7 @@ class logWindow(QWidget):
         self.logv1.setLayout(self.hLayout1)
 
 
-        ########## logV2 ##########
+        ########## logV2 (authentification incorrecte) ##########
         self.logv2 = QWidget()
         
         self.hLayout2 = QHBoxLayout()
@@ -248,8 +261,6 @@ class logWindow(QWidget):
 
         self.setLayout(layoutHome)
 
-        
-
     ########## Fonction de connexion ##########
     def PushCo (self):
         sender = self.sender()
@@ -263,6 +274,7 @@ class logWindow(QWidget):
                 role = self.ddbmdp['Role'][nrow]
                 denom = self.ddbmdp['Denom'][nrow]
                 if self.inputPassword.text() == self.ddbmdp.loc[self.ddbmdp['Username'] == self.inputUser.text()]['Password'][nrow]:
+                    ##### Authentification réussie, ouverture de la fenêtre principale #####
                     self.Stack.setCurrentIndex(2)
                     if self.w is None:
                         self.w=main
@@ -271,10 +283,6 @@ class logWindow(QWidget):
                         main.role = role
                         main.denom = denom
                         main.demarrage()
-                        #self.w=mainWindow()
-                        #self.w.user = self.inputUser.text()
-                        #self.w.password = self.inputPassword.text()
-                        #self.w.role = role
                     self.w.show()
                     self.close()
                 else:
@@ -285,6 +293,7 @@ class logWindow(QWidget):
                 role = self.ddbmdp['Role'][nrow]
                 denom = self.ddbmdp['Denom'][nrow]
                 if self.inputPassword2.text() == self.ddbmdp.loc[self.ddbmdp['Username'] == self.inputUser2.text()]['Password'][nrow]:
+                    ##### Authentification réussie, ouverture de la fenêtre principale #####
                     self.Stack.setCurrentIndex(2)
                     if self.w is None:
                         self.w=main
@@ -314,6 +323,35 @@ class logWindow(QWidget):
         self.inputPassword.setText("")
         self.inputPassword2.setText("")
 
+""" mainWindow : Classe gérant la fenêtre principale
+
+    {__init__}: Fonction d'initialisation de la classe
+
+    {demarrage}: Fonction de démarrage de la classe, execute les fonctions loadExcel et loadGU
+
+    {loadExcel}: Fonction de récupération des données Excel
+
+    {loadGUI}: Fonction de génération de l'interface
+
+    {center}: Fonction de centrage de la fenêtre dans l'écran
+
+    {creerDepot}: Fonction créant la fenêtre "Création de dépôt" (réservé aux utilisateurs admins et superadmins)
+
+    {modifDepot}: Fonction créant la fenêtre "Modification de dépôt" (réservé aux utilisateurs admins et superadmins)
+
+    {supprimerDepot}: Fonction créant la fenêtre "Suppression de dépôt" (réservé aux utilisateurs admins et superadmins)
+
+    {demandeChangement}: Fonction créant la fenêtre "Demande de changement de données" (réservé aux utilisateurs non-admins)
+
+    {traitementRequetesChangement}: Fonction créant la fenêtre "Traitement des demandes de changement de données" (réservé aux utilisateurs admins et superadmins)
+
+    {chargerModif}: Fonction pour actualiser les données de la fenêtre principale
+
+    {reglages}: Fonction d'accès à la fenêtre de régalge (réservé aux SuperAdmins)
+
+    {saveData}: Fonction sauvegardant les données saisies dans l'outil dans Sharepoint (réservé aux utilisateurs admins et superadmins)
+"""
+##TODO: SAVEDATA
 class mainWindow(QWidget):
     sheetRequetes = pd.DataFrame
     lstParam = []
@@ -327,19 +365,6 @@ class mainWindow(QWidget):
         self.password = ""
         self.role = ""
         self.denom = ""
-
-        ##### Loading and filtering the data #####
-        #self.loadExcel()
-
-        ########## STYLESHEET ##########
-        #self.setStyleSheet("""
-            #QLineEdit{
-            #    font-size: 20px
-            #}
-            #QPushButton{
-            #    font-size: 20px
-            #}
-            #""")
 
         ##### Loading Widget #####
 
@@ -371,7 +396,7 @@ class mainWindow(QWidget):
         print("Denomination: " + self.denom)
         self.setFixedSize(1280,720)
         self.center()
-        ##### Loading #####
+        ##### Lecture base de données #####
         excel = pd.ExcelFile(bdd)
         lst_sheet = excel.sheet_names
         self.d = {}
@@ -379,48 +404,41 @@ class mainWindow(QWidget):
             if lst_sheet[i] != "Accueil" and lst_sheet[i] != "BDD":
                 self.d[lst_sheet[i]] = pd.read_excel(bdd, sheet_name=lst_sheet[i])
 
-        ##### Generation of the dataFrame #####
+        ##### Récupération des données #####
         self.loadExcel()
 
-        ##### Generation of the layout #####
+        ##### Generation de l'interface #####
         self.loadGUI()
         
-    ##### Function used to load the Excel data file #####
     def loadExcel(self):
         self.sheet = sheet_Globale
         self.sheet_columns = self.sheet.columns.to_list()
 
         if self.role not in ["Admin","SuperAdmin"]:
             if self.role == "Région":
-                ##### Gathering only the lines for a specific regional manager
+                ##### Récupération de toutes les lignes d'un directeur régional et affichables en fonction de la liste des paramètres (ici self.lstParam) #####
                 self.sheet_tri = self.sheet.loc[self.sheet['Directeur Régional'] == self.denom, self.lstParam]
-                print (self.sheet_tri)
                 self.model = pandasModel(self.sheet_tri)
             elif self.role == "Dépôt":
-                ##### Gathering only the lines for a site #####
+                ##### Récupération des lignes d'un directeur de dépôt et affichables en fonction de la liste des paramètres (ici self.lstParam) #####
                 self.sheet_tri = self.sheet.loc[self.sheet['Directeur dépôt'] == self.denom, self.lstParam]
                 self.model = pandasModel(self.sheet_tri)
         else:
-            #self.model = pandasModel(self.sheet)
             if self.role == "SuperAdmin":
                 self.model = pandasEditableModel(self.sheet)
             elif self.role == "Admin":
+                ##### Limitation des colonnes affichables en fonction de la liste des paramètres (ici self.lstParam)#####
                 self.sheetParam = self.sheet.loc[:, self.lstParam]
-                print(self.sheetParam)
                 self.model = pandasEditableModel(self.sheetParam)
-                print("travail sur sheet")
             print("Model créé Admin en lecture écriture")
 
-    ##### Function used to create the interface dynamically #####
     def loadGUI(self):
-        
+        ##### Création de l'interface ADMIN et SuperAdmin #####
         if self.role == "Admin" or self.role == "SuperAdmin":
             print("Creation du GUI ADMIN")
-            ##### Creation of the admin interface #####
 
             self.adminGUI = QWidget()
 
-            ##TODO: Corriger le titre qui apparait pas en entier
             ##### Top Banner #####
             self.titre = QLabel("Base de données magasin - Brico Dépôt")
             font = QFont()
@@ -459,7 +477,6 @@ class mainWindow(QWidget):
             self.topLayout.addStretch(1)
             
             self.topBanner.setLayout(self.topLayout)
-            #self.topBanner.setStyleSheet("background-color: red")
 
             ##### Table and research bar #####
             self.middle = QWidget()
@@ -477,7 +494,7 @@ class mainWindow(QWidget):
             self.tab = QTableView()
 
             self.proxy_model = QSortFilterProxyModel()
-            self.proxy_model.setFilterKeyColumn(-1) #Toutes les colonnes
+            self.proxy_model.setFilterKeyColumn(-1) #Filtre sur toutes les colonnes
             self.proxy_model.setSourceModel(self.model)
             self.proxy_model.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
 
@@ -488,7 +505,6 @@ class mainWindow(QWidget):
 
             self.middleLayout.addWidget(self.searchBar)
             self.middle.setLayout(self.middleLayout)
-            #self.middle.setStyleSheet("background-color: green;")
 
             ##### Push buttons #####
             fontBouton = QFont()
@@ -500,7 +516,6 @@ class mainWindow(QWidget):
             self.creer.clicked.connect(self.creerDepot)
             self.creer.setMaximumSize(QSize(300, 100))
             self.creer.setMinimumSize(QSize(300,40))
-            #self.creer.setStyleSheet(styleSheetBouton)
             iconCreer = QIcon()
             iconCreer.addPixmap(QPixmap(os.path.join(repertexec,"create.png")), QIcon.Mode.Normal, QIcon.State.Off)
             self.creer.setIcon(iconCreer)
@@ -509,7 +524,6 @@ class mainWindow(QWidget):
             self.modifier.setFont(fontBouton)
             self.modifier.clicked.connect(self.modifDepot)
             self.modifier.setMaximumSize(QSize(300, 100))
-            #self.modifier.setStyleSheet(styleSheetBouton)
             iconModifier = QIcon()
             iconModifier.addPixmap(QPixmap(os.path.join(repertexec,"edit.png")), QIcon.Mode.Normal, QIcon.State.Off)
             self.modifier.setIcon(iconModifier)
@@ -517,7 +531,6 @@ class mainWindow(QWidget):
             self.supprimer = QPushButton("Supprimer un dépôt")
             self.supprimer.clicked.connect(self.supprimerDepot)
             self.supprimer.setMaximumSize(QSize(300, 100))
-            #self.supprimer.setStyleSheet(styleSheetBouton)
             iconSupprimer = QIcon()
             iconSupprimer.addPixmap(QPixmap(os.path.join(repertexec,"delete.png")), QIcon.Mode.Normal, QIcon.State.Off)
             self.supprimer.setIcon(iconSupprimer)
@@ -529,25 +542,21 @@ class mainWindow(QWidget):
             self.bandeauBoutons.addWidget(self.supprimer)
 
             self.bandeau.setLayout(self.bandeauBoutons)
-            #self.bandeau.setStyleSheet("background-color: blue;")
 
             self.boutonValidation = QPushButton("Confirmer modifications")
             self.boutonValidation.setMaximumSize(QSize(300,100))
             self.boutonValidation.setMinimumSize(QSize(300,40))
-            #self.boutonValidation.setStyleSheet(styleSheetBouton)
             self.boutonValidation.clicked.connect(self.saveData)
             iconValider = QIcon()
             iconValider.addPixmap(QPixmap(os.path.join(repertexec,"check.png")), QIcon.Mode.Normal, QIcon.State.Off)
             self.boutonValidation.setIcon(iconValider)
 
-            ##Comptage nombre de requêtes de changement
+            ##### Comptage nombre de requêtes de changement #####
             self.sheetRequetes = pd.read_excel(req, sheet_name="Requete")
             self.nbrLignes = self.sheetRequetes.shape[0]
 
             self.traitementRequetes = QPushButton("Requêtes de MAJ: " + str(self.nbrLignes))
             self.traitementRequetes.setMaximumSize(QSize(300,100))
-            #self.traitementRequetes.setStyleSheet(styleSheetBouton)
-            ##TODO: Rajouter une bulle dans le texte pour ca
             self.traitementRequetes.clicked.connect(self.traitementRequetesChangement)
 
 
@@ -563,19 +572,18 @@ class mainWindow(QWidget):
             self.bandeauInfLayout.addItem(spacer2)
 
             self.bandeauInf.setLayout(self.bandeauInfLayout)
-            #self.bandeauInf.setStyleSheet("background-color: purple;")
             
 
-            ##### Setting up the Widget #####
+            ##### Mise en place du widget #####
             self.layoutAdminGUI = QVBoxLayout()
             self.layoutAdminGUI.addWidget(self.topBanner, 0, Qt.AlignmentFlag.AlignHCenter)
             self.layoutAdminGUI.addWidget(self.middle)
             self.layoutAdminGUI.addWidget(self.tab)
             self.layoutAdminGUI.addWidget(self.bandeau)
             self.layoutAdminGUI.addWidget(self.bandeauInf)
-
+            ##### Ajout du bouton réglage pour les SuperAdmins #####
             if self.role == "SuperAdmin":
-                print("Ajouter le bouton réglage")
+                
                 self.boutonReglage = QPushButton()
                 self.boutonReglage.setMinimumSize(60,60)
                 self.boutonReglage.setMaximumSize(60,60)
@@ -595,12 +603,11 @@ class mainWindow(QWidget):
             self.Stack.addWidget(self.adminGUI)
             self.Stack.setCurrentIndex(1)
 
-        else:
-            print("Creation du GUI en lecture")
-            ##### Creation of the regular interface #####
+        ##### Creation de l'interface non-admin #####
+        else:            
             self.adminGUI = QWidget()
             self.sheetRequetes = pd.read_excel(req, sheet_name="Requete")
-            ##TODO: Corriger le titre qui apparait pas en entier
+
             ##### Top Banner #####
             self.titre = QLabel("Base de données magasin - Brico Dépôt")
             font = QFont()
@@ -653,7 +660,6 @@ class mainWindow(QWidget):
             ##### Push buttons #####
             self.requete = QPushButton("Demander un changement")
             self.requete.setMaximumSize(300,100)
-            #self.requete.setStyleSheet(styleSheetBouton)
             self.requete.clicked.connect(self.demandeChangement)
 
             self.bandeau = QWidget()
@@ -661,14 +667,14 @@ class mainWindow(QWidget):
             self.bandeauBoutons.addWidget(self.requete)
             self.bandeau.setLayout(self.bandeauBoutons)
 
-            ##### Setting up the Widget #####
+            ##### Mise en place du Widget #####
             self.layoutAdminGUI = QVBoxLayout()
             self.layoutAdminGUI.addWidget(self.topBanner, 0, Qt.AlignmentFlag.AlignHCenter)
             self.layoutAdminGUI.addWidget(self.middle)
             self.layoutAdminGUI.addWidget(self.bandeau)
             self.adminGUI.setLayout(self.layoutAdminGUI)
 
-            ##### Adding the interface to the StackedWidget #####
+            ##### Ajout de l'interface dans le stackedWidget #####
             self.Stack.addWidget(self.adminGUI)
             self.Stack.setCurrentIndex(1)
 
@@ -734,19 +740,15 @@ class mainWindow(QWidget):
         print("Model chargé")
 
     def reglage(self):
-        #TODO: FAIRE LA FENETRE ET TOUT
-        print("ouverture réglage")
-        print(self.lstParam)
+        print("Réglages")
         self.wReglage = reglages()
         self.wReglage.lstColonnesCheckees = self.lstParam
-        #self.wReglage.lstColonnesComplete = sheet_Globale.columns.to_list()
 
         self.wReglage.Gui()
         self.wReglage.show()
-##Assurer le save
+##TODO checker le save
     def saveData(self):
         print("Saving...")
-        print(self.sheet)
         self.sheet.to_excel('bddTest.xlsx', index=False)
         
         #Storage du fichier excel temporaire, changer pour le storer uniquement si c'est un utilisateur admin
@@ -794,6 +796,14 @@ class mainWindow(QWidget):
         if self.w:
             self.w.close()
 
+""" creaWindow : Classe gérant la fenêtre de création de dépôt
+
+    {__init__}: Fonction d'initialisation de la classe
+
+    {automCo}: Création de fenêtre/formulaire en fonction de la bdd
+
+    {confirmerCreation}: Fonction d'ajout du nouveau dépôt dans le dataframe de la fenêtre principale
+"""
 class creaWindow(QWidget):
     windowslst = {}
     def __init__(self):
@@ -825,9 +835,6 @@ class creaWindow(QWidget):
         nbRow = (len(self.sheets) // 4)
         reste = len(self.sheets) % 4
 
-        print("nombre row: " + str(nbRow) + " et le reste: " + str(reste))
-        print("nombre max index : " + str(len(self.sheets)))
-
         index = 0
 
         for iterRow in range(nbRow):
@@ -851,8 +858,6 @@ class creaWindow(QWidget):
                 getattr(self, nomPushButton).setMaximumSize(200,40)
                 getattr(self, nomPushButton).setMinimumSize(200,40)
                 self.sheet_name = str(self.sheets[index])
-                #print("sheet_name: " + self.sheet_name)
-                #print(f"Index = {index}, sheet_name = {self.sheet_name}")
                 getattr(self, nomPushButton).clicked.connect(lambda state, x=self.sheet_name, y=False: self.automCo(x, y))
 
                 getattr(self,nomLay).addWidget(getattr(self,nomPushButton))
@@ -895,7 +900,7 @@ class creaWindow(QWidget):
         if str in self.windowslst:
             self.w = self.windowslst[str]
         else:
-            fenetre = testDeLectureCreation()
+            fenetre = varCrea()
             nomFenetre = str
             setattr(self, nomFenetre, fenetre)
             getattr(self,nomFenetre).excel_sheet = str
@@ -908,7 +913,6 @@ class creaWindow(QWidget):
 
 
     def confirmerCreation(self):
-        print("ca marche")
         lstRemove = ['Code BRICO','Code EASIER','Dépôt','Région 2022']
 
         CreaSheet = pd.DataFrame
@@ -941,7 +945,6 @@ class creaWindow(QWidget):
         #Concaténation avec la sheet originale
         CreaSheet = pd.concat([main.sheet, newRow], axis=0)
         CreaSheet = CreaSheet.reset_index(drop=True)
-        print (CreaSheet)
 
         main.sheet = CreaSheet
         main.chargerModif()
@@ -954,7 +957,15 @@ class creaWindow(QWidget):
         if self.w:
             self.w.close()
 
-class testDeLectureCreation(QWidget):
+""" varCrea : Classe gérant la création de formulaire de saisie de données pour la créatoin de dépôts
+
+    {__init__}: Fonction d'initialisation de la classe
+
+    {demarrage}: Fonction de création des widgets en fonctions des données de la bdd
+
+    {getLineEditValue}: Fonction pour récupérer la saisie d'un utilisateur
+"""
+class varCrea(QWidget):
     excel_sheet = ""
     def __init__(self):
         super().__init__()
@@ -994,8 +1005,6 @@ class testDeLectureCreation(QWidget):
             self.layout.addWidget(getattr(self,nomLineEdit), i+1,1)
 
         if len(self.colonnes) > 15:
-            #faire la scroll area
-            print("Scroll Area creation")
             self.scroll_area = QScrollArea(self)
             self.scroll_area.setWidgetResizable(True)
             self.scroll_area.setFixedSize(500,380)
@@ -1009,6 +1018,20 @@ class testDeLectureCreation(QWidget):
     def getLineEditValue(self, nomLineEdit):
         return getattr(self, nomLineEdit).text()
 
+""" modifWindow : Classe gérant la fenêtre de modification de dépôt
+
+    {__init__}: Fonction d'initialisation de la classe
+
+    {selectionDepot}: Fonction actualisant les données des tableView en fonction de la selection du combobox (première selection)
+
+    {chargementTableau}: Fonction actualisant les données des tableView en fonction de la selection du combobox (seconde selection)
+
+    {choix}: Sauvegarde des modifications dans la dataframe main
+
+    {center}: Fonction pour centrer la fenetre sur l'écran
+
+    {annuler}: Fonction pour quitter la fenêtre
+"""
 class modifWindow(QWidget):
     sheet = pd.DataFrame
 
@@ -1149,6 +1172,20 @@ class modifWindow(QWidget):
     def annuler(self):
         self.close()
 
+""" suppWindow : Classe gérant la fenêtre de suppression de dépôt
+
+    {__init__}: Fonction d'initialisation de la classe
+
+    {selectionDepot}: Fonction actualisant les données des tableView en fonction de la selection du combobox (première selection)
+
+    {chargementTableau}: Fonction actualisant les données des tableView en fonction de la selection du combobox (seconde selection) 
+
+    {suppression}: Suppression du dépôt dans la dataframe main
+
+    {center}: Fonction pour centrer la fenêtre sur l'écran
+
+    {annuler}: Fonction pour quitter la fenêtre
+"""
 class suppWindow(QWidget):
     sheet = pd.DataFrame
     
@@ -1294,16 +1331,18 @@ class suppWindow(QWidget):
     def annuler(self):
         self.close()
 
-prout1 = "APIERR"
-prout2 = "GLAq35n0"
+""" demandeChangement : Classe gérant la fenêtre de demande de mise à jour
 
-prout3 = ""
-prout4 = ""
+    {__init__}: Fonction d'initialisation de la classe
 
-region1 = "JPELUT"
-region2 = "aWnJwBy8"
+    {transmettre}:
 
-##TODO: UI Design + Rajouter icones dans les boutons + liste déroulante pour selectionner le depot à modif
+    {gene}:
+
+    {select}:
+
+    {annulerF}
+"""
 class demandeChangement(QWidget):
     sheet = pd.DataFrame
     sheetOrigines = pd.DataFrame
@@ -1530,6 +1569,20 @@ class demandeChangement(QWidget):
     def annulerF(self):
         self.close()
 
+""" confirmDemande : Classe gérant la fenêtre d'étude de conflits
+
+    {__init__}: Fonction d'initialisation de la classe
+
+    {geneSheet}:
+
+    {annuler}:
+
+    {confremplacement}:
+
+    {remplacement}:
+
+    {selectConflit}:
+"""
 class confirmDemande(QWidget):
     sheetDemande = pd.DataFrame
     sheetConflit = pd.DataFrame
@@ -1579,22 +1632,13 @@ class confirmDemande(QWidget):
         self.boutonRemplacement.setMinimumSize(300,40)
         self.boutonRemplacement.clicked.connect(self.confremplacement)
 
-        """
-        self.boutonFusion = QPushButton("Fusionner les requêtes")
-        self.boutonFusion.setMaximumSize(300,100)
-        self.boutonFusion.setMinimumSize(300,40)
-        self.boutonFusion.clicked.connect(self.fusion)
-        """
         self.bandeauBouton = QWidget()
         self.layoutBandeauBouton = QHBoxLayout()
 
         self.layoutBandeauBouton.addWidget(self.boutonAnnuler)
         self.layoutBandeauBouton.addItem(self.stretch)
         self.layoutBandeauBouton.addWidget(self.boutonRemplacement)
-        """
-        self.layoutBandeauBouton.addItem(self.stretch1)
-        self.layoutBandeauBouton.addWidget(self.boutonFusion)
-        """
+
 
         self.bandeauBouton.setLayout(self.layoutBandeauBouton)
 
@@ -1625,7 +1669,6 @@ class confirmDemande(QWidget):
 
         self.listeCodes.addItems(self.lstCodes)
 
-    #Fermer la fenêtre de confirmation
     def annuler(self):
         self.close()
 
@@ -1651,7 +1694,7 @@ class confirmDemande(QWidget):
             self.remplacement()
         else:
             print("L'utilisateur a annulé.")
-    ##TODO: Faire le remplacement de la requete GLAq35n0
+  
     def remplacement(self):
         print("Remplacement ancienne requête")
         responseREQ = File.open_binary(ctx, requete_URL)
@@ -1725,8 +1768,7 @@ class confirmDemande(QWidget):
         #Affichage message box, changement confirmé et transmis
         QMessageBox.information(self, 'Succès', 'Requête remplacée')
         self.close()
-        
-        
+                
     def selectConflit(self):
         depot = self.listeCodes.currentText()
         depot = str(depot.split('-')[0])
@@ -1744,7 +1786,23 @@ class confirmDemande(QWidget):
 
         self.tableOrigin.setModel(self.model2)
         self.tableOrigin.resizeColumnsToContents()
-##truc d'index
+
+""" traitementDemandeChangement : Classe gérant la fenêtre de traitement des demandes de MAJ
+
+    {__init__}: Fonction d'initialisation de la classe
+
+    {selectionDepot}:
+    
+    {selectionDepot2}:
+
+    {valider}:
+
+    {retirer}:
+
+    {center}: Fonction pour centrer la fenetre sur l'écran
+
+    {annuler}: Fonction pour quitter la fenêtre
+"""
 class traitementDemandeChangement(QWidget):
 
     def __init__(self):
@@ -1925,9 +1983,15 @@ class traitementDemandeChangement(QWidget):
         self.utilisateur = self.sheet_tri.iloc[1]["Utilisateur"]
         self.dateDemande = self.sheet_tri.iloc[1]["Date demande"]
 
+
         #Index de la ligne à changer
-        index_ligne = self.dfRequete.loc[(self.dfRequete['Code BRICO'] == self.codeBrico) & (self.dfRequete['Utilisateur'] == self.utilisateur) & (self.dfRequete['Date demande'] == self.dateDemande)].index[0]
+        # & (self.dfRequete['Utilisateur'] == self.utilisateur) & (self.dfRequete['Date demande'] == self.dateDemande)
+        index_ligne = self.dfRequete.loc[(self.dfRequete['Code BRICO'] == self.codeBrico)].index[0]
         indexMain = main.sheet.loc[(main.sheet['Code BRICO'] == self.codeBrico)].index[0]
+
+        print("Les deux index")
+        print(index_ligne)
+        print(indexMain)
 
         for i in range(len(lst_colonnes)):
             main.sheet[lst_colonnes[i]][indexMain] = self.dfRequete[lst_colonnes[i]][index_ligne]
@@ -2062,6 +2126,14 @@ class traitementDemandeChangement(QWidget):
     def annuler(self):
         self.close()   
 
+""" reglages : Classe gérant la fenêtre des réglages
+
+    {__init__}: Fonction d'initialisation de la classe
+
+    {gui}: Fonction pour initialiser l'interface de la fenêtre réglage
+
+    {save}: Fonction de sauvegarde des réglages
+"""
 class reglages(QWidget):
     lstColonnesComplete = []
     lstColonnesCheckees = []
@@ -2076,8 +2148,6 @@ class reglages(QWidget):
 
     def Gui(self):
         self.sheetLst = sheet_lst
-        print (self.lstcheckcrees)
-        print("Génération de la fenetre")
 
         self.layout = QVBoxLayout()
 
@@ -2111,7 +2181,6 @@ class reglages(QWidget):
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setFixedSize(400,450)
 
-        ##TODO: Faire apparaitre les lignes checkées
         for i in range(len(self.sheetLst)):
             label = QLabel()
             nomLabel = traitementNom(self.sheetLst[i])
@@ -2153,13 +2222,11 @@ class reglages(QWidget):
         self.setLayout(self.layout)
 
         self.lstcheckcrees.clear()
-        print("lstchekcrees")
-        print(self.lstcheckcrees)
+
         
     def save(self):
         self.lstSortie = []
-        print("Sauvegarde des paramètres")
-        print(self.lstColonnesComplete)
+
 
         for i in range(len(self.lstColonnesComplete)):
             if getattr(self, self.lstColonnesComplete[i]).isChecked():
@@ -2169,7 +2236,6 @@ class reglages(QWidget):
         with open(self.upload_path_parm, 'w') as f:
             for item in self.lstSortie:
                 f.write(item + "\n")
-        print("Param créé")
 
         with open(self.upload_path_parm, 'rb') as content_file:
             file_content = content_file.read()
@@ -2181,6 +2247,7 @@ class reglages(QWidget):
 		
         shutil.rmtree(os.path.dirname(self.upload_path_parm))
 
+##### Model Pandas pour tableView -> N'accepte pas la modification #####
 class pandasModel(QAbstractTableModel):
     def __init__(self, data):
         QAbstractTableModel.__init__(self) 
@@ -2214,6 +2281,7 @@ class pandasModel(QAbstractTableModel):
         self.colors[(row, column)] = color
         self.dataChanged.emit(ix, ix, (Qt.ItemDataRole.BackgroundRole,))
 
+##### Model Pandas pour tableView -> Accepte la modification #####
 class pandasEditableModel(QAbstractTableModel):
     def __init__(self, data):
         super().__init__()
@@ -2547,7 +2615,7 @@ if __name__ == '__main__':
     app.processEvents()
     splash.labelDescription.setText('<strong>Connexion à Sharepoint</strong>')
 
-    #####ETAPE 1#####
+    #####ETAPE 1: Création context authentification#####
     username = "acae250d-01e9-4f32-9d65-e06fa388ff60"
     password = "8FG7d+Es/DYXCJWN8spbNV6qyU5TQqUsoKmg5HLsHw4="
     test_team_site_url = "https://sgzkl.sharepoint.com/sites/BricoDepot"
@@ -2564,7 +2632,7 @@ if __name__ == '__main__':
     splash.progressBar.setValue(10)
     splash.labelDescription.setText('<strong>Récupération fichier 1</strong>')
 
-    #####ETAPE 2#####
+    #####ETAPE 2: Récupération BDD#####
     responseBDD = File.open_binary(ctx, bdd_URL)
     print("Reponse trouvée")
     bytes_file_obj_bdd = io.BytesIO()
@@ -2575,7 +2643,7 @@ if __name__ == '__main__':
     splash.progressBar.setValue(20)
     splash.labelDescription.setText('<strong>Récupération fichier 2</strong>')
     
-    #####ETAPE 3#####
+    #####ETAPE 3: Récupération MDP#####
     responseMDP = File.open_binary(ctx, mdp_URL)
     print("Reponse trouvée")
     bytes_file_obj_mdp = io.BytesIO()
@@ -2586,7 +2654,7 @@ if __name__ == '__main__':
     splash.progressBar.setValue(30)
     splash.labelDescription.setText('<strong>Récupération fichier 3</strong>')
 
-    #####ETAPE 4#####
+    #####ETAPE 4: Récupération requetes#####
     responseREQ = File.open_binary(ctx, requete_URL)
     print("Reponse trouvée")
     bytes_file_obj_req = io.BytesIO()
@@ -2601,7 +2669,7 @@ if __name__ == '__main__':
     splash.progressBar.setValue(40)
     splash.labelDescription.setText('<strong>Fin de paramétrage</strong>')
 
-    #####ETAPE 5#####
+    #####ETAPE 5: Création de la dataframe#####
     xlsx_file = pd.ExcelFile(bdd)
     sheet_lst = xlsx_file.sheet_names
     #splash.setProgress(50)
@@ -2650,7 +2718,7 @@ if __name__ == '__main__':
 
     app.setStyleSheet(styleSheet)
 
-    #####ETAPE 6#####
+    #####ETAPE 6: Récupération des paramètre#####
     downParam = os.path.join(tempfile.mkdtemp(), os.path.basename(param_URL))
     with open(downParam, "wb") as local_file:
         file = ctx.web.get_file_by_server_relative_url(param_URL).download(local_file).execute_query()
@@ -2662,9 +2730,6 @@ if __name__ == '__main__':
         
     listeParam = contenu.split('\n')[:-1]
     shutil.rmtree(os.path.dirname(downParam))
-
-    print("Liste param")
-    print(listeParam)
 
     splash.close()
     main = mainWindow()
