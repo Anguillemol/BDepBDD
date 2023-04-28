@@ -1377,7 +1377,7 @@ class suppWindow(QWidget):
 
     def annuler(self):
         self.close()
-
+##TODO: ERREUR TypeLigne :):):):)
 """ demandeChangement : Classe gérant la fenêtre de demande de mise à jour
 
     {__init__}: Fonction d'initialisation de la classe
