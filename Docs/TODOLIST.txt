@@ -4,5 +4,6 @@ Vérifier la validation d'une requête (Chaud)
 Faire les tests pour la validation d'une requête
 SaveData sur validation
 
-Finir doc Admin
-Copier coller puis rajouter section réglage dans "SuperAdmin"
+Faire une doc sur le fonctionnement du code
+Faire une doc sur comment gérer les fichiers sur Sharepoint et sur comment acceder blabla et comment créer un compte
+Faire les mdp

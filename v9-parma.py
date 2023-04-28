@@ -356,7 +356,7 @@ class mainWindow(QWidget):
         super().__init__()
 
         self.setFixedSize(720,440)
-
+        self.setWindowTitle("Utilitaire SharePoint")
         ##### Important variables #####
         self.user = ""
         self.password = ""
@@ -1774,7 +1774,6 @@ class traitementDemandeChangement(QWidget):
         print ("Requêtes chargées")
         req = bytes_file_obj_req
         self.dfRequete = pd.read_excel(req, sheet_name='Requete')
-        #self.dfRequete = main.sheetRequetes 
         self.dfRequete.insert(0, 'TypeLigne', "")
         self.dfRequete['TypeLigne'] = ['Requête de changement'] * len(self.dfRequete.index)
 
