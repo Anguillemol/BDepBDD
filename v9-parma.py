@@ -11,8 +11,6 @@ from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.client_credential import ClientCredential
 from office365.sharepoint.files.file import File 
 
-##TODO: Faire le formatage pour les colonnes qui posent probleme
-#Nombre d'heure gardiennage 2017, Chef Aménagement Téléphone (long), Taux de Démarque 2021 (long), Taux de braquage pour 100 000 habitants
 
 """ SplashScreen : Classe gérant l'écran de chargement
     
@@ -1335,13 +1333,13 @@ class suppWindow(QWidget):
 
     {__init__}: Fonction d'initialisation de la classe
 
-    {transmettre}:
+    {transmettre}: Fonction pour valider la demande de mise à jour. Etudie les potentiels conflits et les repertories pour traitement des conflits
 
-    {gene}:
+    {gene}: Fonction pour créer la liste qui alimente la combobox
 
-    {select}:
+    {select}: Fonction pour charger les données du dépôt sélectionné
 
-    {annulerF}
+    {annulerF}: Fonction pour fermer la fenêtre
 """
 class demandeChangement(QWidget):
     sheet = pd.DataFrame
@@ -1381,12 +1379,10 @@ class demandeChangement(QWidget):
 
         self.valider = QPushButton("Valider la demande de\nchangement de données")
         self.valider.setMaximumSize(400,100)
-        #self.valider.setStyleSheet(styleSheetBouton)
         self.valider.clicked.connect(self.transmettre)
 
         self.annuler = QPushButton("Annuler la demande de\nchangement de données")
         self.annuler.setMaximumSize(400,100)
-        #self.annuler.setStyleSheet(styleSheetBouton)
         self.annuler.clicked.connect(self.annulerF)
 
         self.space = QSpacerItem(100,0)
@@ -1421,21 +1417,13 @@ class demandeChangement(QWidget):
         print ("Requêtes chargées")
         req = bytes_file_obj_req
         self.dataframereq = pd.read_excel(req, sheet_name='Requete')
-        print("dataframeREQ")
-        print(self.dataframereq)
 
-        #self.sheet['Utilisateur'] = main.denom
-        #self.sheet['Date demande'] = datetime.datetime.now().strftime('%Y-%m-%d')
         self.rowDemande['Utilisateur'] = main.denom
         self.rowDemande['Date demande'] = datetime.datetime.now().strftime('%Y-%m-%d')
 
         self.lstDonneesSup = ['Utilisateur', 'Date demande']
 
         lstCodeBrico = self.dataframereq['Code BRICO'].tolist()
-        print(lstCodeBrico)
-
-        #Récupérer uniquement les lignes ou il y a un changement
-        self.sheetChangement = pd.DataFrame
 
         #Création de la sheet de conflit
         self.sheetC = pd.DataFrame(columns=self.sheet.columns)
@@ -1445,7 +1433,6 @@ class demandeChangement(QWidget):
         conflit = False
         if self.rowDemande.shape[0] == 1:
             
-            print ("Une seule ligne à traiter")
             codeATrouver = self.rowDemande['Code BRICO'][0]
             if codeATrouver in lstCodeBrico:
                 print("Conflit pour le code " + str(codeATrouver))
@@ -1464,23 +1451,14 @@ class demandeChangement(QWidget):
                     valeur = self.sheet.loc[index, 'Dépôt']
                     lstCodesConflits.append(str(codeATrouver) + "-" + str(valeur))
                     lstCleanConflits.append(codeATrouver)
-        
-
-        print("Liste des conflits")
-        print(lstCodesConflits)
-        #Trouver si une ligne à le meme code si oui la sauvegarder dans self.sheetC
 
         if conflit == True:
             print("Conflit MAJ, ouverture gestionnaire")
             self.gestionConflit = confirmDemande()
 
             self.gestionConflit.sheetDemande = self.rowDemande
-            #self.gestionConflit.sheetConflit = self.sheetOrigines[self.sheetOrigines['Code BRICO'].isin(lstCleanConflits)]
             self.gestionConflit.sheetConflit = self.dataframereq[self.dataframereq['Code BRICO'].isin(lstCleanConflits)]
-            print("PUTAIN DE SHEET DE MERDE")
-            print(self.gestionConflit.sheetConflit)
-            print("FIN DE LA PUTAIN DE SHEET DSADJ")
-            
+        
             self.gestionConflit.lstCodes = lstCodesConflits
             self.gestionConflit.lstClean = lstCleanConflits
 
@@ -1488,7 +1466,6 @@ class demandeChangement(QWidget):
             self.gestionConflit.show()
             
         else:
-            #Completer la truc req GLAq35n0
             self.listeParamCheck = listeParam
             self.listeParamCheck.append('Utilisateur')
             self.listeParamCheck.append('Date demande')
@@ -1504,9 +1481,6 @@ class demandeChangement(QWidget):
                         self.dfCompletee[nomColonne][i] = self.rowDemande[nomColonne][i]
                     else:
                         self.dfCompletee[nomColonne][i] = main.sheet[nomColonne][indexdfReq]
-
-
-            print(self.dfCompletee)
             
             
         
@@ -1519,9 +1493,7 @@ class demandeChangement(QWidget):
             self.newDF = pd.DataFrame
             self.dataframereq = pd.read_excel(download_path_req, sheet_name='Requete')
             self.newDF = pd.concat([self.dataframereq,self.dfCompletee], axis=0)
-            self.newDF = self.newDF.reset_index(drop=True)
-            print("newDF")
-            print(self.newDF)        
+            self.newDF = self.newDF.reset_index(drop=True)        
 
             with pd.ExcelWriter(download_path_req, mode='a', if_sheet_exists='replace') as writer:
                 self.newDF.to_excel(writer, sheet_name='Requete', index=False)
@@ -1550,11 +1522,9 @@ class demandeChangement(QWidget):
         self.lstDepots = self.sheet['Dépôt'].tolist()
         for i in range(len(self.lstCodesBrico)):
             self.lstCodesBrico[i] = str(self.lstCodesBrico[i]) + "-" + self.lstDepots[i]
-        print(self.lstCodesBrico)
         self.listeCodes.addItems(self.lstCodesBrico)
 
     def select(self):
-        #TODO:IMPORTANT, faire le chargement de la sheet
         depot = self.listeCodes.currentText()
         depot = str(depot.split('-')[0])
         
@@ -1573,15 +1543,15 @@ class demandeChangement(QWidget):
 
     {__init__}: Fonction d'initialisation de la classe
 
-    {geneSheet}:
+    {geneSheet}: Fonction générant les 2 dataframes pour comparer les conflits dans des tableViews
 
-    {annuler}:
+    {annuler}: Fonction pour quitter la fenêtre
 
-    {confremplacement}:
+    {confremplacement}: MessageBox pour confirmer le remplacement de la requête actuelle par la requête utilisateur
 
-    {remplacement}:
+    {remplacement}: Fonction remplacant la requête actuelle par la requête utilisateur après confirmation
 
-    {selectConflit}:
+    {selectConflit}: Fonction pour actualiser les tableView en fonction de la sélection de la combobox
 """
 class confirmDemande(QWidget):
     sheetDemande = pd.DataFrame
@@ -1653,8 +1623,6 @@ class confirmDemande(QWidget):
         self.setLayout(self.layout)
 
     def geneSheet(self):
-        print("Creation de la sheet de comparaison et chargement dans la table")
-        print(self.lstClean)
 
         self.sheetConflit = self.sheetConflit[self.sheetConflit['Code BRICO'].isin(self.lstClean)]
         self.sheetDemande = self.sheetDemande[self.sheetDemande['Code BRICO'].isin(self.lstClean)]
@@ -1696,7 +1664,6 @@ class confirmDemande(QWidget):
             print("L'utilisateur a annulé.")
   
     def remplacement(self):
-        print("Remplacement ancienne requête")
         responseREQ = File.open_binary(ctx, requete_URL)
         print("Reponse trouvée")
         bytes_file_obj_req = io.BytesIO()
@@ -1714,36 +1681,23 @@ class confirmDemande(QWidget):
         self.listeParamCheck = listeParam
         self.listeParamCheck.append('Utilisateur')
         self.listeParamCheck.append('Date demande')
-        print("pas de conflit on upload banal")
+
         self.dfCompletee = pd.DataFrame(columns=main.sheetRequetes.columns)
         for i in range(self.sheetDemande.shape[0]):
             self.dfCompletee.loc[len(self.dfCompletee)] = [None] * len(self.dfCompletee.columns)
             codeBrico = self.sheetDemande['Code BRICO'][i]
             indexdfReq = main.sheet.loc[main.sheet['Code BRICO'] == codeBrico].index[0]
-            print(indexdfReq)
             for j in range(self.dfCompletee.shape[1]):
                 nomColonne = self.dfCompletee.columns[j]
                 if nomColonne in self.listeParamCheck:
                     self.dfCompletee[nomColonne][i] = self.sheetDemande[nomColonne][i]
-                    print(self.sheetDemande[nomColonne][i])
                 else:
                     self.dfCompletee[nomColonne][i] = main.sheet[nomColonne][indexdfReq]
-                    print(main.sheet[nomColonne][indexdfReq])
 
-                print(str(j) +" / "+str(self.dfCompletee.shape[1]))
-
-        print(self.dfCompletee)
-
-
-
-
-        #main.sheetRequetes.loc[indexReq] = self.rowDemande.loc[0]
         main.sheetRequetes.loc[indexReq] = self.dfCompletee.loc[0]
-        print("Test")
-        print(main.sheetRequetes)
         
-        #Upload sur sharepoint GLAq35n0
-        print("au boulot feignase")
+        #Upload sur sharepoint
+
         download_path_req = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
         with open(download_path_req, "wb") as local_file:
             file = ctx.web.get_file_by_server_relative_url(requete_URL).download(local_file).execute_query()
@@ -1791,13 +1745,13 @@ class confirmDemande(QWidget):
 
     {__init__}: Fonction d'initialisation de la classe
 
-    {selectionDepot}:
+    {selectionDepot}: Première selection dans la combobox
     
-    {selectionDepot2}:
+    {selectionDepot2}: Selection suivante dans la combobox. Charge les données actuelles et la requete et analyse les données qui diffèrent entre les deux
 
-    {valider}:
-
-    {retirer}:
+    {valider}: Valide la requête et modifie la dataframe main puis sauvegarde les modifications sur sharepoint
+ 
+    {retirer}: Retire la requête
 
     {center}: Fonction pour centrer la fenetre sur l'écran
 
@@ -1824,7 +1778,6 @@ class traitementDemandeChangement(QWidget):
         #self.dfRequete = main.sheetRequetes 
         self.dfRequete.insert(0, 'TypeLigne', "")
         self.dfRequete['TypeLigne'] = ['Requête de changement'] * len(self.dfRequete.index)
-        print(self.dfRequete)
 
 
         self.listedesdepotsReq = self.dfRequete["Dépôt"].values.tolist()
@@ -1876,19 +1829,16 @@ class traitementDemandeChangement(QWidget):
         self.boutonValidation.clicked.connect(self.valider)
         self.boutonValidation.setMaximumSize(300,100)
         self.boutonValidation.setMinimumWidth(200)
-        #self.boutonValidation.setStyleSheet(styleSheetBouton)
 
         self.boutonRetirer = QPushButton("Retirer la requête")
         self.boutonRetirer.clicked.connect(self.retirer)
         self.boutonRetirer.setMaximumSize(300,100)
         self.boutonRetirer.setMinimumWidth(200)
-        #self.boutonRetirer.setStyleSheet(styleSheetBouton)
 
         self.boutonAnnuler = QPushButton("Annuler")
         self.boutonAnnuler.clicked.connect(self.annuler)
         self.boutonAnnuler.setMaximumSize(300,100)
         self.boutonAnnuler.setMinimumWidth(200)
-        #self.boutonAnnuler.setStyleSheet(styleSheetBouton)
 
         self.bandeauBouton = QWidget()
         self.bandeauBoutonLayout = QHBoxLayout()
@@ -1924,30 +1874,25 @@ class traitementDemandeChangement(QWidget):
         self.selectionDepot2()
 
     def selectionDepot2(self):
-        ##TODO: Essayer de freeze la premiere colonne
         #Création de la sheet
         depot = self.comboBox2.currentText()
-        print("le depot: " + depot)
         depot = str(depot.split('-')[1])
 
         #Ligne actuelle
         self.actualdata = self.sheet.loc[self.sheet['Dépôt'] == depot]
         self.actualdata.insert(0, 'TypeLigne', ['Données actuelles'])
-        print(self.actualdata)
 
         #Ligne de changment
         self.sheetRequete = self.dfRequete.loc[self.dfRequete['Dépôt'] == depot]
-        #self.sheetRequete.insert(0, 'TypeLigne', ['Requête de changement'])
-
 
         self.sheet_tri = pd.concat([self.actualdata, self.sheetRequete], axis=0)
         self.sheet_tri = self.sheet_tri.reset_index(drop=True)
-        ##TODO: SHEETTRIOUI
+
         self.lstParam = listeParam
         self.lstParam.append('Utilisateur')
         self.lstParam.append('Date demande')
         self.sheet_tri = self.sheet_tri.loc[:, listeParam]
-        print (self.sheet_tri)
+
         #Chargement table
         self.model = pandasModel(self.sheet_tri)
         
@@ -1976,7 +1921,7 @@ class traitementDemandeChangement(QWidget):
 
     def valider(self):
         print("Valider la requête")
-        #Dans ce cas on va tout simplement remplacer dans la sheet de base du main
+
         lst_colonnes = main.sheet.columns.tolist()
         self.codeBrico = self.sheet_tri.iloc[1]["Code BRICO"]
         self.depot = self.sheet_tri.iloc[1]["Dépôt"]
@@ -1985,20 +1930,15 @@ class traitementDemandeChangement(QWidget):
 
 
         #Index de la ligne à changer
-        # & (self.dfRequete['Utilisateur'] == self.utilisateur) & (self.dfRequete['Date demande'] == self.dateDemande)
         index_ligne = self.dfRequete.loc[(self.dfRequete['Code BRICO'] == self.codeBrico)].index[0]
         indexMain = main.sheet.loc[(main.sheet['Code BRICO'] == self.codeBrico)].index[0]
-
-        print("Les deux index")
-        print(index_ligne)
-        print(indexMain)
 
         for i in range(len(lst_colonnes)):
             main.sheet[lst_colonnes[i]][indexMain] = self.dfRequete[lst_colonnes[i]][index_ligne]
 
         main.chargerModif()
 
-        #La requête est passée, supprimer la requete et supprimer tout bref
+        #La requête est passée, supprimer la requete
         self.dfRequete = self.dfRequete.drop(index_ligne)
         self.dfRequete.reset_index(drop=True)
 
@@ -2041,24 +1981,16 @@ class traitementDemandeChangement(QWidget):
     ##TODO: Mettre a jour dans la main window, retirer la requete aussi
     
     def retirer(self):
-        print("retirer la requete")
+
         self.codeBrico = self.sheet_tri.iloc[1]["Code BRICO"]
         self.depot = self.sheet_tri.iloc[1]["Dépôt"]
         self.utilisateur = self.sheet_tri.iloc[1]["Utilisateur"]
         self.dateDemande = self.sheet_tri.iloc[1]["Date demande"]
 
-        print("Code brico: " + str(self.codeBrico))
-        print("Depot: " + str(self.depot))
-        print("Utilisateur: " + str(self.utilisateur))
-        print("Date demande: " + self.dateDemande)
-
-        # & (self.dfRequete['Utilisateur'] == self.utilisateur) & (self.dfRequete['Date demande'] == self.dateDemande)
         index_ligne = self.dfRequete.loc[(self.dfRequete['Code BRICO'] == self.codeBrico)].index[0]
-        print("index de la ligne: "+ str(index_ligne))
+
         self.dfRequete = self.dfRequete.drop(index_ligne)
         self.dfRequete.reset_index(drop=True)
-        print(self.dfRequete)
-
 
         #Maj Sharepoint
         self.dfReqWrite = self.dfRequete.drop("TypeLigne", axis = 1)
