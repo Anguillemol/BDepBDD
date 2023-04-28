@@ -89,7 +89,7 @@ class SplashScreen(QWidget):
         self.labelDescription.resize(self.width() - 10, 50)
         self.labelDescription.move(0, self.labelTitle.height())
         self.labelDescription.setObjectName('LabelDesc')
-        self.labelDescription.setText('<strong>Working on Task #1</strong>')
+        self.labelDescription.setText('<strong>Démarrage...</strong>')
         self.labelDescription.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.progressBar = QProgressBar(self.frame)
@@ -349,7 +349,6 @@ class logWindow(QWidget):
 
     {saveData}: Fonction sauvegardant les données saisies dans l'outil dans Sharepoint (réservé aux utilisateurs admins et superadmins)
 """
-##TODO: SAVEDATA
 class mainWindow(QWidget):
     sheetRequetes = pd.DataFrame
     lstParam = []
@@ -744,7 +743,7 @@ class mainWindow(QWidget):
 
         self.wReglage.Gui()
         self.wReglage.show()
-##TODO checker le save
+    ##TODO checker le save
     def saveData(self):
         print("Saving...")
         self.sheet.to_excel('bddTest.xlsx', index=False)
@@ -1979,6 +1978,8 @@ class traitementDemandeChangement(QWidget):
 
     ##TODO: Refaire le test avec 1 requete et plusieurs requetes
     ##TODO: Mettre a jour dans la main window, retirer la requete aussi
+    ##TODO: Sauvegarder sur Sharepoint
+    ##TODO: Fenetre confirmation
     
     def retirer(self):
 
