@@ -1,0 +1,8 @@
+Faire la fenêtre de confirmation pour la suppression (Rapide)
+Vérifier le saveData
+Vérifier la validation d'une requête (Chaud)
+Faire les tests pour la validation d'une requête
+SaveData sur validation
+
+Finir doc Admin
+Copier coller puis rajouter section réglage dans "SuperAdmin"
