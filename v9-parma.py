@@ -753,7 +753,6 @@ class mainWindow(QWidget):
             print("ACTUALISATION DE self.sheet")
             for i in range(len(listeParam)):
                 self.sheet[listeParam[i]] = self.sheetParam[listeParam[i]]
-        self.sheet.to_excel('bddTest.xlsx', index=False)
         
         #Storage du fichier excel temporaire, changer pour le storer uniquement si c'est un utilisateur admin
         self.download_path = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
@@ -930,6 +929,11 @@ class creaWindow(QWidget):
 
         CreaSheet = pd.DataFrame
         dic = {}
+
+        if main.role == "Admin":
+            print("ACTUALISATION DE self.sheet")
+            for i in range(len(listeParam)):
+                main.sheet[listeParam[i]] = main.sheetParam[listeParam[i]]
 
         for i in range (len(self.sheets)):
             self.sheetName = self.sheets[i]
@@ -1164,6 +1168,12 @@ class modifWindow(QWidget):
 
     def choix(self):
     ##Application des modifications sur la sheet de la classe
+
+        if main.role == "Admin":
+            print("ACTUALISATION DE self.sheet")
+            for i in range(len(listeParam)):
+                main.sheet[listeParam[i]] = main.sheetParam[listeParam[i]]
+
         rowIndex = self.sheet_tri_index
         listHeaders = self.sheet.columns.values.tolist()
 
@@ -1344,6 +1354,12 @@ class suppWindow(QWidget):
             print("L'utilisateur a annulé.")
 
     def suppression(self):
+
+        if main.role == "Admin":
+            print("ACTUALISATION DE self.sheet")
+            for i in range(len(listeParam)):
+                main.sheet[listeParam[i]] = main.sheetParam[listeParam[i]]
+
         rowIndex = self.sheet_tri_index
         
         main.sheet = main.sheet.drop(rowIndex)
@@ -1953,7 +1969,7 @@ class traitementDemandeChangement(QWidget):
 
     def valider(self):
         print("Valider la requête")
-
+        """
         lst_colonnes = main.sheet.columns.tolist()
         self.codeBrico = self.sheet_tri.iloc[1]["Code BRICO"]
         self.depot = self.sheet_tri.iloc[1]["Dépôt"]
@@ -2008,7 +2024,7 @@ class traitementDemandeChangement(QWidget):
         curInd = self.comboBox2.currentIndex()
         self.comboBox2.removeItem(curInd)
         self.comboBox2.setCurrentIndex(1)
-
+        """
     ##TODO: Refaire le test avec 1 requete et plusieurs requetes
     ##TODO: Mettre a jour dans la main window, retirer la requete aussi
     ##TODO: Sauvegarder sur Sharepoint
