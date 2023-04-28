@@ -1,5 +1,3 @@
-Faire la fenêtre de confirmation pour la suppression (Rapide)
-Vérifier le saveData
 Vérifier la validation d'une requête (Chaud)
 Faire les tests pour la validation d'une requête
 SaveData sur validation
@@ -7,3 +5,5 @@ SaveData sur validation
 Faire une doc sur le fonctionnement du code
 Faire une doc sur comment gérer les fichiers sur Sharepoint et sur comment acceder blabla et comment créer un compte
 Faire les mdp
+
+retirer les onbglets de merde

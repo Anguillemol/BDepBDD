@@ -3,6 +3,7 @@ import openpyxl as wb
 import sys, io, shutil, tempfile, os, time
 import datetime
 from unidecode import unidecode
+from openpyxl.utils.dataframe import dataframe_to_rows
 
 from PyQt6.QtCore import Qt, QSize, QSortFilterProxyModel, QAbstractTableModel, QTimer, QThread, pyqtSignal
 from PyQt6.QtGui import QIcon, QPainter, QColor, QPixmap, QBrush, QFont
@@ -15,6 +16,7 @@ from office365.sharepoint.files.file import File
 """ SplashScreen : Classe gérant l'écran de chargement
     
     {__init__}: Fonction d'initialisation de la classe
+
     {initUI}: Annexe de l'initialisation de la classe (mise en place des Widgets)
 """
 class SplashScreen(QWidget):
@@ -730,7 +732,8 @@ class mainWindow(QWidget):
         if self.role == "SuperAdmin":
             self.model = pandasEditableModel(self.sheet)
         elif self.role == "Admin":
-            self.model = pandasEditableModel(self.sheet.loc[:, self.lstParam])
+            self.sheetParam = self.sheet.loc[:, self.lstParam]
+            self.model = pandasEditableModel(self.sheetParam)
         self.proxy_model.setSourceModel(self.model)
         self.tab.setModel(self.proxy_model)
         self.tab.resizeColumnsToContents()
@@ -743,9 +746,13 @@ class mainWindow(QWidget):
 
         self.wReglage.Gui()
         self.wReglage.show()
-    ##TODO checker le save
+
     def saveData(self):
         print("Saving...")
+        if self.role == "Admin":
+            print("ACTUALISATION DE self.sheet")
+            for i in range(len(listeParam)):
+                self.sheet[listeParam[i]] = self.sheetParam[listeParam[i]]
         self.sheet.to_excel('bddTest.xlsx', index=False)
         
         #Storage du fichier excel temporaire, changer pour le storer uniquement si c'est un utilisateur admin
@@ -756,26 +763,35 @@ class mainWindow(QWidget):
 
         self.wb_obj = wb.load_workbook(self.download_path)
         print("Workbook loadé sur openpyxl")
-
+        
         my_set = set(self.sheet_columns)
         lst_clean = []
+
         for key in self.d.keys():
             lst_columns = self.d[key].columns.to_list()
             
-            for i in range(len(lst_columns)):
-                if lst_columns[i] in my_set:
-                    lst_clean.append(lst_columns[i])
-
             self.worksheet = self.wb_obj[key]
             self.worksheet.delete_rows(2, self.worksheet.max_row)
 
-            self.donnees = self.sheet[lst_clean].values.tolist()
-            for ligne in self.donnees:
-                self.worksheet.append(ligne)
+            for i in range(len(lst_columns)):
+                if lst_columns[i] in my_set:
+                    #Récupération des colonnes à copier
+                    lst_clean.append(lst_columns[i])               
+
+            self.df = self.sheet[lst_clean]
+            rows = dataframe_to_rows(self.df, index=False)
+
+            for r_idx, row in enumerate(rows, 1):
+                for c_idx, value in enumerate(row, 1):
+                    self.worksheet.cell(row=r_idx, column=c_idx, value=value)
+
+            lst_clean.clear()
 
         self.wb_obj.save('BDD2.xlsx')
         
-        ########## Upload du fichier sur Sharepoint ##########
+        ########## Upload du fichier sur Sharepoint ########## 
+        # ##TODO RENVOYER LE FICHIER AVEC UNE SAUVEGARDE
+        ##TODO Activer sauvegarde Sharepoint
         """
         with open(self.download_path, 'rb') as content_file:
             file_content = content_file.read()
@@ -1236,14 +1252,12 @@ class suppWindow(QWidget):
         self.affichageDep = QTableView()
 
         self.boutonConfirmation = QPushButton("Supprimer le dépôt")
-        self.boutonConfirmation.clicked.connect(self.suppression)
+        self.boutonConfirmation.clicked.connect(self.confSuppression)
         self.boutonConfirmation.setMaximumSize(300,100)
-        #self.boutonConfirmation.setStyleSheet(styleSheetBouton)
 
         self.boutonAnnulation = QPushButton("Annuler")
         self.boutonAnnulation.clicked.connect(self.annuler)
         self.boutonAnnulation.setMaximumSize(300,100)
-        #self.boutonAnnulation.setStyleSheet(styleSheetBouton)
 
         self.widgetBouton = QWidget()
         self.layoutBouton = QHBoxLayout()
@@ -1255,7 +1269,6 @@ class suppWindow(QWidget):
 
         self.widgetBouton.setLayout(self.layoutBouton)
 
-        #, Qt.AlignmentFlag.AlignCenter
         self.layout2.addWidget(self.titre2, 0, Qt.AlignmentFlag.AlignHCenter)
         self.layout2.addWidget(self.listedepots2, 0, Qt.AlignmentFlag.AlignHCenter)
         self.layout2.addWidget(self.affichageDep)
@@ -1307,6 +1320,29 @@ class suppWindow(QWidget):
         self.header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         print("Chargement fini")
 
+    def confSuppression(self):
+        confirm_box = QMessageBox()
+        confirm_box.setText("Confirmer la suppression du dépôt ?")
+        
+        fontMessage = QFont()
+        fontMessage.setPointSize(14)
+        confirm_box.setFont(fontMessage)
+        confirm_box.setWindowTitle("Confirmation")
+
+        confirm_button = QPushButton("Confirmer")
+        cancel_button = QPushButton("Annuler")
+        
+        confirm_box.addButton(confirm_button, QMessageBox.ButtonRole.AcceptRole)
+        confirm_box.addButton(cancel_button, QMessageBox.ButtonRole.RejectRole)
+        
+        confirm_box.exec()
+
+        if confirm_box.clickedButton() == confirm_button:
+            print("L'utilisateur a confirmé.")
+            self.suppression()
+        else:
+            print("L'utilisateur a annulé.")
+
     def suppression(self):
         rowIndex = self.sheet_tri_index
         
@@ -1315,8 +1351,6 @@ class suppWindow(QWidget):
         main.chargerModif()
 
         self.close()
-
-        ##TODO: Faire une fenetre de confirmation
 
     def center(self):
         qr = self.frameGeometry()
