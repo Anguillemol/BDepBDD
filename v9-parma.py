@@ -1377,7 +1377,7 @@ class suppWindow(QWidget):
 
     def annuler(self):
         self.close()
-##TODO: ERREUR TypeLigne :):):):)
+
 """ demandeChangement : Classe gérant la fenêtre de demande de mise à jour
 
     {__init__}: Fonction d'initialisation de la classe
@@ -1478,7 +1478,7 @@ class demandeChangement(QWidget):
         self.sheetC = pd.DataFrame(columns=self.sheet.columns)
         lstCodesConflits = []
         lstCleanConflits = []
-
+        print("traitementConflits")
         conflit = False
         if self.rowDemande.shape[0] == 1:
             
@@ -1518,12 +1518,15 @@ class demandeChangement(QWidget):
             self.listeParamCheck = listeParam
             self.listeParamCheck.append('Utilisateur')
             self.listeParamCheck.append('Date demande')
-            self.dfCompletee = pd.DataFrame(columns=self.dataframereq.columns)
+            self.lstDfCompletee = self.dataframereq.columns.tolist()
+            print(self.lstDfCompletee)
+            self.dfCompletee = pd.DataFrame(columns=self.lstDfCompletee)
             for i in range(self.rowDemande.shape[0]):
                 self.dfCompletee.loc[len(self.dfCompletee)] = [None] * len(self.dfCompletee.columns)
                 codeBrico = self.rowDemande['Code BRICO'][i]
                 indexdfReq = main.sheet.loc[main.sheet['Code BRICO'] == codeBrico].index[0]
                 print(indexdfReq)
+                print("prout ")
                 for j in range(self.dfCompletee.shape[1]):
                     nomColonne = self.dfCompletee.columns[j]
                     if nomColonne in self.listeParamCheck:
@@ -1939,7 +1942,10 @@ class traitementDemandeChangement(QWidget):
         self.lstParam = listeParam
         self.lstParam.append('Utilisateur')
         self.lstParam.append('Date demande')
-        self.sheet_tri = self.sheet_tri.loc[:, listeParam]
+        if main.role == 'Admin':
+            self.sheet_tri = self.sheet_tri.loc[:, listeParam]
+        elif main.role == "SuperAdmin":
+            self.sheet_tri = self.sheet_tri
 
         #Chargement table
         self.model = pandasModel(self.sheet_tri)
