@@ -732,7 +732,13 @@ class mainWindow(QWidget):
         if self.role == "SuperAdmin":
             self.model = pandasEditableModel(self.sheet)
         elif self.role == "Admin":
-            self.sheetParam = self.sheet.loc[:, self.lstParam]
+            print("prout")
+            self.lstParamEtendue = self.lstParam
+            self.lstParamEtendue.remove('Utilisateur')
+            self.lstParamEtendue.remove('Date demande')
+            self.lstParamEtendue.remove('TypeLigne')
+            self.sheetParam = self.sheet.loc[:, self.lstParamEtendue]
+            print(self.sheetParam)
             self.model = pandasEditableModel(self.sheetParam)
         self.proxy_model.setSourceModel(self.model)
         self.tab.setModel(self.proxy_model)
@@ -746,14 +752,15 @@ class mainWindow(QWidget):
 
         self.wReglage.Gui()
         self.wReglage.show()
-
+    ##TODO: Retirer les onglets BDD etc et faire un fichier excel
     def saveData(self):
         print("Saving...")
         if self.role == "Admin":
             print("ACTUALISATION DE self.sheet")
             for i in range(len(listeParam)):
                 self.sheet[listeParam[i]] = self.sheetParam[listeParam[i]]
-        
+        self.sheet.to_excel('selfSheet.xlsx')
+        self.sheetParam.to_excel('selfSheetParam.xlsx')
         #Storage du fichier excel temporaire, changer pour le storer uniquement si c'est un utilisateur admin
         self.download_path = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
         with open(self.download_path, "wb") as local_file:
@@ -762,6 +769,16 @@ class mainWindow(QWidget):
 
         self.wb_obj = wb.load_workbook(self.download_path)
         print("Workbook loadé sur openpyxl")
+
+        print("Création sauvegarde")
+        with open(self.download_path, 'rb') as content_file:
+            file_content = content_file.read()
+        
+
+        file_folder = ctx.web.get_folder_by_server_relative_url("/sites/BricoDepot/Shared%20Documents/Donnees")
+        target_file = file_folder.upload_file('BDD_Back.xlsx', file_content).execute_query()
+
+        print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
         
         my_set = set(self.sheet_columns)
         lst_clean = []
@@ -787,11 +804,8 @@ class mainWindow(QWidget):
             lst_clean.clear()
 
         self.wb_obj.save('BDD2.xlsx')
-        
-        ########## Upload du fichier sur Sharepoint ########## 
-        # ##TODO RENVOYER LE FICHIER AVEC UNE SAUVEGARDE
-        ##TODO Activer sauvegarde Sharepoint
-        """
+        self.wb_obj.save(self.download_path)
+        ########## Upload du fichier sur Sharepoint ##########         
         with open(self.download_path, 'rb') as content_file:
             file_content = content_file.read()
         
@@ -800,7 +814,7 @@ class mainWindow(QWidget):
         target_file = file_folder.upload_file('BDD2.xlsx', file_content).execute_query()
 
         print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
-        """
+        
         shutil.rmtree(os.path.dirname(self.download_path))
 
     def closeEvent(self, event):
@@ -1877,7 +1891,7 @@ class traitementDemandeChangement(QWidget):
         self.comboBox2.currentIndexChanged.connect(self.selectionDepot2)
 
         self.boutonValidation = QPushButton("Valider la requête")
-        self.boutonValidation.clicked.connect(self.valider)
+        self.boutonValidation.clicked.connect(self.confValider)
         self.boutonValidation.setMaximumSize(300,100)
         self.boutonValidation.setMinimumWidth(200)
 
@@ -1942,8 +1956,9 @@ class traitementDemandeChangement(QWidget):
         self.lstParam = listeParam
         self.lstParam.append('Utilisateur')
         self.lstParam.append('Date demande')
+        self.lstParam.insert(0, 'TypeLigne')
         if main.role == 'Admin':
-            self.sheet_tri = self.sheet_tri.loc[:, listeParam]
+            self.sheet_tri = self.sheet_tri.loc[:, self.lstParam]
         elif main.role == "SuperAdmin":
             self.sheet_tri = self.sheet_tri
 
@@ -1973,25 +1988,55 @@ class traitementDemandeChangement(QWidget):
         for i in range(len(colonnes_dif)):
             self.model.change_color(1, colonnes_dif[i], QBrush(Qt.GlobalColor.red))
 
+    def confValider(self):
+        confirm_box = QMessageBox()
+        confirm_box.setText("Valider la requête ?\nLa validation de la requête enregistrera toutes les modifications faites jusqu'ici.")
+        
+        fontMessage = QFont()
+        fontMessage.setPointSize(14)
+        confirm_box.setFont(fontMessage)
+        confirm_box.setWindowTitle("Confirmation")
+
+        confirm_button = QPushButton("Confirmer")
+        cancel_button = QPushButton("Annuler")
+        
+        confirm_box.addButton(confirm_button, QMessageBox.ButtonRole.AcceptRole)
+        confirm_box.addButton(cancel_button, QMessageBox.ButtonRole.RejectRole)
+        
+        confirm_box.exec()
+
+        if confirm_box.clickedButton() == confirm_button:
+            print("L'utilisateur a confirmé.")
+            self.valider()
+        else:
+            print("L'utilisateur a annulé.")
+
     def valider(self):
         print("Valider la requête")
-        """
+        if main.role == "Admin":
+            print("ACTUALISATION DE self.sheet")
+            for i in range(len(listeParam)):
+                if listeParam[i] not in ['Utilisateur', 'Date demande', 'TypeLigne']:
+                    main.sheet[listeParam[i]] = main.sheetParam[listeParam[i]]
+        
         lst_colonnes = main.sheet.columns.tolist()
+
         self.codeBrico = self.sheet_tri.iloc[1]["Code BRICO"]
         self.depot = self.sheet_tri.iloc[1]["Dépôt"]
         self.utilisateur = self.sheet_tri.iloc[1]["Utilisateur"]
         self.dateDemande = self.sheet_tri.iloc[1]["Date demande"]
 
-
         #Index de la ligne à changer
         index_ligne = self.dfRequete.loc[(self.dfRequete['Code BRICO'] == self.codeBrico)].index[0]
         indexMain = main.sheet.loc[(main.sheet['Code BRICO'] == self.codeBrico)].index[0]
 
+ 
         for i in range(len(lst_colonnes)):
             main.sheet[lst_colonnes[i]][indexMain] = self.dfRequete[lst_colonnes[i]][index_ligne]
 
         main.chargerModif()
-
+        self.retirer()
+        """
         #La requête est passée, supprimer la requete
         self.dfRequete = self.dfRequete.drop(index_ligne)
         self.dfRequete.reset_index(drop=True)
@@ -2031,10 +2076,8 @@ class traitementDemandeChangement(QWidget):
         self.comboBox2.removeItem(curInd)
         self.comboBox2.setCurrentIndex(1)
         """
-    ##TODO: Refaire le test avec 1 requete et plusieurs requetes
     ##TODO: Mettre a jour dans la main window, retirer la requete aussi
     ##TODO: Sauvegarder sur Sharepoint
-    ##TODO: Fenetre confirmation
     
     def retirer(self):
 
@@ -2663,7 +2706,6 @@ if __name__ == '__main__':
     #splash.setProgress(50)
 
     sheet_Globale = pd.DataFrame()
-    ##TODO: vérif
     bool_premier = True
     sheet_lst = [element for element in sheet_lst if element not in ['Accueil', 'BDD']]
     increment = 60 / (len(sheet_lst)+1) 
