@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QCheckBox, Q
 from office365.sharepoint.client_context import ClientContext
 from office365.runtime.auth.client_credential import ClientCredential
 from office365.sharepoint.files.file import File 
-
+##TODO: Test Plan
 
 """ SplashScreen : Classe gérant l'écran de chargement
     
@@ -752,7 +752,7 @@ class mainWindow(QWidget):
 
         self.wReglage.Gui()
         self.wReglage.show()
-    ##TODO: Retirer les onglets BDD etc et faire un fichier excel
+    ##TODO: faire un fichier excel
     def saveData(self):
         print("Saving...")
         if self.role == "Admin":
@@ -816,6 +816,7 @@ class mainWindow(QWidget):
         print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
         
         shutil.rmtree(os.path.dirname(self.download_path))
+        QMessageBox.information(self, 'Succès', 'Données sauvegardées')
 
     def closeEvent(self, event):
         self.w = ''
@@ -2036,49 +2037,9 @@ class traitementDemandeChangement(QWidget):
 
         main.chargerModif()
         self.retirer()
-        """
-        #La requête est passée, supprimer la requete
-        self.dfRequete = self.dfRequete.drop(index_ligne)
-        self.dfRequete.reset_index(drop=True)
+        main.saveData()
+        self.close()
 
-        self.dfReqWrite = self.dfRequete
-
-        download_path_req = os.path.join(tempfile.mkdtemp(), os.path.basename(bdd_URL))
-        with open(download_path_req, "wb") as local_file:
-            file = ctx.web.get_file_by_server_relative_url(requete_URL).download(local_file).execute_query()
-        print("[Ok] file has been downloaded into: {0}".format(download_path_req))
-
-        with pd.ExcelWriter(download_path_req, mode='a', if_sheet_exists='replace') as writer:
-            self.dfReqWrite.to_excel(writer, sheet_name='Requete', index=False)
-
-
-        with open(download_path_req, 'rb') as content_file:
-            file_content = content_file.read()
-        
-
-        file_folder = ctx.web.get_folder_by_server_relative_url("/sites/BricoDepot/Shared%20Documents/Donnees")
-        target_file = file_folder.upload_file('REQ.xlsx', file_content).execute_query()
-
-        print("File hase been uploaded to url: {0}".format(target_file.serverRelativeUrl))
-
-        #Suppression du dossier temp
-        shutil.rmtree(os.path.dirname(download_path_req))
-        
-        #Affichage message box, changement confirmé et transmis
-        QMessageBox.information(self, 'Succès', 'Requête acceptée')
-
-        if self.dfRequete.empty:
-            QMessageBox.information(self, 'Succès', 'Plus de requêtes à traiter, fermeture...')
-            self.close()
-            return
-        
-        curInd = self.comboBox2.currentIndex()
-        self.comboBox2.removeItem(curInd)
-        self.comboBox2.setCurrentIndex(1)
-        """
-    ##TODO: Mettre a jour dans la main window, retirer la requete aussi
-    ##TODO: Sauvegarder sur Sharepoint
-    
     def retirer(self):
 
         self.codeBrico = self.sheet_tri.iloc[1]["Code BRICO"]
